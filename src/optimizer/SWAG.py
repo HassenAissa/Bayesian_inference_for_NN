@@ -1,7 +1,7 @@
 from optimizer import Optimizer
 from hyperparameters import Hyperparams
 
-class SWAG_Hyperparam(Hyperparams):
+class SwagHyperparam(Hyperparams):
     pass
 
 class SWAG(Optimizer):
