@@ -1,6 +1,4 @@
 from optimizer import Optimizer
-import sys
-sys.path.append('C:/Users/hasse/Documents/Hassen/SEGP/Bayesian_NN/git_version/Beyesian_inference_for_NN/src')
 from hyperparameters import Hyperparams
 import copy
 import torch
@@ -32,8 +30,7 @@ class SWAG(Optimizer):
         for name in list(module._parameters.keys()):
             if module._parameters[name] is None:
                 continue
-            data = module._parameters[name].data
-            module._parameters.pop(name)
+            data = module._parameters.pop(name).data
             module.register_buffer("%s_mean" % name, data.new(data.size()).zero_())
             module.register_buffer("%s_sq_mean" % name, data.new(data.size()).zero_())
             module.register_buffer("%s_deviation_matrix" % name, data.new_empty((0, data.numel())).zero_())
