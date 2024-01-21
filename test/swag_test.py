@@ -1,6 +1,8 @@
 import torch
 import torch.nn
 import sys
+import pytest
+
 sys.path.append('C:/Users/hasse/Documents/Hassen/SEGP/Bayesian_NN/git_version/Beyesian_inference_for_NN/src/optimizer')
 
 from SWAG import SWAG, SwagHyperparam
@@ -8,7 +10,7 @@ import numpy as np
 from torch.utils.data import TensorDataset, DataLoader
 
 
-def test_swag_on_distribution():
+def test_swag_on_distribution_succeed():
 
 
     base_model = torch.nn.Linear(20, 2, bias=True)
@@ -65,12 +67,12 @@ def test_swag_on_distribution():
     print("expected ", expected)
     print("prediction " , sum/nb_samples)
 
+
+    assert loss < 0.05
     if(loss < 0.05):
         print("test successful")
     else:
         print("test FAILED !!!!!!!")
 
 
-
-test_swag_on_distribution()
-
+test_swag_on_distribution_succeed()
