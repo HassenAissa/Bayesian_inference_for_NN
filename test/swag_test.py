@@ -67,7 +67,6 @@ def test_swag_on_distribution_succeed():
     print("expected ", expected)
     print("prediction " , sum/nb_samples)
 
-
     assert loss < 0.05
     if(loss < 0.05):
         print("test successful")

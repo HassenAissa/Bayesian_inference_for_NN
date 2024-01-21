@@ -91,7 +91,7 @@ class SWAG(Optimizer):
             ).normal_()
         )
 
-        sample = mean + math.sqrt(0.5)*(cov_sample/((self.n_models-1)**0.5) + var_sample)
+        sample = mean + math.sqrt(self.hyperparameters.scale) * (math.sqrt(0.5)*(cov_sample/((self.n_models-1)**0.5) + var_sample))
         sample = sample.unsqueeze(0)
 
         # print(sample.shape)
