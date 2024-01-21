@@ -61,14 +61,14 @@ def test_swag_on_distribution_succeed():
         mean, var, deviation = swag_model.distribution()
         out = swag_model.predict(mean, var, deviation, input)
         sum += out
-
-    loss = ((expected - out) ** 2.0).sum()
+    sum = sum/nb_samples
+    loss = ((expected - sum) ** 2.0).sum()
     print("loss ",loss)
     print("expected ", expected)
-    print("prediction " , sum/nb_samples)
+    print("prediction " , sum)
 
-    assert loss < 0.05
-    if(loss < 0.05):
+    assert loss < 0.0005
+    if(loss < 0.0005):
         print("test successful")
     else:
         print("test FAILED !!!!!!!")
