@@ -1,5 +1,5 @@
 import pytest
-from src.example_main import return_val, return_one
+from example_main import return_val, return_one
 
 def test_return_one_succeed():
     assert return_one() == 1
