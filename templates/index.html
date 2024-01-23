@@ -1,0 +1,56 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bayesian NN</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Create two equal columns that floats next to each other */
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      /* height: 300px; Should be removed. Only for demonstration */
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    table, th, td {
+      border: 0.5px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
+    <div class="row">
+    <div class="column" style="background-color: lightgoldenrodyellow;">
+        <h2>Select dataset and create neural network model</h2>
+        <form action="/" method="post">
+            dataset: <input type="file" name="dataset">
+            neural network category: <select name="category">{% for c in categories %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+          <input type="submit" value="continue>>"> <br><b>Seleted category</b>: {{category}}; <b>Input dimension</b>:{{ic}} <b>Number of classes</b>: {{n_classes}}; <a href="/">Reset data and nueral network</a>
+        </form>
+        <form action="/" method="post">
+        <input type="hidden" name="category" value="{{category}}"><input type="hidden" name="n_classes" value="{{n_classes}}"><input type="hidden" name="ic" value="{{ic}}">
+        {% if category == "Fully connected" %}
+            <b>hidden dimension list</b> (use comma ',' to separate each layer dimension):<br><textarea name="hidden" cols="70" rows="1"></textarea> <br><b>activation fuinctions</b> (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, use comma ',' to separate each activation): <br><textarea name="activations" cols="70" rows="1"></textarea>
+        {% elif category == "Convolutional" %}
+            <b>filter dimension list</b> (use comma ',' to separate each filter): <br><textarea name="filters" cols="70" rows="1"></textarea>; <br><b>kernel size:</b> <input type="number" name="kernel" min="1" max="999">; <b>feature size:</b> <input type="number" name="features" min="1" max="99999">; 
+        {% endif %}
+        <input type="submit" value="create neural network">
+        </form>
+        <h2>Select optimizer</h2>
+        SWAG <input type="submit" value="start training">
+    </div>
+    <div class="column">
+      {% if graph %}
+      <img src="static/drawnn.png" alt="graph">
+      {% endif %}
+    </div>
