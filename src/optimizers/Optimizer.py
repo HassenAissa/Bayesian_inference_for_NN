@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from src.dataset.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 import tensorflow as tf
@@ -10,6 +11,7 @@ class Optimizer(ABC):
         self._model_config = None
         self._hyperparameters = None
         self.__compiled = False
+        self._dataset : Dataset = Dataset()
 
     @abstractmethod
     def step(self):
@@ -22,6 +24,7 @@ class Optimizer(ABC):
             self.__compiled = True
             self._hyperparameters = hyperparameters
             self._model_config = model_config
+            self._dataset = dataset
         self.compile_extra_components(**kwargs)
 
     @abstractmethod
