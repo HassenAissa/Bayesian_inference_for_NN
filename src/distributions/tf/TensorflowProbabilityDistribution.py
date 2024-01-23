@@ -32,12 +32,12 @@ class TensorflowProbabilityDistribution(Distribution):
             return DEFAULT_BASE_SERIALIZER.serialize(self._tf_distribution)
 
     @classmethod
-    def deserialize(cls: str) -> 'Distribution':
-        dist_dict = json.loads(cls)
+    def deserialize(cls, data: str) -> 'Distribution':
+        dist_dict = json.loads(data)
         if dist_dict["type"] in DISTRIBUTION_SERIALIZER_REGISTER:
-            return DISTRIBUTION_SERIALIZER_REGISTER[dist_dict["type"]].deserialize(cls)
+            return DISTRIBUTION_SERIALIZER_REGISTER[dist_dict["type"]].deserialize(data)
         else:
-            return DEFAULT_BASE_SERIALIZER.deserialize(cls)
+            return DEFAULT_BASE_SERIALIZER.deserialize(data)
 
     def sample(self) -> tf.Tensor:
-        return self._tf_distribution.sam
+        pass

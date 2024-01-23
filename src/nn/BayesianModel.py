@@ -1,8 +1,5 @@
 import tensorflow as tf
-from django.contrib.gis.gdal import layer
-
 from src.distributions.Distribution import Distribution
-from src.distributions.tf.Constant import Constant
 import bisect
 
 
@@ -19,6 +16,8 @@ class BayesianModel:
         self._model = model
 
     def apply_distribution(self, distribution: Distribution, start_layer: int, end_layer: int):
+        """
+        TODO: Implement this without errors
         if start_layer > end_layer:
             raise ValueError('starting_layer must be less than end_layer')
         elif start_layer < 0 or end_layer >= self._n_layers:
@@ -31,26 +30,24 @@ class BayesianModel:
         end_index = bisect.bisect_right(end_layer)
         if self._layers_dist_intervals[end_index]:
             pass
-
+        """
+        pass
 
     def apply_distributions_layers(self, layer_list, dist_list):
         self._layers_dist_intervals = layer_list
         self._distributions = dist_list
 
     def _sample_weights(self):
-        # sample from dist
-        i = 0
-        for layer in self._layers:
-
-
-    def predict(self, X):
-        self._sample_weights()
-        return self._model.predict(X)
-
-    def load(self):
         pass
 
-    def store(self):
+    def predict(self, x: tf.Tensor):
+        pass
+
+    @classmethod
+    def load(cls, model_path: str) -> 'BayesianModel':
+        pass
+
+    def store(self, model_path: str):
         pass
 
     class Layer:

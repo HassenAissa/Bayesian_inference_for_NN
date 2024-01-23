@@ -20,7 +20,7 @@ class Distribution(ABC):
 
     @classmethod
     @abstractmethod
-    def deserialize(cls: str) -> 'Distribution':
+    def deserialize(cls, data: str) -> 'Distribution':
         pass
 
 

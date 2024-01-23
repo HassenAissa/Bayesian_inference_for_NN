@@ -15,5 +15,5 @@ class Constant(Distribution):
         pass
 
     @classmethod
-    def deserialize(cls: str) -> 'Distribution':
+    def deserialize(cls, data: str) -> 'Distribution':
         pass
