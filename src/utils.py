@@ -1,7 +1,7 @@
 import numpy as np 
-import torch
 import os
 from PIL import Image
+import tensorflow as tf
 
 
 
@@ -40,20 +40,22 @@ def load_data(directory):
 
 
 def unflatten_like(vector, likeTensorList):
-    # Takes a flat torch.tensor and unflattens it to a list of torch.tensors
+    # Takes a flat tf.tensor and unflattens it to a list of tf.tensors
     #    shaped like likeTensorList
     outList = []
     i = 0
     for tensor in likeTensorList:
         # n = module._parameters[name].numel()
-        n = tensor.numel()
-        outList.append(vector[:, i : i + n].view(tensor.shape))
+        n = tf.size(tensor).numpy()
+        outList.append(tf.reshape(vector[i : i + n], tensor.shape))
         i += n
     return outList
 
 def flatten(lst):
-    tmp = [i.contiguous().view(-1, 1) for i in lst]
-    return torch.cat(tmp).view(-1)
+    tmp = [tf.reshape(i, [-1, 1]) for i in lst]
+    res = tf.concat(tmp, 0)
+    res = tf.reshape(res, [-1])
+    return res
 
 def label_to_onehot(labels, C=None):
     """
