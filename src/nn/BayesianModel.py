@@ -11,7 +11,7 @@ class BayesianModel:
         for layer in model.layers:
             self._layers.append(BayesianModel.Layer([w.shape for w in layer.weights]))
         self._n_layers = len(self._layers)
-        self._layers_dist_intervals = [0]
+        self._layers_dtbn_intervals = [0]
         self._distributions = [None]
         self._model = model
 
@@ -22,20 +22,20 @@ class BayesianModel:
             raise ValueError('starting_layer must be less than end_layer')
         elif start_layer < 0 or end_layer >= self._n_layers:
             raise ValueError('out of bounds')
-        start_index = bisect.bisect_right(self._layers_dist_intervals, start_layer)
-        if self._layers_dist_intervals[start_index - 1] != start_layer:
-            self._layers_dist_intervals.insert(start_index, start_layer)
+        start_index = bisect.bisect_right(self._layers_dtbn_intervals, start_layer)
+        if self._layers_dtbn_intervals[start_index - 1] != start_layer:
+            self._layers_dtbn_intervals.insert(start_index, start_layer)
         else:
             start_index -= 1
         end_index = bisect.bisect_right(end_layer)
-        if self._layers_dist_intervals[end_index]:
+        if self._layers_dtbn_intervals[end_index]:
             pass
         """
         pass
 
-    def apply_distributions_layers(self, layer_list, dist_list):
-        self._layers_dist_intervals = layer_list
-        self._distributions = dist_list
+    def apply_distributions_layers(self, layer_list, dtbn_list):
+        self._layers_dtbn_intervals = layer_list
+        self._distributions = dtbn_list
 
     def _sample_weights(self):
         pass

@@ -9,13 +9,13 @@ class BaseSerializer:
         pass
 
     def serialize(self, tf_distribution: tfp.distributions.Distribution) -> str:
-        dist_dict = {
+        dtbn_dict = {
             'type': type(tf_distribution).__name__,
             'params': {k: v.numpy().tolist() for k, v in tf_distribution.parameters.items()}
         }
-        return json.dumps(dist_dict)
+        return json.dumps(dtbn_dict)
 
     def deserialize(self, cls: str) -> TensorflowProbabilityDistribution:
-        dist_dict = json.loads(cls)
-        tf_distribution = tfp.distributions.getattr(dist_dict['type'])(**dist_dict['params'])
+        dtbn_dict = json.loads(cls)
+        tf_distribution = tfp.distributions.getattr(dtbn_dict['type'])(**dtbn_dict['params'])
         return TensorflowProbabilityDistribution(tf_distribution)
