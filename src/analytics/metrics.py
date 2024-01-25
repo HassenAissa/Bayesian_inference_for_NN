@@ -1,3 +1,4 @@
+import numpy as np
 from src.nn.BayesianModel import BayesianModel
 from pydantic import BaseModel
 # from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, confusion_matrix, recall_score, precision_score, accuracy_score, roc_auc_score
@@ -28,7 +29,6 @@ class Analytics(BayesianModel):
     def visualise():
         # ouptut results with table
         # plot y_true VS y_pred
-        
         pass
         
     def metrics_regressor(self, y_pred, y_true):
@@ -45,9 +45,35 @@ class Analytics(BayesianModel):
         f1 = met.f1_score(y_true, y_pred)
         print("Performence metrics for Classification: ....")
         
-    def uncertainty():
+    def uncertainty(self, dataset, n_samples=100) -> tuple:
         # epistemic - model's lack of knowledge
         # aleatoric - natural variability or noise in the data
+        if dataset.likelihoodModel == "Regressor":
+            return self.uncertainty_regressor(dataset, n_samples)
+        else:
+            return self.uncertainty_classification(dataset, n_samples)
+        
+    
+    def uncertainty_regressor(self, dataset, n_samples=100) -> tuple:
+        predictions = [self.predict(dataset.testData.input) for _ in range(n_samples)]
+        # means = np.mean(predictions, axis=0)
+        # variance = np.var(predictions, axis=0)
+        
+    def uncertainty_classification(self, dataset, n_samples=100) -> tuple:
+        # For classification, we might use the entropy of the predicted probabilities
+        # as a measure of aleatoric uncertainty and variance of multiple stochastic
+        # forward passes as epistemic uncertainty.
+
+        # Assuming predict returns a distribution over classes for each sample
+        predictions = self.predict(dataset.testData.input) # shape: (n_samples, n_classes)
+        # predictions = np.array([self.predict(dataset.testData.input) for _ in range(n_samples)])
+        samples = predictions
+        aleatoric_uncertainty = np.mean(samples, axis=0)
+        
+        #aleatoric_uncertainty = -np.sum(mean_predictions * np.log(mean_predictions + 1e-10), axis=1) # Aleatoric Uncertainty as entropy
+        epistemic_uncertainty = np.var(samples, axis=0) # Epistemic Uncertainty as variance of the predictions
+        return aleatoric_uncertainty, epistemic_uncertainty
+        
         
     def learning_diagnostics():
-        #
+        pass
