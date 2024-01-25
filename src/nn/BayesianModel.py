@@ -71,11 +71,14 @@ class BayesianModel:
 
     def predict(self, x: tf.Tensor, nb_samples: int):
         result = 0
+        samples_results = []
         for i in range(nb_samples):
             self._sample_weights()
-            result += self._model.predict(x)
+            prediction = self._model.predict(x)
+            result += prediction
+            samples_results.append(prediction)
         result /= nb_samples
-        return result
+        return samples_results, result
 
     @classmethod
     def load(cls, model_path: str, custom_distribution_register=None) -> 'BayesianModel':
