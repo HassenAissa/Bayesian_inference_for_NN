@@ -21,6 +21,7 @@ class SWAG(Optimizer):
         self._mean: list[tf.Tensor] = []
         self._sq_mean: list[tf.Tensor] = []
         self._dev: list[tf.Tensor] = []
+        self._weight_layers_indices = []
 
     def step(self):
         sample, label = next(self._data_iterator)
@@ -67,7 +68,8 @@ class SWAG(Optimizer):
         self._n = 0
 
     def _init_swag_arrays(self):
-        for layer in list(self._base_model.layers):
+        for layer_idx in self._base_model.layers:
+            layer = self._base_model.layers[layer_idx]
             size = 0
             for w in layer.get_weights():
                 size += tf.size(w).numpy()
@@ -75,18 +77,22 @@ class SWAG(Optimizer):
                 self._mean.append(tf.zeros((size,), dtype=tf.float32))
                 self._sq_mean.append(tf.zeros((size,), dtype=tf.float32))
                 self._dev.append(tf.zeros((size, 0), dtype=tf.float32))
+                self._weight_layers_indices.append(layer_idx)
 
     def result(self) -> BayesianModel:
         model = BayesianModel(self._model_config)
-        i = 0
-        for mean, sq_mean, dev in zip(self._mean, self._sq_mean, self._dev):
+        for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev, range(len(self._weight_layers_indices))):
             tf_dist = tfp.distributions.MultivariateNormalDiagPlusLowRankCovariance(
                 mean,
                 sq_mean - mean ** 2,
                 dev
             )
-            model.apply_distribution(TensorflowProbabilityDistribution(tf_dist), i, i)
-            i += 1
+            start_idx = self._weight_layers_indices[idx]
+            end_idx = len(self._base_model.layers) - 1
+            if idx+1 < len(self._weight_layers_indices):
+                end_idx = self._weight_layers_indices[idx + 1]
+
+            model.apply_distribution(TensorflowProbabilityDistribution(tf_dist), start_idx, end_idx)
         return model
 
     def update_parameters_step(self):
