@@ -33,10 +33,10 @@ class SampledDistribution(Distribution):
         content = json.dumps(info)
         f.write(content+'\n')
         f.close()
-        for vec in self.param_vecs:
+        for i in self.n_samples:
             f = open("src/distributions/samples/sd"+str(self.index)+"_sample"+str(i)+".npy", "wb") 
             # example "sd5_sample2.npy"
-            f.write(vec) # ? how to write tensor to .npy files ?
+            f.write(self.param_vecs[i]) # ? how to write tensor to .npy files ?
             f.close()
         return content
 
