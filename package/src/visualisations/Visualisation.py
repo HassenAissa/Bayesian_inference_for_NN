@@ -27,7 +27,7 @@ class Visualisation():
         plt.ylabel('Output')
         plt.show()
                 
-        if dataset.likelihoodModel == "Regressor":
+        if dataset.get_likelihood_model() == "Regressor":
             self.metrics_regressor(y_pred, y_true)
             self.uncertainty_regressor(y_samples)
             
@@ -41,9 +41,11 @@ class Visualisation():
             plt.xlabel('Index')
             plt.ylabel('Output')
             plt.show()
-        else:
+        elif dataset.get_likelihood_model() == "Classification":
             self.metrics_classification(y_pred, y_true)
             self.uncertainty_classification(y_samples)
+        else: 
+            print("Invalid loss function")
         
     def metrics_regressor(self, y_pred, y_true):
         mse = met.mean_squared_error(y_true, y_pred)
