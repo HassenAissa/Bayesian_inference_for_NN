@@ -49,8 +49,9 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, dataset, loss):
+    def __init__(self, dataset, loss, likelihoodModel):
         self._loss = loss
+        self.likelihoodModel = likelihoodModel
         self.size = tf.data.experimental.cardinality(dataset).numpy()
         self.train_size = int(0.8 * self.size)
         self.test_size = int(0.1 * self.size)

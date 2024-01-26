@@ -14,7 +14,7 @@ train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 x_test = tf.random.uniform(shape=(100,1), minval=1, maxval=20, dtype=tf.int32)
 y_test = 2*x_test+2
 
-train_dataset = Dataset(train_dataset, tf.keras.losses.MeanSquaredError())
+train_dataset = Dataset(train_dataset, tf.keras.losses.MeanSquaredError(), "Regressor")
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 model = tf.keras.models.Sequential()
 model.add(layers.Dense(1, activation='linear', kernel_initializer=initializer, input_shape=(1,)))

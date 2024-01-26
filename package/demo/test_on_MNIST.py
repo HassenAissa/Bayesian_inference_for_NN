@@ -89,7 +89,8 @@ train_dataset = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
 
 train_dataset = Dataset(
     train_dataset,
-    tf.keras.losses.SparseCategoricalCrossentropy()
+    tf.keras.losses.SparseCategoricalCrossentropy(),
+    "Classification"
 )
 
 
