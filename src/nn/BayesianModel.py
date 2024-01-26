@@ -5,6 +5,8 @@ import tensorflow as tf
 from src.distributions.Distribution import Distribution
 import bisect
 
+from src.distributions.DistributionSerializer import DistributionSerializer
+
 
 class BayesianModel:
     def __init__(self, model_config: dict):
@@ -27,6 +29,10 @@ class BayesianModel:
             raise ValueError('out of bounds')
         interval = [start_layer, end_layer]
 
+        if len(self._layers_dtbn_intervals) == 0:
+            self._layers_dtbn_intervals.append(interval)
+            self._distributions.append(distribution)
+            return
         for i in range(len(self._layers_dtbn_intervals)):
             if start_layer > self._layers_dtbn_intervals[i][0]:
                 self._layers_dtbn_intervals = self._layers_dtbn_intervals[:i + 1] + [
@@ -57,6 +63,8 @@ class BayesianModel:
     def _sample_weights(self):
         for interval_idx in range(len(self._layers_dtbn_intervals)):
             vector_weights: tf.Tensor = self._distributions[interval_idx].sample()
+            #print(vector_weights)
+
             start = self._layers_dtbn_intervals[interval_idx][0]
             end = self._layers_dtbn_intervals[interval_idx][1]
             take_from = 0
@@ -64,7 +72,7 @@ class BayesianModel:
                 weights = []
                 for w in self._model.layers[layer_idx].get_weights():
                     size = tf.size(w).numpy()
-                    weights.append(tf.reshape(vector_weights[take_from:take_from + size]), w.shape)
+                    weights.append(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
                     take_from += size
                 self._model.layers[layer_idx].set_weights(weights)
 
@@ -73,7 +81,8 @@ class BayesianModel:
         result = 0
         for i in range(nb_samples):
             self._sample_weights()
-            result += self._model.predict(x)
+            out = self._model(x)
+            result += out
         result /= nb_samples
         return result
 
@@ -94,7 +103,7 @@ class BayesianModel:
 
         for i in range(n_intervals):
             with open(model_path + "/distributions/distribution" + str(i) + ".json", "r") as dist_file:
-                distribution = Distribution.deserialize_from(layers_intervals[i][0], custom_distribution_register,
+                distribution = DistributionSerializer.deserialize_from(layers_intervals[i][0], custom_distribution_register,
                                                              dist_file.read())
                 bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
         return bayesian_model

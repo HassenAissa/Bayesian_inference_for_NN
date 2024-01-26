@@ -11,7 +11,7 @@ class Optimizer(ABC):
         self._model_config = None
         self._hyperparameters = None
         self.__compiled = False
-        self._dataset : Dataset = Dataset()
+        self._dataset : Dataset = None
 
     @abstractmethod
     def step(self):
