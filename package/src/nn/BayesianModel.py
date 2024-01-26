@@ -3,8 +3,6 @@ import os
 
 import tensorflow as tf
 from src.distributions.Distribution import Distribution
-import bisect
-
 from src.distributions.DistributionSerializer import DistributionSerializer
 
 
@@ -102,7 +100,7 @@ class BayesianModel:
             n_intervals = int(layers_file.readline())
             for i in range(n_intervals):
                 layers_intervals.append(
-                    (layers_file.readline(), int(layers_file.readline()), int(layers_file.readline())))
+                    (layers_file.readline()[:-1], int(layers_file.readline()), int(layers_file.readline())))
 
         for i in range(n_intervals):
             with open(model_path + "/distributions/distribution" + str(i) + ".json", "r") as dist_file:
@@ -120,13 +118,11 @@ class BayesianModel:
             for i in range(len(self._layers_dtbn_intervals)):
                 layers_start = self._layers_dtbn_intervals[i][0]
                 layers_end = self._layers_dtbn_intervals[i][1]
-                layers_file.write(self._distributions[i].__class__.__name__)
-                layers_file.write(str(layers_start) + "\n")
-                layers_file.write(str(layers_end) + "\n")
+                layers_file.write(self._distributions[i].__class__.__name__+'\n'+str(layers_start)+'\n'+str(layers_end)+'\n')
 
         os.mkdir(model_path + "/distributions")
         for i in range(len(self._layers_dtbn_intervals)):
-            with open(model_path + "/distributions" + "distribution" + str(i) + ".json", "w") as distribution_file:
+            with open(model_path + "/distributions/distribution" + str(i) + ".json", "w") as distribution_file:
                 distribution_file.write(self._distributions[i].serialize())
 
     class Layer:
