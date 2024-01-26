@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.dataset.Dataset import Dataset
+from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 import tensorflow as tf

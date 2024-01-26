@@ -14,14 +14,13 @@ class Dataset(BaseModel):
 
 class Analytics(BayesianModel):
     def __init__(self):
-        self.conf_intv = 0.2
         pass
     
     # https://seaborn.pydata.org
     def visualise(self, dataset, nb_samples):
-        x = dataset.testData.input
+        tf_dataset = iter(dataset.valid)
+        x, y_true = next(tf_dataset)
         y_samples, y_pred = self.predict(x, nb_samples)  # pass in the x value
-        y_true = dataset.testData.labels # true value
         if dataset.likelihoodModel == "Regressor":
             self.metrics_regressor(y_pred, y_true)
             self.uncertainty_regressor(y_samples)

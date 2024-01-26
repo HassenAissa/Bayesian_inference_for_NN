@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from src.dataset.Dataset import Dataset
+from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
