@@ -114,7 +114,7 @@ class BayesianModel:
             config_file.write(self._model.to_json())
 
         with open(model_path + "/layers_config.txt") as layers_file:
-            layers_file.write(str(len(self._layers_dtbn_intervals)))
+            layers_file.write(str(len(self._layers_dtbn_intervals))+'\n')
             for i in range(len(self._layers_dtbn_intervals)):
                 layers_start = self._layers_dtbn_intervals[i][0]
                 layers_end = self._layers_dtbn_intervals[i][1]
