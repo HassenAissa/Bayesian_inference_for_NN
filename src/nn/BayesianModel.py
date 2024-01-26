@@ -83,7 +83,7 @@ class BayesianModel:
         samples_results = []
         for i in range(nb_samples):
             self._sample_weights()
-            prediction = self._model.predict(x)
+            prediction = self._model(x)
             result += prediction
             samples_results.append(prediction)
         result /= nb_samples
