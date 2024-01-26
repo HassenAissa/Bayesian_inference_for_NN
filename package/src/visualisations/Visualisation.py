@@ -12,10 +12,9 @@ class Visualisation(BayesianModel):
     
     # https://seaborn.pydata.org
     def visualise(self, dataset: Dataset, nb_samples: int):
-        valid_dataset = iter(dataset.valid)
-        x, y_true = next(valid_dataset)
+        x, y_true = tuple(zip(*dataset.valid))
         y_samples, y_pred = self.predict(x, nb_samples)  # pass in the x value
-        
+    
         # Prediction Plot
         plt.figure(figsize=(10, 5))
         plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
