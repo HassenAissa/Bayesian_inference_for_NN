@@ -28,14 +28,18 @@ class Visualisation():
         plt.show()
         if dataset.get_likelihood_type() == "Regressor":
             self.metrics_regressor(y_pred, y_true)
-            epistemic = self.uncertainty_regressor(y_samples)
+            err = np.sqrt(self.uncertainty_regressor(y_samples))
+            pred_dev = y_pred.numpy() - y_true.numpy()
             
             # uncertainty
             plt.figure(figsize=(10, 5))
-            plt.scatter(range(len(epistemic)), epistemic, label='Epistemic Uncertainty', alpha=0.5)
+            plt.hlines([0], 0, len(err))
+            plt.plot(range(len(err)), pred_dev-err, label='Epistemic Lower', alpha=0.5)
+            plt.scatter(range(len(err)), pred_dev, label='Averaged deviation', alpha=0.5, c="k")
+            plt.plot(range(len(err)), pred_dev+err, label='Epistemic Upper', alpha=0.5)
             plt.legend()
             plt.title('Epistemic Uncertainty')
-            plt.ylabel('Output')
+            plt.ylabel('Pred-True difference')
             plt.show()
             
         elif dataset.get_likelihood_type() == "Classification":
