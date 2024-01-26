@@ -3,6 +3,8 @@ from src.nn.BayesianModel import BayesianModel
 from src.datasets.Dataset import Dataset
 import sklearn.metrics as met
 import tensorflow as tf
+import matplotlib.pyplot as plt
+
 
 class Visualisation(BayesianModel):
     def __init__(self):
@@ -13,9 +15,31 @@ class Visualisation(BayesianModel):
         valid_dataset = iter(dataset.valid)
         x, y_true = next(valid_dataset)
         y_samples, y_pred = self.predict(x, nb_samples)  # pass in the x value
+        
+        # Prediction Plot
+        plt.figure(figsize=(10, 5))
+        plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
+        plt.scatter(range(len(y_pred)), y_pred, label='Predicted Mean', alpha=0.5)
+        plt.legend()
+        plt.title('True vs Predicted Values')
+        plt.xlabel('Sample Index')
+        plt.ylabel('Output')
+        plt.show()
+                
         if dataset.likelihoodModel == "Regressor":
             self.metrics_regressor(y_pred, y_true)
             self.uncertainty_regressor(y_samples)
+            
+            # uncertainty
+            y_std = np.std(y_samples, axis=0)
+            plt.figure(figsize=(10, 5))
+            plt.errorbar(range(len(y_pred)), y_pred, yerr=y_std, fmt='o', label='Prediction with Uncertainty', alpha=0.5)
+            plt.fill_between(range(len(y_pred)), y_pred - y_std, y_pred + y_std, alpha=0.2)
+            plt.legend()
+            plt.title('Prediction with Uncertainty')
+            plt.xlabel('Index')
+            plt.ylabel('Output')
+            plt.show()
         else:
             self.metrics_classification(y_pred, y_true)
             self.uncertainty_classification(y_samples)
