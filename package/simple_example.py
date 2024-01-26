@@ -5,6 +5,7 @@ from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
+from src.visualisations.Visualisation import Visualisation
 
 x_train = tf.random.uniform(shape=(500,1), minval=1, maxval=20, dtype=tf.int32)
 y_train = 2*x_train+2
@@ -30,5 +31,7 @@ for i in range(0, 100):
     optimizer.step()
 print(optimizer._base_model(x_test[0]))
 bayesian_model: BayesianModel = optimizer.result()
+analytics_builder = Visualisation(bayesian_model)
 
 print(x_test[0], bayesian_model.predict(x_test[0], 100))
+#analytics_builder.visualise(test_dataset, 100)

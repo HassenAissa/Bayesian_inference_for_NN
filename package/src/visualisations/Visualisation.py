@@ -1,25 +1,17 @@
 import numpy as np
 from src.nn.BayesianModel import BayesianModel
-from pydantic import BaseModel
-# from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, confusion_matrix, recall_score, precision_score, accuracy_score, roc_auc_score
+from src.datasets.Dataset import Dataset
 import sklearn.metrics as met
 import tensorflow as tf
 
-""""imaginary dataset class"""
-
-class Dataset(BaseModel):
-    likelihood: str # "Regressor" or "Classification"
-    output: float
-    testData: tf.Tensor
-
-class Analytics(BayesianModel):
+class Visualisation(BayesianModel):
     def __init__(self):
         pass
     
     # https://seaborn.pydata.org
-    def visualise(self, dataset, nb_samples):
-        tf_dataset = iter(dataset.valid)
-        x, y_true = next(tf_dataset)
+    def visualise(self, dataset: Dataset, nb_samples: int):
+        valid_dataset = iter(dataset.valid)
+        x, y_true = next(valid_dataset)
         y_samples, y_pred = self.predict(x, nb_samples)  # pass in the x value
         if dataset.likelihoodModel == "Regressor":
             self.metrics_regressor(y_pred, y_true)
