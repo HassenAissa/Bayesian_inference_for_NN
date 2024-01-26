@@ -12,8 +12,10 @@ class Visualisation():
     
     # https://seaborn.pydata.org
     def visualise(self, dataset: Dataset, nb_samples: int):
-        x, y_true = tuple(zip(*dataset.valid))
-        y_samples, y_pred = self.predict(x, nb_samples)  # pass in the x value
+        images, labels = tuple(zip(*dataset.valid_data))
+        x = tf.transpose(tf.stack(images, axis=1))
+        y_true = tf.transpose(tf.stack(labels, axis=1))
+        y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
     
         # Prediction Plot
         plt.figure(figsize=(10, 5))
