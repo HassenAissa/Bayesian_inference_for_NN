@@ -1,11 +1,13 @@
 import tensorflow as tf
 from PIL import Image
-from src.dataset.Dataset import Dataset
+from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
 import numpy as np
 import os
+from src.visualisations.Visualisation import Visualisation
+
 
 
 def _load_images_from_directory(dir):
@@ -62,7 +64,7 @@ def get_n_classes(labels):
     return int(np.max(labels) + 1)
 
 
-xtrain, xtest, ytrain, ytest = load_data(r"path")
+xtrain, xtest, ytrain, ytest = load_data(r"C:\Users\hasse\Downloads\ml-main\ml-main\Milestone1\sciper1_sciper2_sciper3_project\dataset_HASYv2\dataset_HASYv2")
 xtrain = xtrain.reshape(xtrain.shape[0], -1)
 xtest = xtest.reshape(xtest.shape[0], -1)
 
@@ -86,6 +88,7 @@ n_classes = get_n_classes(ytrain)
 xtrain = xtrain.reshape(xtrain.shape[0], 32, 32, 1)
 xtest = xtest.reshape(xtest.shape[0], 32, 32, 1)
 train_dataset = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
+test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
 
 train_dataset = Dataset(
     train_dataset,
@@ -94,15 +97,14 @@ train_dataset = Dataset(
 )
 
 
+test_dataset = Dataset(
+    test_dataset,
+    tf.keras.losses.SparseCategoricalCrossentropy(),
+    "Classification"
+)
+
 base_model = tf.keras.Sequential()
-#base_model.add(tf.keras.layers.Dense(100, activation='relu', input_shape=(1024,)))
-#base_model.add(tf.keras.layers.Dense(10, activation='softmax'))
-#base_model.compile(optimizer=tf.keras.optimizers.SGD(lr = 1e-1), loss=tf.keras.losses.SparseCategoricalCrossentropy())
-#base_model.fit(xtrain, ytrain, epochs=100)
-#prediction = base_model.predict(xtest, 100)
-#compare = tf.equal(tf.math.argmax(prediction, axis=-1), ytest)
-#print(tf.reduce_sum(tf.cast(compare, tf.float32) / xtest.shape[0]))
-#
+
 base_model.add(tf.keras.layers.Conv2D(16, 3, activation='relu', input_shape=(32, 32, 1)))
 base_model.add(tf.keras.layers.MaxPooling2D(2))
 base_model.add(tf.keras.layers.Conv2D(32, 3, activation='relu'))
@@ -128,4 +130,18 @@ bayesian_model: BayesianModel = optimizer.result()
 
 _, prediction = bayesian_model.predict(xtest, 100)
 compare = tf.equal(tf.math.argmax(prediction, axis=-1), ytest)
-print(tf.reduce_sum(tf.cast(compare, tf.float32) / xtest.shape[0]))
+print("Accuracy of the bayesian model :", tf.reduce_sum(tf.cast(compare, tf.float32) / xtest.shape[0]).numpy())
+path = r"..."
+
+bayesian_model.store(path)
+bayesian_model: BayesianModel= BayesianModel.load(path)
+
+_, prediction = bayesian_model.predict(xtest, 100)
+
+compare = tf.equal(tf.math.argmax(prediction, axis=-1), ytest)
+
+print("Accuracy of the bayesian model after store/load :", tf.reduce_sum(tf.cast(compare, tf.float32) / xtest.shape[0]).numpy())
+
+analytics_builder = Visualisation(bayesian_model)
+
+analytics_builder.visualise(test_dataset, 100)

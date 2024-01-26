@@ -12,21 +12,24 @@ class Visualisation():
     
     # https://seaborn.pydata.org
     def visualise(self, dataset: Dataset, nb_samples: int):
-        images, labels = tuple(zip(*dataset.valid_data))
-        x = tf.transpose(tf.stack(images, axis=1))
-        y_true = tf.transpose(tf.stack(labels, axis=1))
+        # images, labels = tuple(zip(*dataset.valid_data))
+        # x = tf.transpose(tf.stack(images, axis=-1))
+        # y_true = tf.transpose(tf.stack(labels, axis=-1))
+        x, y_true = next(iter(dataset.valid_data.batch(dataset.valid_data.cardinality())))
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
     
         # Prediction Plot
-        plt.figure(figsize=(10, 5))
-        plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
-        plt.scatter(range(len(y_pred)), y_pred, label='Predicted Mean', alpha=0.5)
-        plt.legend()
-        plt.title('True vs Predicted Values')
-        plt.xlabel('Sample Index')
-        plt.ylabel('Output')
-        plt.show()
         if dataset.get_likelihood_type() == "Regressor":
+
+            plt.figure(figsize=(10, 5))
+            plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
+            plt.scatter(range(len(y_pred)), y_pred, label='Predicted Mean', alpha=0.5)
+            plt.legend()
+            plt.title('True vs Predicted Values')
+            plt.xlabel('Sample Index')
+            plt.ylabel('Output')
+            plt.show()
+
             self.metrics_regressor(y_pred, y_true)
             err = np.sqrt(self.uncertainty_regressor(y_samples))
             pred_dev = y_pred.numpy() - y_true.numpy()
@@ -44,7 +47,7 @@ class Visualisation():
             
         elif dataset.get_likelihood_type() == "Classification":
             self.metrics_classification(y_pred, y_true)
-            self.uncertainty_classification(y_samples)
+            # self.uncertainty_classification(y_samples)
         else: 
             print("Invalid loss function")
         
@@ -60,10 +63,10 @@ class Visualisation():
               R^2: {}""".format(mse, rmse, mae, r2))
         
     def metrics_classification(self, y_pred, y_true):
-        accuracy = met.accuracy_score(y_true, y_pred)
-        recall_score = met.recall_score(y_true, y_pred)
-        precision = met.precision_score(y_true, y_pred)
-        f1 = met.f1_score(y_true, y_pred)
+        accuracy = met.accuracy_score(y_true, tf.argmax(y_pred, axis = 1))
+        recall_score = met.recall_score(y_true, tf.argmax(y_pred, axis = 1), average= "macro")
+        precision = met.precision_score(y_true, tf.argmax(y_pred, axis = 1), average= "micro")
+        f1 = met.f1_score(y_true, tf.argmax(y_pred,axis = 1), average = "macro")
         print("""Performence metrics for Classification:
               Accuracy: {}
               Mean Recall: {}
@@ -72,8 +75,6 @@ class Visualisation():
         
     def uncertainty_regressor(self, y_samples) -> tuple:
         variance = np.var(y_samples, axis=0)
-        print("""Uncertainty for Regression: 
-              Epistemic Uncertainty: {}""".format(variance))
         return variance
         
     def uncertainty_classification(self, y_samples) -> tuple:
@@ -84,7 +85,7 @@ class Visualisation():
         # Assuming predict returns a distribution over classes for each sample
         mean = np.mean(y_samples, axis=0)
         variance = np.var(y_samples, axis=0)
-        print("""Uncertainty for Regression: 
+        print("""Uncertainty for Classificaton: 
                 Epistemic Uncertainty: {}
                 Aleatoric Uncertainty: {}""".format(variance, mean))
         

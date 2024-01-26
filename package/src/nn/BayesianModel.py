@@ -62,8 +62,6 @@ class BayesianModel:
     def _sample_weights(self):
         for interval_idx in range(len(self._layers_dtbn_intervals)):
             vector_weights: tf.Tensor = self._distributions[interval_idx].sample()
-            #print(vector_weights)
-
             start = self._layers_dtbn_intervals[interval_idx][0]
             end = self._layers_dtbn_intervals[interval_idx][1]
             take_from = 0
@@ -91,11 +89,12 @@ class BayesianModel:
     def load(cls, model_path: str, custom_distribution_register=None) -> 'BayesianModel':
         if custom_distribution_register is None:
             custom_distribution_register = dict()
-        with open(model_path + "/config.json", "w") as config_file:
-            bayesian_model = BayesianModel(json.load(config_file))
+        with open(os.path.join(model_path, "config.json"), "r") as config_file:
+            
+            bayesian_model = BayesianModel(tf.keras.models.model_from_json(config_file.read()).get_config())
 
         layers_intervals = []
-        with open(model_path + "/layers_config.txt") as layers_file:
+        with open(os.path.join(model_path,"layers_config.txt"), "r") as layers_file:
             # layers information are saved as name, start, end (both included)
             n_intervals = int(layers_file.readline())
             for i in range(n_intervals):
@@ -103,26 +102,26 @@ class BayesianModel:
                     (layers_file.readline()[:-1], int(layers_file.readline()), int(layers_file.readline())))
 
         for i in range(n_intervals):
-            with open(model_path + "/distributions/distribution" + str(i) + ".json", "r") as dist_file:
+            with open(os.path.join(model_path,"distribution" + str(i) + ".json"), "r") as dist_file:
                 distribution = DistributionSerializer.deserialize_from(layers_intervals[i][0], custom_distribution_register,
                                                              dist_file.read())
                 bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
         return bayesian_model
 
     def store(self, model_path: str):
-        with open(model_path + "/config.json", "w") as config_file:
+        with open(os.path.join(model_path,"config.json"), "w") as config_file:
             config_file.write(self._model.to_json())
 
-        with open(model_path + "/layers_config.txt") as layers_file:
+        with open(os.path.join(model_path, "layers_config.txt"), "w") as layers_file:
             layers_file.write(str(len(self._layers_dtbn_intervals))+'\n')
             for i in range(len(self._layers_dtbn_intervals)):
                 layers_start = self._layers_dtbn_intervals[i][0]
                 layers_end = self._layers_dtbn_intervals[i][1]
                 layers_file.write(self._distributions[i].__class__.__name__+'\n'+str(layers_start)+'\n'+str(layers_end)+'\n')
 
-        os.mkdir(model_path + "/distributions")
+        #os.mkdir(os.path.join(model_path, "distributions"))
         for i in range(len(self._layers_dtbn_intervals)):
-            with open(model_path + "/distributions/distribution" + str(i) + ".json", "w") as distribution_file:
+            with open(os.path.join(model_path, "distribution"+str(i)+".json"), "w") as distribution_file:
                 distribution_file.write(self._distributions[i].serialize())
 
     class Layer:
