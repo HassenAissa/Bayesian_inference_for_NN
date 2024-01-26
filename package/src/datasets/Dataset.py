@@ -62,9 +62,9 @@ class Dataset:
         self.test_data = self.test_data.take(self.test_size)
 
     def get_likelihood_type(self):
-        if self.loss == tf.keras.losses.MeanSquaredError():
+        if isinstance(self._loss, tf.keras.losses.MeanSquaredError):
             return "Regressor"
-        elif self.loss == tf.keras.losses.SparseCategoricalCrossentropy():
+        elif isinstance(self._loss, tf.keras.losses.SparseCategoricalCrossentropy):
             return "Classification"
         else:
             return None

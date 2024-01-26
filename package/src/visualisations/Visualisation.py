@@ -26,22 +26,19 @@ class Visualisation():
         plt.xlabel('Sample Index')
         plt.ylabel('Output')
         plt.show()
-                
-        if dataset.get_likelihood_model() == "Regressor":
+        if dataset.get_likelihood_type() == "Regressor":
             self.metrics_regressor(y_pred, y_true)
-            self.uncertainty_regressor(y_samples)
+            epistemic = self.uncertainty_regressor(y_samples)
             
             # uncertainty
-            y_std = np.std(y_samples, axis=0)
             plt.figure(figsize=(10, 5))
-            plt.errorbar(range(len(y_pred)), y_pred, yerr=y_std, fmt='o', label='Prediction with Uncertainty', alpha=0.5)
-            plt.fill_between(range(len(y_pred)), y_pred - y_std, y_pred + y_std, alpha=0.2)
+            plt.scatter(range(len(epistemic)), epistemic, label='Epistemic Uncertainty', alpha=0.5)
             plt.legend()
-            plt.title('Prediction with Uncertainty')
-            plt.xlabel('Index')
+            plt.title('Epistemic Uncertainty')
             plt.ylabel('Output')
             plt.show()
-        elif dataset.get_likelihood_model() == "Classification":
+            
+        elif dataset.get_likelihood_type() == "Classification":
             self.metrics_classification(y_pred, y_true)
             self.uncertainty_classification(y_samples)
         else: 
@@ -73,6 +70,7 @@ class Visualisation():
         variance = np.var(y_samples, axis=0)
         print("""Uncertainty for Regression: 
               Epistemic Uncertainty: {}""".format(variance))
+        return variance
         
     def uncertainty_classification(self, y_samples) -> tuple:
         # For classification, we might use the entropy of the predicted probabilities
