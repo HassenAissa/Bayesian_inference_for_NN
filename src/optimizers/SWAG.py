@@ -6,6 +6,7 @@ from src.nn.BayesianModel import BayesianModel
 from src.optimizers.Optimizer import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
+import copy
 
 
 class SWAG(Optimizer):
@@ -46,11 +47,11 @@ class SWAG(Optimizer):
         bayesian_layer_index = 0
         for layer_index in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_index]
+
             if len(layer.get_weights()) != 0:
                 theta = [tf.reshape(i, (-1, 1)) for i in layer.get_weights()]
-                theta = tf.reshape(tf.concat(theta, 0), (-1,))
+                theta = tf.reshape(tf.concat(theta, 0), (-1, 1))
                 if self._n % self._hyperparameters.frequency == 0:
-
                     mean = self._mean[bayesian_layer_index]
                     sq_mean = self._sq_mean[bayesian_layer_index]
                     mean = (mean * self._n + theta) / (self._n + 1.0)
@@ -84,14 +85,14 @@ class SWAG(Optimizer):
         self._n = 0
 
     def _init_swag_arrays(self):
-        for layer_idx in self._base_model.layers:
+        for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             size = 0
             for w in layer.get_weights():
                 size += tf.size(w).numpy()
             if size != 0:
-                self._mean.append(tf.zeros((size,), dtype=tf.float32))
-                self._sq_mean.append(tf.zeros((size,), dtype=tf.float32))
+                self._mean.append(tf.zeros((size, 1), dtype=tf.float32))
+                self._sq_mean.append(tf.zeros((size, 1), dtype=tf.float32))
                 self._dev.append(tf.zeros((size, 0), dtype=tf.float32))
                 self._weight_layers_indices.append(layer_idx)
 
@@ -118,7 +119,7 @@ class SWAG(Optimizer):
             '''
             start_idx = self._weight_layers_indices[idx]
             end_idx = len(self._base_model.layers) - 1
-            if idx+1 < len(self._weight_layers_indices):
+            if idx + 1 < len(self._weight_layers_indices):
                 end_idx = self._weight_layers_indices[idx + 1]
 
             model.apply_distribution(tf_dist, start_idx, start_idx)
