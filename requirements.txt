@@ -56,7 +56,6 @@ tensorflow==2.15.0
 tensorflow-datasets==4.9.4
 tensorflow-estimator==2.15.0
 tensorflow-io-gcs-filesystem==0.34.0
-tensorflow-macos==2.15.0
 tensorflow-metadata==1.14.0
 tensorflow-probability==0.23.0
 termcolor==2.4.0
