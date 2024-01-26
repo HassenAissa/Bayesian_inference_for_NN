@@ -29,6 +29,17 @@ class Dataset:
         self.validData["input"] = self.scaler.transform(self.validData["input"])
 """
 
+"""
+class Dataset:
+    def __init__(self, tf_dataset, loss):
+        self._loss = loss
+        self._tf_dataset = tf_dataset
+    def loss(self):
+        return self._loss
+ 
+    def tf_dataset(self) -> tf.data.Dataset:
+        return self._tf_dataset
+"""
 class Dataset:
     test_size: int
     valid_size: int
@@ -38,21 +49,26 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, dataset: tf.data.Dataset, size: int):
-        self.train_size = int(0.8 * size)
-        self.test_size = int(0.1 * size)
-        self.valid_size = int(0.1 * size)
+    def __init__(self, dataset, loss):
+        self._loss = loss
+        self.size = tf.data.experimental.cardinality(dataset).numpy()
+        self.train_size = int(0.8 * self.size)
+        self.test_size = int(0.1 * self.size)
+        self.valid_size = int(0.1 * self.size)
         self.train_data = dataset.take(self.train_size)
         self.test_data = dataset.skip(self.train_size)
         self.valid_data = self.test_data.skip(self.test_size)
         self.test_data = self.test_data.take(self.test_size)
 
-    def tf_dataset(self):
+    #this is just to be in line with old api
+    def tf_dataset(self) -> tf.data.Dataset:
         return self.train_data
+    
+    def loss(self):
+        return self._loss
     
     def normalise(self):
         pass
-
 
 """
 def convert_sklearn_dataset(dataset, likelihood):
