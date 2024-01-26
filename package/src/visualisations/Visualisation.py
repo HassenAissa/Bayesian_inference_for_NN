@@ -6,9 +6,9 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 
-class Visualisation(BayesianModel):
-    def __init__(self):
-        pass
+class Visualisation():
+    def __init__(self, model):
+        self.model = model
     
     # https://seaborn.pydata.org
     def visualise(self, dataset: Dataset, nb_samples: int):
