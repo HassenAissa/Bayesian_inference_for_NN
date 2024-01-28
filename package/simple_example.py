@@ -13,8 +13,8 @@ dataset = tf.data.Dataset.from_tensor_slices((x, y))
 
 
 #train_dataset = Dataset(train_dataset, tf.keras.losses.MeanSquaredError())
-dataset = Dataset(dataset, tf.keras.losses.MeanSquaredError())
-train_dataset = Dataset(dataset.train_data, tf.keras.losses.MeanSquaredError())
+dataset = Dataset(dataset, tf.keras.losses.MeanSquaredError(), "Regression")
+train_dataset = Dataset(dataset.train_data, tf.keras.losses.MeanSquaredError(), "Regression")
 
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 model = tf.keras.models.Sequential()
