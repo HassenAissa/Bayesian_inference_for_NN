@@ -3,11 +3,12 @@ from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
-import numpy as np
 from src.visualisations.Visualisation import Visualisation
-from src.datasets.utils import imgdata_preprocess
+from src.datasets.utils import imgdata_preprocess, get_n_classes
 
-dataset, n_classes = imgdata_preprocess(r"...", 0.1, (32,32,1))
+x,y = imgdata_preprocess(r"...", 0.1, (32,32,1))
+dataset = tf.data.Dataset.from_tensor_slices((x, y))
+n_classes = get_n_classes(y)
 dataset = Dataset(
     dataset,
     tf.keras.losses.SparseCategoricalCrossentropy(),

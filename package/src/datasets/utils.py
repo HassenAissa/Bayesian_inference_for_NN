@@ -2,7 +2,6 @@ import numpy as np
 import os
 from PIL import Image
 import tensorflow as tf
-from Dataset import Dataset
 
 def _load_images_from_directory(dir):
     images = []
@@ -70,9 +69,7 @@ def imgdata_preprocess(directory, fraction_train, input_shape: tuple):
 
     x = x[rinds[:n_train]]
     y = y[rinds[:n_train]]
-    n_classes = get_n_classes(y)
     x = x.reshape(x.shape[0], *input_shape)
-    dataset = tf.data.Dataset.from_tensor_slices((x, y))
-    return dataset, n_classes
+    return x,y
 
 
