@@ -61,13 +61,13 @@ class Dataset:
         self.valid_data = self.test_data.skip(self.test_size)
         self.test_data = self.test_data.take(self.test_size)
 
-    def get_likelihood_type(self):
-        if isinstance(self._loss, tf.keras.losses.MeanSquaredError):
-            return "Regressor"
-        elif isinstance(self._loss, tf.keras.losses.SparseCategoricalCrossentropy):
-            return "Classification"
-        else:
-            return None
+    # def get_likelihood_type(self):
+    #     if isinstance(self._loss, tf.keras.losses.MeanSquaredError):
+    #         return "Regression"
+    #     elif isinstance(self._loss, tf.keras.losses.SparseCategoricalCrossentropy):
+    #         return "Classification"
+    #     else:
+    #         return None
         
     #this is just to be in line with old api
     def tf_dataset(self) -> tf.data.Dataset:
@@ -126,7 +126,7 @@ def convert_tf_dataset(dataset, size):
     return Dataset(dataset, size)
 
 
-load_tf_dataset('mnist')
+# load_tf_dataset('mnist')
 """
 data = tfds.load('mnist', split='train')
 assert isinstance(data, tf.data.Dataset)
