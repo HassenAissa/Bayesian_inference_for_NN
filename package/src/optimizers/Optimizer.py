@@ -35,13 +35,10 @@ class Optimizer(ABC):
     def update_parameters_step(self):
         pass
 
-    def train(self):
-        """
-        TODO : Add some default training method that calls step() a lot of times
-        Returns:
+    def train(self, nb_iterations):
+        for i in range(nb_iterations):
+            self.step()
 
-        """
-        pass
     @abstractmethod
     def result(self) -> BayesianModel:
         pass

@@ -64,44 +64,35 @@ def get_n_classes(labels):
     return int(np.max(labels) + 1)
 
 
-xtrain, xtest, ytrain, ytest = load_data(r"C:\Users\hasse\Downloads\ml-main\ml-main\Milestone1\sciper1_sciper2_sciper3_project\dataset_HASYv2\dataset_HASYv2")
-xtrain = xtrain.reshape(xtrain.shape[0], -1)
-xtest = xtest.reshape(xtest.shape[0], -1)
+x, _, y,_ = load_data(r"C:\Users\hasse\Downloads\ml-main\ml-main\Milestone1\sciper1_sciper2_sciper3_project\dataset_HASYv2\dataset_HASYv2")
+x = x.reshape(x.shape[0], -1)
 
 # normalize, add bias
-means = np.mean(xtrain, axis=0, keepdims=True)
-stds = np.std(xtrain, axis=0, keepdims=True)
+means = np.mean(x, axis=0, keepdims=True)
+stds = np.std(x, axis=0, keepdims=True)
 
-xtrain = normalize_fn(xtrain, means, stds)
-xtest = normalize_fn(xtest, means, stds)
+x = normalize_fn(x, means, stds)
 fraction_train = 0.1
-n_samples = xtrain.shape[0]
+n_samples = x.shape[0]
 rinds = np.random.permutation(n_samples)
 
 n_train = int(n_samples * fraction_train)
-xtest = xtrain[rinds[n_train:]]
-ytest = ytrain[rinds[n_train:]]
 
-xtrain = xtrain[rinds[:n_train]]
-ytrain = ytrain[rinds[:n_train]]
-n_classes = get_n_classes(ytrain)
-xtrain = xtrain.reshape(xtrain.shape[0], 32, 32, 1)
-xtest = xtest.reshape(xtest.shape[0], 32, 32, 1)
-train_dataset = tf.data.Dataset.from_tensor_slices((xtrain, ytrain))
-test_dataset = tf.data.Dataset.from_tensor_slices((xtest, ytest))
 
-train_dataset = Dataset(
-    train_dataset,
+x = x[rinds[:n_train]]
+y = y[rinds[:n_train]]
+n_classes = get_n_classes(y)
+x = x.reshape(x.shape[0], 32, 32, 1)
+dataset = tf.data.Dataset.from_tensor_slices((x, y))
+
+dataset = Dataset(
+    dataset,
     tf.keras.losses.SparseCategoricalCrossentropy(),
     "Classification"
 )
 
 
-test_dataset = Dataset(
-    test_dataset,
-    tf.keras.losses.SparseCategoricalCrossentropy(),
-    "Classification"
-)
+
 
 base_model = tf.keras.Sequential()
 
@@ -121,27 +112,25 @@ hyperparams = HyperParameters(lr=1e-1, k=10, frequency=1, scale=1)
 optimizer = SWAG()
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.get_config(), train_dataset, starting_model=base_model)
-for i in range(0, 300):
-    # train the model
-    optimizer.step()
+optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
+optimizer.train(300)
 
 bayesian_model: BayesianModel = optimizer.result()
 
-_, prediction = bayesian_model.predict(xtest, 100)
-compare = tf.equal(tf.math.argmax(prediction, axis=-1), ytest)
-print("Accuracy of the bayesian model :", tf.reduce_sum(tf.cast(compare, tf.float32) / xtest.shape[0]).numpy())
-path = r"..."
+_, prediction = bayesian_model.predict(x, 100)
+compare = tf.equal(tf.math.argmax(prediction, axis=-1), y)
+print("Accuracy of the bayesian model :", tf.reduce_sum(tf.cast(compare, tf.float32) / x.shape[0]).numpy())
+path = r"C:\Users\hasse\Documents\model"
 
 bayesian_model.store(path)
 bayesian_model: BayesianModel= BayesianModel.load(path)
 
-_, prediction = bayesian_model.predict(xtest, 100)
+_, prediction = bayesian_model.predict(x, 100)
 
-compare = tf.equal(tf.math.argmax(prediction, axis=-1), ytest)
+compare = tf.equal(tf.math.argmax(prediction, axis=-1), y)
 
-print("Accuracy of the bayesian model after store/load :", tf.reduce_sum(tf.cast(compare, tf.float32) / xtest.shape[0]).numpy())
+print("Accuracy of the bayesian model after store/load :", tf.reduce_sum(tf.cast(compare, tf.float32) / x.shape[0]).numpy())
 
 analytics_builder = Visualisation(bayesian_model)
 
-analytics_builder.visualise(test_dataset, 100)
+analytics_builder.visualise(dataset, 100)
