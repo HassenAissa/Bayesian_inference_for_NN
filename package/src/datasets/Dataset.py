@@ -49,17 +49,21 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, dataset, loss, likelihoodModel="Classification"):
+    def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=True):
         self._loss = loss
         self.likelihoodModel = likelihoodModel
-        self.size = tf.data.experimental.cardinality(dataset).numpy()
-        self.train_size = int(0.8 * self.size)
-        self.test_size = int(0.1 * self.size)
-        self.valid_size = int(0.1 * self.size)
-        self.train_data = dataset.take(self.train_size)
-        self.test_data = dataset.skip(self.train_size)
-        self.valid_data = self.test_data.skip(self.test_size)
-        self.test_data = self.test_data.take(self.test_size)
+        print(type(dataset))
+        if (isinstance(dataset, tf.data.Dataset)):
+            self._init_from_tf_dataset(dataset)
+        elif(isinstance(dataset, pd.DataFrame)):
+            self._init_from_dataframe(dataset) 
+        elif(isinstance(dataset, str)):
+            self._init_from_csv(dataset)
+        else:
+            raise Exception("Unsupported dataset format")
+
+        if (normalise):
+            self.normalise()
 
     # def get_likelihood_type(self):
     #     if isinstance(self._loss, tf.keras.losses.MeanSquaredError):
@@ -70,6 +74,25 @@ class Dataset:
     #         return None
         
     #this is just to be in line with old api
+    def _init_from_tf_dataset(self, dataset: tf.data.Dataset):
+        self.size = tf.data.experimental.cardinality(dataset).numpy()
+        self.train_size = int(0.8 * self.size)
+        self.test_size = int(0.1 * self.size)
+        self.valid_size = int(0.1 * self.size)
+        self.train_data = dataset.take(self.train_size)
+        self.test_data = dataset.skip(self.train_size)
+        self.valid_data = self.test_data.skip(self.test_size)
+        self.test_data = self.test_data.take(self.test_size)
+
+    def _init_from_dataframe(self, dataframe: pd.DataFrame):
+        targets = dataframe.pop('target')
+        dataset = tf.data.Dataset.from_tensor_slices((dataframe.values, targets.values))
+        self._init_from_tf_dataset(dataset)
+
+    def _init_from_csv(self, filename: str):
+        dataframe = pd.read_csv(filename)
+        self._init_from_dataframe(dataframe)
+
     def tf_dataset(self) -> tf.data.Dataset:
         return self.train_data
     
@@ -79,6 +102,12 @@ class Dataset:
     def normalise(self):
         pass
 
+def load_from_tf_dataset(dataset_name, likelihoodModel: str) -> Dataset:
+    data = tfds.load(dataset_name, split='train', shuffle_files=True)
+    assert isinstance(data, tf.data.Dataset)
+    loss = tf.keras.losses.MeanSquaredError() if likelihoodModel == "Classification" else tf.keras.losses.SparseCategoricalCrossentropy()
+    return Dataset(data, loss, likelihoodModel)
+    
 """
 def convert_sklearn_dataset(dataset, likelihood):
     df = dataset["data"].insert(4, "target", dataset["target"])
@@ -114,17 +143,6 @@ def convert_csv_dataset(filename, likelihood):
     new_dataset = Dataset(train=train_data, test=test_data, valid=test_data, likelihood=likelihood)
     return new_dataset
 """
-
-#pass dataset from 
-
-def load_tf_dataset(name):
-    data = tfds.load(name, split='train', shuffle_files=True)
-    assert isinstance(data, tf.data.Dataset)
-    dataset = convert_tf_dataset(data, tf.data.experimental.cardinality(data).numpy())
-
-def convert_tf_dataset(dataset, size):
-    return Dataset(dataset, size)
-
 
 # load_tf_dataset('mnist')
 """
