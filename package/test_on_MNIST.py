@@ -64,7 +64,7 @@ def get_n_classes(labels):
     return int(np.max(labels) + 1)
 
 
-x, _, y,_ = load_data(r"C:\Users\hasse\Downloads\ml-main\ml-main\Milestone1\sciper1_sciper2_sciper3_project\dataset_HASYv2\dataset_HASYv2")
+x, _, y,_ = load_data(r"...")
 x = x.reshape(x.shape[0], -1)
 
 # normalize, add bias
@@ -120,7 +120,7 @@ bayesian_model: BayesianModel = optimizer.result()
 _, prediction = bayesian_model.predict(x, 100)
 compare = tf.equal(tf.math.argmax(prediction, axis=-1), y)
 print("Accuracy of the bayesian model :", tf.reduce_sum(tf.cast(compare, tf.float32) / x.shape[0]).numpy())
-path = r"C:\Users\hasse\Documents\model"
+path = r"..."
 
 bayesian_model.store(path)
 bayesian_model: BayesianModel= BayesianModel.load(path)
