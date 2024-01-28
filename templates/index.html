@@ -31,16 +31,20 @@
     <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
     <div class="row">
     <div class="column" style="background-color: lightgoldenrodyellow;">
-        <h2>Select dataset and create neural network model</h2>
+        <h2>Dataset and neural network model</h2>
         <form action="/" method="post">
-            dataset: <input type="file" name="dataset">
-            neural network category: <select name="category">{% for c in categories %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
-          <input type="submit" value="continue>>"> <br><b>Seleted category</b>: {{category}}; <b>Input dimension</b>:{{ic}} <b>Number of classes</b>: {{n_classes}}; <a href="/">Reset data and nueral network</a>
+            dataset category: <select name="dcat">{% for c in options[0] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
+            learning category: <select name="lcat">{% for c in  options[1] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
+            loss function: <select name="loss">{% for l in options[2] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>,
+            training fraction (default 0.1): <input type="number" name="tfrac" min="0" max="1" step="0.01">,
+            neural network category: <select name="nncat">{% for c in  options[3] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
+            input dimensions: <input type="text" name="ic">, dataset folder: test/<select name="dataset">{% for d in options[4] %}<option value="{{d}}">{{d}}</option>{% endfor %}</select><br>
+            <a href="/">Reset data and nueral network</a> | <input type="submit" value="continue>>"> 
         </form>
+        {{inputs}}
         <form action="/" method="post">
-        <input type="hidden" name="category" value="{{category}}"><input type="hidden" name="n_classes" value="{{n_classes}}"><input type="hidden" name="ic" value="{{ic}}">
         {% if category == "Fully connected" %}
-            <b>hidden dimension list</b> (use comma ',' to separate each layer dimension):<br><textarea name="hidden" cols="70" rows="1"></textarea> <br><b>activation fuinctions</b> (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, use comma ',' to separate each activation): <br><textarea name="activations" cols="70" rows="1"></textarea>
+            <b>hidden dimension list</b> (use comma ',' to separate each layer dimension):<br><textarea name="hidden" cols="70" rows="1"></textarea> <br><b>activation functions</b> (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, use comma ',' to separate each activation): <br><textarea name="activations" cols="70" rows="1"></textarea>
         {% elif category == "Convolutional" %}
             <b>filter dimension list</b> (use comma ',' to separate each filter): <br><textarea name="filters" cols="70" rows="1"></textarea>; <br><b>kernel size:</b> <input type="number" name="kernel" min="1" max="999">; <b>feature size:</b> <input type="number" name="features" min="1" max="99999">; 
         {% endif %}

@@ -1,2 +1,0 @@
-class BayesinNN():
-    pass
