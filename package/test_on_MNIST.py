@@ -1,98 +1,18 @@
 import tensorflow as tf
-from PIL import Image
 from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
 import numpy as np
-import os
 from src.visualisations.Visualisation import Visualisation
+from src.datasets.utils import imgdata_preprocess
 
-
-
-def _load_images_from_directory(dir):
-    images = []
-    for imagestr in sorted(os.listdir(dir)):
-        if imagestr.endswith('.png'):
-            image = Image.open(os.path.join(dir, imagestr)).convert('L')
-            images.append(np.asarray(image) / 255.)
-    return np.array(images)
-
-
-def load_data(directory):
-    """
-    Return the dataset as numpy arrays.
-
-    Arguments:
-        directory (str): path to the dataset directory
-    Returns:
-        train_images (array): images of the train set, of shape (N,H,W)
-        test_images (array): images of the test set, of shape (N',H,W)
-        train_labels (array): labels of the train set, of shape (N,)
-        test_labels (array): labels of the test set, of shape (N',)
-    """
-    train_images = _load_images_from_directory(os.path.join(directory, 'train_images'))
-    test_images = _load_images_from_directory(os.path.join(directory, 'test_images'))
-
-    train_labels = np.loadtxt(os.path.join(directory, 'train_labels.csv'), dtype=int)
-    test_labels = np.loadtxt(os.path.join(directory, 'test_labels.csv'), dtype=int)
-
-    return train_images, test_images, train_labels, test_labels
-
-
-def normalize_fn(data, means, stds):
-    """
-    Return the normalized data, based on precomputed means and stds.
-
-    Arguments:
-        data (array): of shape (N,D)
-        means (array): of shape (1,D)
-        stds (array): of shape (1,D)
-    Returns:
-        (array): shape (N,D)
-    """
-    # return the normalized features
-    return (data - means) / stds
-
-
-def get_n_classes(labels):
-    """
-    Return the number of classes present in the data labels.
-
-    This is approximated by taking the maximum label + 1 (as we count from 0).
-    """
-    return int(np.max(labels) + 1)
-
-
-x, _, y,_ = load_data(r"...")
-x = x.reshape(x.shape[0], -1)
-
-# normalize, add bias
-means = np.mean(x, axis=0, keepdims=True)
-stds = np.std(x, axis=0, keepdims=True)
-
-x = normalize_fn(x, means, stds)
-fraction_train = 0.1
-n_samples = x.shape[0]
-rinds = np.random.permutation(n_samples)
-
-n_train = int(n_samples * fraction_train)
-
-
-x = x[rinds[:n_train]]
-y = y[rinds[:n_train]]
-n_classes = get_n_classes(y)
-x = x.reshape(x.shape[0], 32, 32, 1)
-dataset = tf.data.Dataset.from_tensor_slices((x, y))
-
+dataset, n_classes = imgdata_preprocess(r"...", 0.1, (32,32,1))
 dataset = Dataset(
     dataset,
     tf.keras.losses.SparseCategoricalCrossentropy(),
     "Classification"
 )
-
-
-
 
 base_model = tf.keras.Sequential()
 
