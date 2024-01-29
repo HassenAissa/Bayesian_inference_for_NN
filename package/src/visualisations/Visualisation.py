@@ -19,7 +19,7 @@ class Visualisation():
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
     
         # Prediction Plot
-        if dataset.get_likelihood_type() == "Regressor":
+        if dataset.likelihoodModel == "Regression":
 
             plt.figure(figsize=(10, 5))
             plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
@@ -30,8 +30,8 @@ class Visualisation():
             plt.ylabel('Output')
             plt.show()
 
-            self.metrics_regressor(y_pred, y_true)
-            err = np.sqrt(self.uncertainty_regressor(y_samples))
+            self.metrics_regression(y_pred, y_true)
+            err = np.sqrt(self.uncertainty_regression(y_samples))
             pred_dev = y_pred.numpy() - y_true.numpy()
             
             # uncertainty
@@ -45,13 +45,13 @@ class Visualisation():
             plt.ylabel('Pred-True difference')
             plt.show()
             
-        elif dataset.get_likelihood_type() == "Classification":
+        elif dataset.likelihoodModel == "Classification":
             self.metrics_classification(y_pred, y_true)
             # self.uncertainty_classification(y_samples)
         else: 
             print("Invalid loss function")
         
-    def metrics_regressor(self, y_pred, y_true):
+    def metrics_regression(self, y_pred, y_true):
         mse = met.mean_squared_error(y_true, y_pred)
         rmse = met.mean_squared_error(y_true, y_pred, squared=False)
         mae = met.mean_absolute_error(y_true, y_pred)
@@ -73,7 +73,7 @@ class Visualisation():
               Mean Precision: {}
               F1-Score: {}""".format(accuracy, recall_score, precision, f1))
         
-    def uncertainty_regressor(self, y_samples) -> tuple:
+    def uncertainty_regression(self, y_samples) -> tuple:
         variance = np.var(y_samples, axis=0)
         return variance
         
