@@ -28,7 +28,7 @@ class SWAG(Optimizer):
         self._weight_layers_indices = []
 
     def step(self):
-        sample,label = next(self._data_iterator, None)
+        sample,label = next(self._data_iterator, (None,None))
         if sample is None:
             self._data_iterator = iter(self._dataloader)
             sample, label = next(self._data_iterator, (None, None))

@@ -39,7 +39,7 @@ class Optimizer(ABC):
         for i in range(nb_iterations):
             self.step()
             # if int(i/nb_iterations *100) > int((i-1)/nb_iterations *100):
-            print(" Training in progress: \r{} %".format(int(i/nb_iterations *100)), end = '')
+            print(" Training in progress... \r{} %".format(int(i/nb_iterations *100)), end = '')
         print()
 
 
