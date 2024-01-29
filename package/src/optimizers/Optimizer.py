@@ -42,7 +42,6 @@ class Optimizer(ABC):
             print(" Training in progress... \r{} %".format(int(i/nb_iterations *100)), end = '')
         print()
 
-
     @abstractmethod
     def result(self) -> BayesianModel:
         pass
