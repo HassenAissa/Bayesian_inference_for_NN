@@ -28,9 +28,7 @@ optimizer = SWAG()
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
 optimizer.compile(hyperparams, model.get_config(), train_dataset, starting_model=model)
 
-for i in range(0, 100):
-    # train the model
-    optimizer.step()
+optimizer.train(100)
 
 
 

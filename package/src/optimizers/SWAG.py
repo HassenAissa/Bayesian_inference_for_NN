@@ -28,14 +28,13 @@ class SWAG(Optimizer):
         self._weight_layers_indices = []
 
     def step(self):
-        sample, label = next(self._data_iterator, (None, None))
+        sample,label = next(self._data_iterator, None)
         if sample is None:
             self._data_iterator = iter(self._dataloader)
             sample, label = next(self._data_iterator, (None, None))
         with tf.GradientTape(persistent=True) as tape:
-            predictions = self._base_model(sample)
+            predictions = self._base_model(sample, training = True)
             loss = self._dataset.loss()(label, predictions)
-        print("loss, ", loss)
         weight_gradient = tape.gradient(loss, self._base_model.trainable_variables)
         weights = self._base_model.get_weights()
         new_weights = []
@@ -79,7 +78,7 @@ class SWAG(Optimizer):
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._dataloader = (self._dataset.tf_dataset()
                             .shuffle(self._dataset.tf_dataset().cardinality())
-                            .batch(50))
+                            .batch(1))
         self._init_swag_arrays()
         self._data_iterator = iter(self._dataloader)
         self._n = 0
