@@ -43,11 +43,11 @@
         </form>
         {{inputs}}
         <form action="/" method="post">
-        {% if category == "Fully connected" %}
-            <b>hidden dimension list</b> (use comma ',' to separate each layer dimension):<br><textarea name="hidden" cols="70" rows="1"></textarea> <br><b>activation functions</b> (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, use comma ',' to separate each activation): <br><textarea name="activations" cols="70" rows="1"></textarea>
-        {% elif category == "Convolutional" %}
-            <b>filter dimension list</b> (use comma ',' to separate each filter): <br><textarea name="filters" cols="70" rows="1"></textarea>; <br><b>kernel size:</b> <input type="number" name="kernel" min="1" max="999">; <b>feature size:</b> <input type="number" name="features" min="1" max="99999">; 
+        batch size: <input type="number" min="1">; 
+        {% if category == "Convolutional" %}
+            kernel size: <input type="number" name="kernel" min="1" max="999">; filters list (use comma ',' to separate): <br><textarea name="filters" cols="70" rows="1"></textarea> <br>
         {% endif %}
+        fully connected part's hidden dimensions list (use comma ',' to separate): <br><textarea name="hidden" cols="70" rows="1"></textarea> <br>all activation functions (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh): <br><textarea name="activations" cols="70" rows="1"></textarea>
         <input type="submit" value="create neural network">
         </form>
         <h2>Select optimizer</h2>
