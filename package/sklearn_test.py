@@ -6,19 +6,21 @@ from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
 from src.visualisations.Visualisation import Visualisation
+import tensorflow_datasets as tfds
+import sklearn
 
-x = tf.random.uniform(shape=(600,1), minval=1, maxval=20, dtype=tf.int32)
-y = 2*x+2
-dataset = tf.data.Dataset.from_tensor_slices((x, y))
-
-
-#train_dataset = Dataset(train_dataset, tf.keras.losses.MeanSquaredError())
-dataset = Dataset(dataset, tf.keras.losses.MeanSquaredError(), "Regression")
-train_dataset = Dataset(dataset.train_data, tf.keras.losses.MeanSquaredError(), "Regression")
+x,y = sklearn.datasets.make_moons(n_samples=2000)
+dataset = Dataset(
+    tf.data.Dataset.from_tensor_slices((x, y)),
+    tf.keras.losses.SparseCategoricalCrossentropy(),
+    "Classification"
+)
 
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
-model = tf.keras.models.Sequential()
-model.add(layers.Dense(1, activation='linear', kernel_initializer=initializer, input_shape=(1,)))
+base_model = tf.keras.Sequential()
+
+base_model.add(layers.Dense(50, activation='relu', input_shape=(2,)))
+base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax))
 
 hyperparams = HyperParameters(lr=1e-3, k=50, frequency=1, scale=1)
 # instantiate your optimizer
@@ -26,16 +28,16 @@ optimizer = SWAG()
 
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, model.get_config(), train_dataset, starting_model=model)
+optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
 
-optimizer.train(100)
+optimizer.train(2000)
 
 
 
 bayesian_model: BayesianModel = optimizer.result()
-store_path = r"..."
-bayesian_model.store(store_path)
-bayesian_model: BayesianModel= BayesianModel.load(store_path)
+# store_path = r"..."
+# bayesian_model.store(store_path)
+# bayesian_model: BayesianModel= BayesianModel.load(store_path)
 
 analytics_builder = Visualisation(bayesian_model)
 

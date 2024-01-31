@@ -9,11 +9,15 @@ from src.datasets.utils import imgdata_preprocess, get_n_classes
 x,y = imgdata_preprocess(r"...", 0.1, (32,32,1))
 dataset = tf.data.Dataset.from_tensor_slices((x, y))
 n_classes = get_n_classes(y)
+
 dataset = Dataset(
     dataset,
     tf.keras.losses.SparseCategoricalCrossentropy(),
     "Classification"
 )
+
+
+
 
 base_model = tf.keras.Sequential()
 
