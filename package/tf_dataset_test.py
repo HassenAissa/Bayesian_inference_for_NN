@@ -37,10 +37,8 @@ optimizer = SWAG()
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
 optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
 
-freq = 500
 loss_save_file = r"package/src/visualisations/loss_save_file"
-model_save_file = r"package/src/visualisations/model_save_file"
-optimizer.train(1000, loss_save_file, freq, model_save_file)
+optimizer.train(1000, loss_save_file)
 
 bayesian_model: BayesianModel = optimizer.result()
 # store_path = r"..."
@@ -49,6 +47,6 @@ bayesian_model: BayesianModel = optimizer.result()
 
 analytics_builder = Visualisation(bayesian_model)
 
-analytics_builder.visualise(dataset, 100, loss_save_file, model_save_file)
+analytics_builder.visualise(dataset, 100, loss_save_file)
 
 

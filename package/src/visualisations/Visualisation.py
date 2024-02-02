@@ -12,13 +12,10 @@ class Visualisation():
         self.model = model
     
     # https://seaborn.pydata.org
-    def visualise(self, dataset: Dataset, nb_samples: int, loss_save_file, model_save_file):
+    def visualise(self, dataset: Dataset, nb_samples: int, loss_save_file):
         x, y_true = next(iter(dataset.valid_data.batch(dataset.valid_data.cardinality())))
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
-        print(len(y_samples))
-        print(len(y_pred))
-        print(y_pred.shape)
-        self.learning_diagnostics(loss_save_file, model_save_file)
+        self.learning_diagnostics(loss_save_file)
         # Prediction Plot
         if dataset.likelihoodModel == "Regression":
 
@@ -49,7 +46,7 @@ class Visualisation():
         elif dataset.likelihoodModel == "Classification":
             y_pred_labels = tf.argmax(y_pred, axis=1)
             self.metrics_classification(y_pred, y_true)
-            self.plot_2d_3d(x, y_true)
+            self.plot_2d_3d(x, y_true, y_pred_labels)
             skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = 'Confusion Matrix')
             plt.show()
             #skplt.metrics.plot_precision_recall(y_true, y_pred, title = 'Precision-Recall Curve')
@@ -58,23 +55,37 @@ class Visualisation():
         else: 
             print("Invalid loss function")  
         
-    def plot_2d_3d(self, x, y_true):
-        # 2D visualisation
+    def plot_2d_3d(self, x, y_true, y_pred):
         x_2d = tf.convert_to_tensor(np.reshape(x, (x.shape[0], -1)), dtype=tf.dtypes.float32)
-        eigenvalues, eigenvectors = tf.linalg.eigh(tf.tensordot(tf.transpose(x_2d), x_2d, axes=1))
+        _, eigenvectors = tf.linalg.eigh(tf.tensordot(tf.transpose(x_2d), x_2d, axes=1))
         x_pca = tf.tensordot(x_2d, eigenvectors, axes=1)
-        fig, ax = plt.subplots(figsize=(12, 8))
-        scatter = ax.scatter(x_pca[:, -1], x_pca[:, -2], c=y_true, s=5)
-        legend_plt = ax.legend(*scatter.legend_elements(), loc="lower left", title="Digits")
-        ax.add_artist(legend_plt)
-        plt.title('First Two Dimensions of Projected Data After Applying PCA')
+        self.plot_2d(x_pca, y_true, y_pred)
+        self.plot_3d(x_pca, y_true, y_pred)
+        
+    
+    def plot_2d(self, x_pca, y_true, y_pred):
+        fig, (ax_true, ax_pred) = plt.subplots(2, figsize=(12, 8))
+        scatter_true = ax_true.scatter(x_pca[:, -1], x_pca[:, -2], c=y_true, s=5)
+        legend_plt_true = ax_true.legend(*scatter_true.legend_elements(), loc="lower left", title="Digits")
+        ax_true.add_artist(legend_plt_true)
+        scatter_pred = ax_pred.scatter(x_pca[:, -1], x_pca[:, -2], c=y_pred, s=5)
+        legend_plt_pred = ax_pred.legend(*scatter_pred.legend_elements(), loc="lower left", title="Digits")
+        ax_pred.add_artist(legend_plt_pred)
+        ax_true.set_title('First Two Dimensions of Projected True Data After Applying PCA')
+        ax_pred.set_title('First Two Dimensions of Projected Predicted Data After Applying PCA')
         plt.show()
-        # 3D visualisation
-        fig = plt.figure(figsize=(12, 8))
-        ax = plt.axes(projection='3d')
-        plt_3d = ax.scatter3D(x_pca[:, -1], x_pca[:, -2], x_pca[:, -3], c=y_true, s=1)
-        plt.colorbar(plt_3d)
-        plt.title('First Three Dimensions of Projected Data After Applying PCA')
+        
+    def plot_3d(self, x_pca, y_true, y_pred):
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax_true = fig.add_subplot(1, 2, 1, projection='3d')
+        plt_3d_true = ax_true.scatter3D(x_pca[:, -1], x_pca[:, -2], x_pca[:, -3], c=y_true, s=1)
+        fig.colorbar(plt_3d_true, shrink=0.5)
+        
+        ax_pred = fig.add_subplot(1, 2, 2, projection='3d')
+        plt_3d_pred = ax_pred.scatter3D(x_pca[:, -1], x_pca[:, -2], x_pca[:, -3], c=y_pred, s=1)
+        fig.colorbar(plt_3d_pred, shrink=0.5)
+        
+        plt.title('First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA')
         plt.show()
             
     def metrics_regression(self, y_pred, y_true):
@@ -115,7 +126,7 @@ class Visualisation():
                 Epistemic Uncertainty: {}
                 Aleatoric Uncertainty: {}""".format(variance, mean))
         
-    def learning_diagnostics(self, loss_file, model_file):
+    def learning_diagnostics(self, loss_file):
         if loss_file != None:
             losses = np.loadtxt(loss_file)
             plt.plot(losses)
