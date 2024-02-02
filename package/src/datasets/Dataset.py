@@ -52,10 +52,8 @@ class Dataset:
     def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=True):
         self._loss = loss
         self.likelihoodModel = likelihoodModel
-        print(type(dataset))
         if isinstance(dataset, str) and (dataset in tfds.list_builders()):
-            dataset = tfds.load("mnist", split="train", try_gcs=True)
-            # print(next(iter(dataset)).item())
+            dataset = tfds.load(dataset, split="train", try_gcs=True)
             dataset = dataset.map(lambda data: [data["image"], data["label"]])
             self._init_from_tf_dataset(dataset)
         elif (isinstance(dataset, tf.data.Dataset)):
