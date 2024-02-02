@@ -6,7 +6,7 @@ from src.optimizers.SWAG import SWAG
 from src.visualisations.Visualisation import Visualisation
 from src.datasets.utils import imgdata_preprocess, get_n_classes
 
-x,y = imgdata_preprocess(r"C:\Users\hasse\Downloads\ml-main\ml-main\Milestone1\sciper1_sciper2_sciper3_project\dataset_HASYv2\dataset_HASYv2", 0.1, (32,32,1))
+x,y = imgdata_preprocess(r"...", 0.1, (32,32,1))
 dataset = tf.data.Dataset.from_tensor_slices((x, y))
 n_classes = get_n_classes(y)
 
