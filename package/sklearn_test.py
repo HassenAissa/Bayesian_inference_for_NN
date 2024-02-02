@@ -47,9 +47,9 @@ optimizer.train(100)
 
 
 bayesian_model: BayesianModel = optimizer.result()
-store_path = r"C:\Users\hasse\Documents\model\model2"
+# store_path = r"..."
 # bayesian_model.store(store_path)
-bayesian_model: BayesianModel= BayesianModel.load(store_path)
+# bayesian_model: BayesianModel= BayesianModel.load(store_path)
 
 analytics_builder = Visualisation(bayesian_model)
 
