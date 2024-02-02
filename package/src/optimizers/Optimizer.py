@@ -16,7 +16,7 @@ class Optimizer(ABC):
         self._dataset : Dataset = None
 
     @abstractmethod
-    def step(self, save_path = None):
+    def step(self, save_document_path = None):
         pass
 
     def compile(self, hyperparameters: HyperParameters, model_config: dict,dataset, **kwargs):
@@ -37,17 +37,17 @@ class Optimizer(ABC):
     def update_parameters_step(self):
         pass
 
-    def train(self, nb_iterations, loss_save_path = None, model_save_frequency = None, model_save_path = None):
+    def train(self, nb_iterations, loss_save_document_path = None, model_save_frequency = None, model_save_path = None):
         if model_save_frequency == None and model_save_path != None:
             raise Exception("Error: save path precised and save frequency is None, please provide a savong frequency")
         if model_save_frequency != None and model_save_path == None:
             raise Exception("Error: save frequency precised and save path is None, please provide a saving path")
-        # if model_save_path != None and os.path.isdir(model_save_path):
-        #     raise Exception("Error: path "+ model_save_path + " does not exist")
+        if loss_save_document_path != None and os.path.exists(loss_save_document_path):
+            os.remove(loss_save_document_path)
         
         saved_model_nbr = 0
         for i in range(nb_iterations):
-            self.step(loss_save_path)
+            self.step(loss_save_document_path)
             if model_save_frequency != None and i%model_save_frequency == 0:
                 bayesian_model = self.result()
                 if os.path.exists(os.path.join(model_save_path, "model"+str(saved_model_nbr))):
