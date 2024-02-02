@@ -4,6 +4,8 @@ from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 import tensorflow as tf
+import os
+import shutil
 
 class Optimizer(ABC):
 
@@ -14,7 +16,7 @@ class Optimizer(ABC):
         self._dataset : Dataset = None
 
     @abstractmethod
-    def step(self):
+    def step(self, save_path = None):
         pass
 
     def compile(self, hyperparameters: HyperParameters, model_config: dict,dataset, **kwargs):
@@ -35,11 +37,28 @@ class Optimizer(ABC):
     def update_parameters_step(self):
         pass
 
-    def train(self, nb_iterations):
+    def train(self, nb_iterations, loss_save_path = None, model_save_frequency = None, model_save_path = None):
+        if model_save_frequency == None and model_save_path != None:
+            raise Exception("Error: save path precised and save frequency is None, please provide a savong frequency")
+        if model_save_frequency != None and model_save_path == None:
+            raise Exception("Error: save frequency precised and save path is None, please provide a saving path")
+        # if model_save_path != None and os.path.isdir(model_save_path):
+        #     raise Exception("Error: path "+ model_save_path + " does not exist")
+        
+        saved_model_nbr = 0
         for i in range(nb_iterations):
-            self.step()
-            # if int(i/nb_iterations *100) > int((i-1)/nb_iterations *100):
+            self.step(loss_save_path)
+            if i%model_save_frequency == 0:
+                if model_save_path != None:
+                    bayesian_model = self.result()
+                    if os.path.exists(os.path.join(model_save_path, "model"+str(saved_model_nbr))):
+                        shutil.rmtree(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
+                    os.makedirs(os.path.join(model_save_path, "model"+str(saved_model_nbr)))               
+                    bayesian_model.store(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
+                    saved_model_nbr += 1
+                # if int(i/nb_iterations *100) > int((i-1)/nb_iterations *100):
             print(" Training in progress... \r{} %".format(int(i/nb_iterations *100)), end = '')
+        print(" Training in progress... \r{} %".format(100), end = '')
         print()
 
     @abstractmethod

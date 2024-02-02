@@ -1,4 +1,5 @@
 from math import sqrt
+import os
 
 from src.distributions.MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
 from src.distributions.tf.TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
@@ -27,7 +28,7 @@ class SWAG(Optimizer):
         self._dev: list[tf.Tensor] = []
         self._weight_layers_indices = []
 
-    def step(self):
+    def step(self, save_path = None):
         sample,label = next(self._data_iterator, (None,None))
         if sample is None:
             self._data_iterator = iter(self._dataloader)
@@ -35,6 +36,10 @@ class SWAG(Optimizer):
         with tf.GradientTape(persistent=True) as tape:
             predictions = self._base_model(sample, training = True)
             loss = self._dataset.loss()(label, predictions)
+            if save_path != None:
+                with open(os.path.join(save_path, "metrics.txt"), "a") as losses_file:
+                    losses_file.write(str(loss.numpy()))
+
         weight_gradient = tape.gradient(loss, self._base_model.trainable_variables)
         weights = self._base_model.get_weights()
         new_weights = []
@@ -68,6 +73,7 @@ class SWAG(Optimizer):
                             (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
+
 
     def compile_extra_components(self, **kwargs):
         self._k = self._hyperparameters.k

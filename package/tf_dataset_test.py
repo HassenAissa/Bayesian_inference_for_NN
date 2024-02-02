@@ -20,14 +20,14 @@ base_model = tf.keras.Sequential()
 
 base_model.add(tf.keras.layers.Conv2D(16, 3, activation='relu', input_shape=(28, 28, 1)))
 base_model.add(tf.keras.layers.MaxPooling2D(2))
-base_model.add(tf.keras.layers.Conv2D(28, 3, activation='relu'))
+base_model.add(tf.keras.layers.Conv2D(32, 3, activation='relu'))
 base_model.add(tf.keras.layers.MaxPooling2D(2))
-base_model.add(tf.keras.layers.Conv2D(56, 3, activation='relu'))
+base_model.add(tf.keras.layers.Conv2D(64, 3, activation='relu'))
 base_model.add(tf.keras.layers.MaxPooling2D(2))
 base_model.add(tf.keras.layers.Flatten())
 base_model.add(tf.keras.layers.Dense(120, activation='relu'))
 base_model.add(tf.keras.layers.Dense(84, activation='relu'))
-base_model.add(tf.keras.layers.Dense(10, activation=tf.keras.activations.softmax))
+base_model.add(tf.keras.layers.Dense(62, activation=tf.keras.activations.softmax))
 
 hyperparams = HyperParameters(lr=1e-3, k=50, frequency=1, scale=1)
 # instantiate your optimizer

@@ -42,8 +42,8 @@ class TensorflowProbabilityDistribution(Distribution):
     @classmethod
     def deserialize(cls, data: str) -> 'Distribution':
         dtbn_dict = json.loads(data)
-        if dtbn_dict["type"] in cls.__DISTRIBUTION_SERIALIZER_REGISTER:
-            return cls.__DISTRIBUTION_SERIALIZER_REGISTER[dtbn_dict["type"]].deserialize(data)
+        if dtbn_dict["type"] in cls.__DISTRIBUTION_SERIALIZER_REGISTER():
+            return cls.__DISTRIBUTION_SERIALIZER_REGISTER()[dtbn_dict["type"]].deserialize(data)
         else:
             return cls.__DEFAULT_BASE_SERIALIZER().deserialize(data)
 
