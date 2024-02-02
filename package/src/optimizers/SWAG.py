@@ -28,7 +28,7 @@ class SWAG(Optimizer):
         self._dev: list[tf.Tensor] = []
         self._weight_layers_indices = []
 
-    def step(self, save_path = None):
+    def step(self, save_document_path = None):
         sample,label = next(self._data_iterator, (None,None))
         if sample is None:
             self._data_iterator = iter(self._dataloader)
@@ -36,8 +36,8 @@ class SWAG(Optimizer):
         with tf.GradientTape(persistent=True) as tape:
             predictions = self._base_model(sample, training = True)
             loss = self._dataset.loss()(label, predictions)
-            if save_path != None:
-                with open(os.path.join(save_path, "metrics.txt"), "a") as losses_file:
+            if save_document_path != None:
+                with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(loss.numpy()))
 
         weight_gradient = tape.gradient(loss, self._base_model.trainable_variables)

@@ -65,7 +65,7 @@ class BBB(Optimizer):
         data_likelihood = self._dataset.loss()(labels, predictions)
         return data_likelihood + self._alpha * kl_divergence
 
-    def step(self, save_path = None):
+    def step(self, save_document_path = None):
         sample,label = next(self._data_iterator, (None,None))
         if sample is None:
             self._data_iterator = iter(self._dataloader)
@@ -79,9 +79,8 @@ class BBB(Optimizer):
                 label, 
                 predictions
             )
-            print(likelihood)
-            if save_path != None:
-                with open(os.path.join(save_path, "metrics.txt"), "a") as losses_file:
+            if save_document_path != None:
+                with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(likelihood.numpy())+"\n")
         weight_gradients = tape.gradient(likelihood, self._base_model.trainable_weights)
         mean_gradients = tape.gradient(likelihood, self._posterior_mean_list)
