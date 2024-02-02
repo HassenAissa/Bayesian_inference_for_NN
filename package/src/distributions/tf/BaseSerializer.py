@@ -23,5 +23,5 @@ class BaseSerializer:
 
     def deserialize(self, cls: str) -> TensorflowProbabilityDistribution:
         dtbn_dict = json.loads(cls)
-        tf_distribution = tfp.distributions._getattr_(dtbn_dict['type'])(**dtbn_dict['params'])
+        tf_distribution = getattr(tfp.distributions, dtbn_dict['type'])(**dtbn_dict['params'])
         return TensorflowProbabilityDistribution(tf_distribution)

@@ -48,14 +48,13 @@ class Optimizer(ABC):
         saved_model_nbr = 0
         for i in range(nb_iterations):
             self.step(loss_save_path)
-            if i%model_save_frequency == 0:
-                if model_save_path != None:
-                    bayesian_model = self.result()
-                    if os.path.exists(os.path.join(model_save_path, "model"+str(saved_model_nbr))):
-                        shutil.rmtree(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
-                    os.makedirs(os.path.join(model_save_path, "model"+str(saved_model_nbr)))               
-                    bayesian_model.store(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
-                    saved_model_nbr += 1
+            if model_save_frequency != None and i%model_save_frequency == 0:
+                bayesian_model = self.result()
+                if os.path.exists(os.path.join(model_save_path, "model"+str(saved_model_nbr))):
+                    shutil.rmtree(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
+                os.makedirs(os.path.join(model_save_path, "model"+str(saved_model_nbr)))               
+                bayesian_model.store(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
+                saved_model_nbr += 1
                 # if int(i/nb_iterations *100) > int((i-1)/nb_iterations *100):
             print(" Training in progress... \r{} %".format(int(i/nb_iterations *100)), end = '')
         print(" Training in progress... \r{} %".format(100), end = '')
