@@ -1,3 +1,4 @@
+import math
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
@@ -64,7 +65,7 @@ class Dataset:
             self._init_from_csv(dataset)
         else:
             raise Exception("Unsupported dataset format")
-
+        self.train_data = self.train_data.shuffle(self.train_data.cardinality())
         if (normalise):
             self.normalise()
 
@@ -101,9 +102,24 @@ class Dataset:
     
     def loss(self):
         return self._loss
+
+    def map(self, x,y, mean, std, label_mean, label_std):
+        return ((x-mean)/std, (y-label_mean)/label_std)
     
     def normalise(self):
-        pass
+        input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
+        input = tf.reshape(input, (-1,))
+        mean = tf.reduce_mean(input)
+        std = tf.math.reduce_std(tf.cast(input, dtype = tf.float32))
+        label_mean = tf.reduce_mean(label)
+        label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float32))
+
+        self.train_data = self.train_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+        self.valid_data = self.valid_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+
+
+        
+
 
 def load_from_tf_dataset(dataset_name, likelihoodModel: str) -> Dataset:
     data = tfds.load(dataset_name, split='train', shuffle_files=True)

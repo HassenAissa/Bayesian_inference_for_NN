@@ -79,6 +79,7 @@ class BBB(Optimizer):
                 label, 
                 predictions
             )
+            print(likelihood)
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(likelihood.numpy())+"\n")
@@ -156,9 +157,10 @@ class BBB(Optimizer):
         self._alpha = self._hyperparameters.alpha
         self._dataloader = (self._dataset.tf_dataset()
                             .shuffle(self._dataset.tf_dataset().cardinality())
-                            .batch(self._dataset.tf_dataset().cardinality()))
+                            .batch(32))
         self._data_iterator = iter(self._dataloader)
         self._init_BBB_arrays()
+        self._priors_list = self._prior.get_model_priors(self._base_model)
 
 
     def _init_BBB_arrays(self):
@@ -173,10 +175,6 @@ class BBB(Optimizer):
                 self._posterior_mean_list.append(tf.zeros((size, 1), dtype=tf.float32))
                 self._posterior_std_dev_list.append(tf.ones((size, 1), dtype=tf.float32))
                 self._weight_layers_indices.append(layer_idx)
-                self._priors_list.append(tfp.distributions.Normal(
-                    tf.ones((size, 1)) * self._prior.mean(),
-                    tf.ones((size, 1)) * self._prior.variance(),
-                ))
 
     def result(self) -> BayesianModel:
         model = BayesianModel(self._model_config)
