@@ -17,13 +17,14 @@ class Policy(ABC):  # Policy optimizer
         pass
 
 class Control(ABC):
-    def __init__(self, env:gym.Env, n_episodes:int, policy:Policy):
+    def __init__(self, env:gym.Env, n_episodes:int, policy:Policy, state_reward):
         self.env = env
         self.n_episodes = n_episodes
         state_dim = env.observation_space.shape
         action_dim = env.action_space.shape
         self.policy = policy
         self.policy.setup(state_dim,action_dim)
+        self.state_reward = state_reward
 
     @abstractmethod
     def sample_initial(self):
@@ -31,11 +32,8 @@ class Control(ABC):
         pass
 
     @abstractmethod
-    def state_reward(self, state):
-        pass
-
-    @abstractmethod
-    def reward(self):
+    def reward(self, **kwargs):
+        # if calculating cost, reward is negative
         pass
 
     def execute(self):
@@ -49,6 +47,10 @@ class Control(ABC):
             all_atates.append(state)
             all_actions.append(action)
         return all_atates, all_actions
+    
+    @abstractmethod
+    def learn(self):
+        pass
 
 
 
