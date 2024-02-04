@@ -113,9 +113,11 @@ class Dataset:
         std = tf.math.reduce_std(tf.cast(input, dtype = tf.float32))
         label_mean = tf.reduce_mean(label)
         label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float32))
+        #TODO: do we normalize the labels for regression???????
 
         self.train_data = self.train_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
         self.valid_data = self.valid_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+        self.test_data = self.test_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
 
 
         
