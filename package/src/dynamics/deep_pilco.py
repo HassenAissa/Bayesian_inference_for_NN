@@ -7,8 +7,26 @@ import numpy as np
 
 class NNPolicy(Policy):
     # using tensorflow neural network for optimizing policy params "phi"
-    def __init__(self, network: tf.keras.Model):
+    def __init__(self, network: tf.keras.Model, hyperparams:dict):
         self.network = network
+        self.hyperparams = hyperparams
+
+    def optimize_step(self, loss, check_converge=False):
+        with tf.GradientTape(persistent=True) as tape:
+            grad = tape.gradient(loss, self.network.trainable_variables)
+            weights = self.network.get_weights()
+            new_weights = []
+            for i in range(len(grad)):
+                wg = tf.math.multiply(grad[i], self.hyperparams["lr"])
+                m = tf.math.subtract(weights[i], wg)
+                new_weights.append(m)
+            self.network.set_weights(new_weights)
+
+        # To be implemented: check convergence
+        if check_converge:
+            converge = False
+            return converge
+
 
     def act(self, state):
         return self.network(state)
@@ -44,7 +62,7 @@ class DynamicsTraining:
         
         data = tf.data.Dataset.from_tensor_slices((features, targets))
         dataset = Dataset(data, self.loss, self.learn_type, self.normalise)
-        self.train_dataset = Dataset(dataset.train_data, tf.keras.losses.MeanSquaredError(), "Regression")
+        self.train_dataset = Dataset(dataset.train_data, self.loss, self.learn_type, self.normalise)
 
     def train(self, nb_epochs):
         self.optimizer._dataset = self.train_dataset
@@ -54,7 +72,7 @@ class BayesianDynamics(Control):
     def __init__(self, env:gym.Env, n_episodes, policy, state_reward, dyntrain_config:list, learn_config:tuple):
         super.__init__(env, n_episodes, policy, state_reward)
         self.training = DynamicsTraining(*dyntrain_config)  # Bayesian Model optimizer learning state-action-transition "f"
-        self.nb_epochs, self.kp, self.gamma = learn_config
+        self.dyntrain_epochs, self.kp, self.gamma = learn_config
     
     def sample_initial(self):
         # default sampling method
@@ -91,29 +109,42 @@ class BayesianDynamics(Control):
         return traj
 
     def reward(self, trajectory):
-        # if calculating cost, use negative state reward
         tot_rew = 0
         discount = 1
         for states in trajectory:
             k_rew = 0
             for s in states:
-                k_rew = self.state_reward(s)
+                # if calculating cost, use negative state reward
+                k_rew += self.state_reward(s)  
             k_rew /= self.kp
             tot_rew += discount * k_rew
             discount *= self.gamma
         return tot_rew
     
-    def learn(self):
-        while True:
+    def learn(self, nb_epochs):
+        def step(check_converge=False):
             # train dynamic model using transition dataset
             all_states, all_actions = self.execute()
             self.training.add_transitions(all_states, all_actions)
-            self.training.train(self.nb_epochs)
+            self.training.train(self.dyntrain_epochs)
             # predict trajectory
             traj = self.predict_trajectory(self.kp)
             # evaluate policy and trajectory
             tot_rew = self.reward(traj)
             # optimize policy
+            return self.policy.optimize_step(loss=-tot_rew, check_converge=check_converge)
+            
+        if nb_epochs:
+            # learning for a given number of epochs
+            for ep in range(nb_epochs):
+                step()
+        else:
+            while not step(check_converge=True):
+                # continue learning if policy not converge
+                continue
+        
+                
+
 
 
 

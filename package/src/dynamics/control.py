@@ -9,7 +9,7 @@ class Policy(ABC):  # Policy optimizer
         self.action_dim = action_dim
 
     @abstractmethod
-    def optimize_step(self):
+    def optimize_step(self, **kwargs):
         pass
 
     @abstractmethod
@@ -17,6 +17,7 @@ class Policy(ABC):  # Policy optimizer
         pass
 
 class Control(ABC):
+    # Reinforcement learning basics using gymnasium
     def __init__(self, env:gym.Env, n_episodes:int, policy:Policy, state_reward):
         self.env = env
         self.n_episodes = n_episodes
