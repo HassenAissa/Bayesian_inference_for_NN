@@ -12,7 +12,7 @@ import tensorflow_datasets as tfds
 dataset = Dataset(
     "mnist",
     tf.keras.losses.SparseCategoricalCrossentropy(),
-    "Classification"
+    "Classification",
 )
 
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)

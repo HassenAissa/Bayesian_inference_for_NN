@@ -19,7 +19,7 @@ class Visualisation():
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
     
         # Prediction Plot
-        if dataset.likelihoodModel == "Regression":
+        if dataset.likelihood_model == "Regression":
 
             plt.figure(figsize=(10, 5))
             plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
@@ -45,7 +45,7 @@ class Visualisation():
             plt.ylabel('Pred-True difference')
             plt.show()
             
-        elif dataset.likelihoodModel == "Classification":
+        elif dataset.likelihood_model == "Classification":
             self.metrics_classification(y_pred, y_true)
             # self.uncertainty_classification(y_samples)
         else: 

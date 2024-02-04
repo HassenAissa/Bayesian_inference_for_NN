@@ -52,7 +52,7 @@ class Dataset:
 
     def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=True):
         self._loss = loss
-        self.likelihoodModel = likelihoodModel
+        self.likelihood_model = likelihoodModel
         if isinstance(dataset, str) and (dataset in tfds.list_builders()):
             dataset = tfds.load(dataset, split="train", try_gcs=True)
             dataset = dataset.map(lambda data: [data["image"], data["label"]])
@@ -107,17 +107,17 @@ class Dataset:
         return ((x-mean)/std, (y-label_mean)/label_std)
     
     def normalise(self):
-        input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
-        input = tf.reshape(input, (-1,))
-        mean = tf.reduce_mean(input)
-        std = tf.math.reduce_std(tf.cast(input, dtype = tf.float32))
-        label_mean = tf.reduce_mean(label)
-        label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float32))
-        #TODO: do we normalize the labels for regression???????
-
-        self.train_data = self.train_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
-        self.valid_data = self.valid_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
-        self.test_data = self.test_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+        if self.likelihood_model == "Regression":
+            input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
+            input = tf.reshape(input, (-1,))
+            mean = tf.reduce_mean(input)
+            std = tf.math.reduce_std(tf.cast(input, dtype = tf.float32))
+            label_mean = tf.reduce_mean(label)
+            label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float32))
+            #TODO: do we normalize the labels for regression???????
+            self.train_data = self.train_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+            self.valid_data = self.valid_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+            self.test_data = self.test_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
 
 
         

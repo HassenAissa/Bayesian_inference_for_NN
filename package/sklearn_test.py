@@ -16,7 +16,7 @@ x,y = sklearn.datasets.make_moons(n_samples=2000)
 dataset = Dataset(
     tf.data.Dataset.from_tensor_slices((x, y)),
     tf.keras.losses.SparseCategoricalCrossentropy(),
-    "Classification"
+    "Classification"    
 )
 
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
