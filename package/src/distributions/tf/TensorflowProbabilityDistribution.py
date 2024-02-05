@@ -22,6 +22,12 @@ class TensorflowProbabilityDistribution(Distribution):
 
     @classmethod
     def __DISTRIBUTION_SERIALIZER_REGISTER(cls):
+        """
+        returns the register of serialisers for tfp distributions
+
+        Returns:
+            dict: the serialiser register
+        """
         return {
 
         }

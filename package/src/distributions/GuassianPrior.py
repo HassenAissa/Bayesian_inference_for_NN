@@ -60,12 +60,12 @@ class GuassianPrior:
         return priors_list
     
     def get_model_priors(self, model):
-        if isinstance(self._mean, int):
+        if isinstance(self._mean, int) or isinstance(self._mean, float):
             return self._get_priors_from_int(model)
         if isinstance(self._mean, list) and (all(isinstance(m, int) for m in self._mean) or all(isinstance(m, float) for m in self._mean)):
             return self._get_priors_from_list(model)
         if isinstance(self._mean, list) and all(isinstance(l, list) for l in self._mean):
             return self._get_priors_from_tensor(model)
-        raise Exception("mean and standard deviation should be an int, a list or a tensor")
+        raise Exception("mean and standard deviation should be an int, a float, a list or a tensor")
 
     

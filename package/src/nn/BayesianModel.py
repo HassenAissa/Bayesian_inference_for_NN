@@ -7,6 +7,9 @@ from src.distributions.DistributionSerializer import DistributionSerializer
 
 
 class BayesianModel:
+    """
+        a class that represents a trained bayesian model that could predict outputs. It could also be stored and loaded.
+    """
     def __init__(self, model_config: dict):
         self._model_config = model_config
         # TODO : make it more general
@@ -19,9 +22,17 @@ class BayesianModel:
         self._distributions: list[Distribution] = []
         self._model: tf.keras.Model = model
 
+
+    # intended implementation: dtbn intervals takes the form like [[0,2],[3,4],[5,5],[6,6],[7,12]...]
+    # interval may be single (equal) or double (unequal); distribution list each element correspond to an interval
     def apply_distribution(self, distribution: Distribution, start_layer: int, end_layer: int):
-        # intended implementation: dtbn intervals takes the form like [[0,2],[3,4],[5,5],[6,6],[7,12]...]
-        # interval may be single (equal) or double (unequal); distribution list each element correspond to an interval
+        """
+            set the distributions of the given layers to the one provided
+            Args:
+                distribution (Distribution): the distribution
+                start_layer (int): the starting layer to be set
+                end_layer (int): the ending layer to be set
+        """
         if start_layer > end_layer:
             raise ValueError('starting_layer must be less than end_layer')
         elif start_layer < 0 or end_layer >= self._n_layers:
@@ -53,13 +64,21 @@ class BayesianModel:
         if self._layers_dtbn_intervals[end_index]:
             pass
         """
-        pass
 
     def apply_distributions_layers(self, layer_list, dtbn_list):
+        """
+        set the correlated layers and their distributions
+        Args:
+            layer_list (_type_): _description_
+            dtbn_list (_type_): _description_
+        """
         self._layers_dtbn_intervals = layer_list
         self._distributions = dtbn_list
 
     def _sample_weights(self):
+        """
+            sample the weights of the model
+        """
         for interval_idx in range(len(self._layers_dtbn_intervals)):
             vector_weights: tf.Tensor = self._distributions[interval_idx].sample()
             start = self._layers_dtbn_intervals[interval_idx][0]
@@ -75,6 +94,17 @@ class BayesianModel:
 
 
     def predict(self, x: tf.Tensor, nb_samples: int):
+        """        
+        use monte carlo approxiamtion over nb_samples to predict the result for the input
+        
+
+        Args:
+            x (tf.Tensor): the inuput 
+            nb_samples (int): number of samples for monte carlo approximation
+
+        Returns:
+            (list, tf.Tensor): a pair containing the sampled results and their mean as the prediction
+        """
         result = 0
         samples_results = []
         for i in range(nb_samples):
@@ -87,6 +117,16 @@ class BayesianModel:
 
     @classmethod
     def load(cls, model_path: str, custom_distribution_register=None) -> 'BayesianModel':
+        """
+        load a model from a document
+        Args:
+            model_path (str): the path where the model is stored
+            custom_distribution_register (dict, optional): If the distribution used is not implemented, 
+            a deserialiser should be specified in this dctionnary. Defaults to None.
+
+        Returns:
+            BayesianModel: the loaded bayesian model
+        """
         if custom_distribution_register is None:
             custom_distribution_register = dict()
         with open(os.path.join(model_path, "config.json"), "r") as config_file:
@@ -109,6 +149,16 @@ class BayesianModel:
         return bayesian_model
 
     def store(self, model_path: str):
+        """
+        store a model to a document
+        Args:
+            model_path (str): the path where the model will be stored
+            custom_distribution_register (dict, optional): If the distribution used is not implemented, 
+            a serialiser should be specified in this dctionnary. Defaults to None.
+
+        Returns:
+            BayesianModel: the loaded bayesian model
+        """
         with open(os.path.join(model_path,"config.json"), "w") as config_file:
             config_file.write(self._model.to_json())
 

@@ -42,6 +42,10 @@ class Dataset:
         return self._tf_dataset
 """
 class Dataset:
+    """
+        a class representing a dataset with its portions, training dataset, validation dataset, testing dataset
+        and its loss function
+    """
     test_size: int
     valid_size: int
     train_size: int
@@ -50,7 +54,21 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=True):
+    def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=False):
+        """
+        constructor of a dataset
+
+        Args:
+            dataset: if the dataset is a string and there exists a tf dataset with the given name,
+            we read from tf datasets. Otherwise, you can provide a tf.data.Dataset combining inputs and labels 
+            (please use tf.data.Dataset.from_tensor_slices), or you can provide a pd.Dataframe or a path to a csv file.
+            loss (tf.keras.losses): The loss function for the dataset
+            likelihoodModel (str, optional): the training type, could be "Classification" or "Regression". Defaults to "Classification".
+            normalise (bool, optional): nomalise the data or not. Defaults to True.
+
+        Raises:
+            Exception: _description_
+        """
         self._loss = loss
         self.likelihood_model = likelihoodModel
         if isinstance(dataset, str) and (dataset in tfds.list_builders()):
@@ -97,16 +115,31 @@ class Dataset:
         dataframe = pd.read_csv(filename)
         self._init_from_dataframe(dataframe)
 
-    def tf_dataset(self) -> tf.data.Dataset:
+    def training_dataset(self) -> tf.data.Dataset:
+        """
+        returns the training dataset
+
+        Returns:
+            tf.data.Dataset: the training dataset
+        """
         return self.train_data
     
     def loss(self):
+        """
+        returns the loss function to be used on the dataset
+
+        Returns:
+            tf.keras.losses: the loss function
+        """
         return self._loss
 
-    def map(self, x,y, mean, std, label_mean, label_std):
+    def _map(self, x,y, mean, std, label_mean, label_std):
         return ((x-mean)/std, (y-label_mean)/label_std)
     
     def normalise(self):
+        """
+        normalises the dataset
+        """
         if self.likelihood_model == "Regression":
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
             input = tf.reshape(input, (-1,))
@@ -115,9 +148,9 @@ class Dataset:
             label_mean = tf.reduce_mean(label)
             label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float32))
             #TODO: do we normalize the labels for regression???????
-            self.train_data = self.train_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
-            self.valid_data = self.valid_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
-            self.test_data = self.test_data.map(lambda x,y: self.map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+            self.train_data = self.train_data.map(lambda x,y: self._map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+            self.valid_data = self.valid_data.map(lambda x,y: self._map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
+            self.test_data = self.test_data.map(lambda x,y: self._map(x,y,mean,std+1e-8, label_mean, label_std+1e-8))
 
 
         

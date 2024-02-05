@@ -29,13 +29,18 @@ class SWAG(Optimizer):
         self._weight_layers_indices = []
 
     def step(self, save_document_path = None):
+        # get the sample and the label
         sample,label = next(self._data_iterator, (None,None))
+        # if the iterator reaches the end of the dataset, reinitialise the iterator
         if sample is None:
             self._data_iterator = iter(self._dataloader)
             sample, label = next(self._data_iterator, (None, None))
+
         with tf.GradientTape(persistent=True) as tape:
             predictions = self._base_model(sample, training = True)
+            # get the loss
             loss = self._dataset.loss()(label, predictions)
+            # save the loss if the path is specified
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(loss.numpy()))
@@ -43,11 +48,14 @@ class SWAG(Optimizer):
         weight_gradient = tape.gradient(loss, self._base_model.trainable_variables)
         weights = self._base_model.get_weights()
         new_weights = []
+
+        #update the base model weights
         for i in range(len(weight_gradient)):
             wg = tf.math.multiply(weight_gradient[i], self._lr)
             m = tf.math.subtract(weights[i], wg)
             new_weights.append(m)
         self._base_model.set_weights(new_weights)
+
         bayesian_layer_index = 0
         for layer_index in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_index]
@@ -58,13 +66,17 @@ class SWAG(Optimizer):
                 if self._n % self._hyperparameters.frequency == 0:
                     mean = self._mean[bayesian_layer_index]
                     sq_mean = self._sq_mean[bayesian_layer_index]
+
+                    # update the mean
                     mean = (mean * self._n + theta) / (self._n + 1.0)
-                    sq_mean = (sq_mean * self._n + theta ** 2) / (self._n + 1.0)
                     self._mean[bayesian_layer_index] = mean
+
+                    # update the second moment
+                    sq_mean = (sq_mean * self._n + theta ** 2) / (self._n + 1.0)
                     self._sq_mean[bayesian_layer_index] = sq_mean
 
+                    # update the deviation matrix
                     deviation_matrix = self._dev[bayesian_layer_index]
-
                     if deviation_matrix.shape[0] == self._hyperparameters.k:
                         self._dev[bayesian_layer_index] = tf.concat(
                             (deviation_matrix[:, :self._hyperparameters.k - 1], theta - mean), axis=1)
@@ -82,14 +94,17 @@ class SWAG(Optimizer):
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
-        self._dataloader = (self._dataset.tf_dataset()
-                            .shuffle(self._dataset.tf_dataset().cardinality())
+        self._dataloader = (self._dataset.training_dataset()
+                            .shuffle(self._dataset.training_dataset().cardinality())
                             .batch(1))
         self._init_swag_arrays()
         self._data_iterator = iter(self._dataloader)
         self._n = 0
 
     def _init_swag_arrays(self):
+        """
+        initialise the mean, second moment (sq_mean), deviation and trainable weights lists
+        """
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             size = 0
@@ -114,14 +129,6 @@ class SWAG(Optimizer):
                 tf.reshape(sq_mean - mean ** 2, (-1,)),
                 sqrt((1 / (self._k - 1))) * dev,
             )
-
-            '''
-            tf_dist = tfp.distributions.MultivariateNormalDiag(
-                loc = tf.reshape(mean, (-1,)),
-                scale_diag=tf.reshape(sq_mean - mean ** 2, (-1,))
-
-            )
-            '''
             start_idx = self._weight_layers_indices[idx]
             end_idx = len(self._base_model.layers) - 1
             if idx + 1 < len(self._weight_layers_indices):

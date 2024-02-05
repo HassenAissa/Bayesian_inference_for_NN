@@ -9,10 +9,22 @@ class Distribution(ABC):
 
     @property
     def size(self) -> int:
+        """
+        returns the site of the distribution
+
+        Returns:
+            int: the size of the distribution
+        """
         return self._size
 
     @abstractmethod
     def sample(self) -> tf.Tensor:
+        """
+        samples from the given distribution
+
+        Returns:
+            tf.Tensor: the sample
+        """
         pass
 
     @abstractmethod

@@ -22,11 +22,27 @@ class BBB(Optimizer):
         self._layers_intervals = []
 
     def _guassian_likelihood(self,weights, mean, variance):
+        """
+        calculates the likelihood of the weights being from a guassian distribution of the given mean and variance
+
+        Args:
+            weights (_type_): the weights to test
+            mean (_type_): the mean
+            variance (_type_): the variance
+
+        Returns:
+            tf.Tensor: the likelihood
+        """
         var = tf.math.softplus(tf.math.sqrt(variance))**2 
         guassian_distribution = tfp.distributions.Normal(mean, var)
-        return tf.reduce_sum(guassian_distribution.log_prob(weights)) #sum
+        return tf.reduce_sum(guassian_distribution.log_prob(weights)) #TODO: mena or sum, paper says sum but other sources say sum
 
-    def _prior_guassian_likelihood(self, normal_list):
+    def _prior_guassian_likelihood(self):
+        """
+        calculates the guassian likelihood of the weights with respect to the prior
+        Returns:
+            tf.Tensor: the likelihood of the weights of being sampled from the prior
+        """
         likelihood = 0
         mean_idx = 0
         for layer_idx in range(len(self._base_model.layers)):
@@ -43,6 +59,11 @@ class BBB(Optimizer):
         return likelihood
     
     def _posterior_guassian_likelihood(self, mean_list, var_list):
+        """
+        calculates the guassian likelihood of the weights with respect to the posterior
+        Returns:
+            tf.Tensor: the likelihood of the weights of being sampled from the posterior
+        """
         likelihood = 0
         mean_idx = 0
         for layer_idx in range(len(self._base_model.layers)):
@@ -58,19 +79,36 @@ class BBB(Optimizer):
 
         return likelihood
 
-    def _cost_function(self, labels, predictions):
+    def _cost_function(self, labels: tf.Tensor, predictions: tf.Tensor):
+        """
+        calculate the cost function as follows:
+        cost = data_likelihood + alpha * kl_divergence
+
+        Args:
+            labels (tf.Tensor): the labels
+            predictions (tf.Tensor): the predictions
+
+        Returns:
+            tf.Tensor: the cost
+        """
         posterior_likelihood = self._posterior_guassian_likelihood(self._posterior_mean_list, self._posterior_std_dev_list)
-        prior_likelihood = self._prior_guassian_likelihood(self._priors_list)
+        prior_likelihood = self._prior_guassian_likelihood()
         kl_divergence = posterior_likelihood - prior_likelihood
         data_likelihood = self._dataset.loss()(labels, predictions)
         return data_likelihood + self._alpha * kl_divergence
+    
+
 
     def step(self, save_document_path = None):
+        # get sample and label
         sample,label = next(self._data_iterator, (None,None))
+        # if the iterator reaches the end of the dataset, reinitialise the iterator
         if sample is None:
             self._data_iterator = iter(self._dataloader)
             sample, label = next(self._data_iterator, (None, None))
+
         with tf.GradientTape(persistent=True) as tape:
+            # take the posterior distribution into account in the calculation of the gradients
             tape.watch(self._posterior_mean_list)
             tape.watch(self._posterior_std_dev_list)
 
@@ -80,55 +118,68 @@ class BBB(Optimizer):
                 predictions
             )
             print(likelihood)
+            # save the model loss if the path is specified
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(likelihood.numpy())+"\n")
+
+        # get the weight, mean and variance gradients
         weight_gradients = tape.gradient(likelihood, self._base_model.trainable_weights)
         mean_gradients = tape.gradient(likelihood, self._posterior_mean_list)
         var_gradients = tape.gradient(likelihood, self._posterior_std_dev_list)
-        mean_gradient_list = []
-        var_gradient_list = []
+
+        new_posterior_mean_list = []
+        new_posterior_std_dev_list = []
         trainable_layer_index = 0
         gradient_layer_index = 0
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             if len(layer.get_weights()) != 0:
                 weight_gradient = []
-                # go through weights and biases and merge them
+                # go through weights and biases and merge their gradients into one vector
                 for j in range(len(layer.get_weights())):
                     weight_gradient.append(tf.reshape(weight_gradients[gradient_layer_index], (-1, 1)))
                     gradient_layer_index += 1
                 weight_gradient = tf.reshape(tf.concat(weight_gradient, 0), (-1, 1))
 
-                mean_gradient_list.append(mean_gradients[trainable_layer_index]+weight_gradient)
+                # calculate the new mean of the posterior
+                mean_gradient = mean_gradients[trainable_layer_index]+weight_gradient
+                # calculate the new mean of the posterior
+                new_posterior_mean_list.append(
+                    self._posterior_mean_list[trainable_layer_index]-self._lr*mean_gradient
+                )
 
-                posterior_std_dev = tf.math.sqrt(self._posterior_std_dev_list[trainable_layer_index])
+                # calculate the std_dev gradient
+                posterior_std_dev = self._posterior_std_dev_list[trainable_layer_index]
                 noise = tfp.distributions.Normal(
                     tf.zeros(posterior_std_dev.shape),
                     tf.ones(posterior_std_dev.shape)
                 ).sample()
-                var_grad = noise / (1 + tf.math.exp(-posterior_std_dev))
-                var_grad *= weight_gradient
-                var_grad += var_gradients[trainable_layer_index]
-                var_gradient_list.append(var_grad)
+                std_dev_grad = noise / (1 + tf.math.exp(-posterior_std_dev))
+                std_dev_grad *= weight_gradient
+                std_dev_grad += var_gradients[trainable_layer_index]
+
+                # calculate the new variance of the posterior
+                new_posterior_std_dev_list.append(
+                    posterior_std_dev-self._lr*std_dev_grad
+                )
 
                 trainable_layer_index += 1
-
-        new_posterior_mean_list = []
-        new_posterior_std_dev_list = []
-        for mean, std_dev, mean_gradient, srd_dev_gradient in zip(self._posterior_mean_list, self._posterior_std_dev_list, self._posterior_mean_list, self._posterior_std_dev_list):
-            new_posterior_mean_list.append(
-                mean-self._lr*mean_gradient
-            )
-            new_posterior_std_dev_list.append(
-                std_dev-self._lr*srd_dev_gradient
-            )
+        #update the posteriors
         self._posterior_mean_list = new_posterior_mean_list
         self._posterior_std_dev_list = new_posterior_std_dev_list
+        #update the weights
         self._update_weights()
 
+
+
+
     def _update_weights(self):
+        """
+        generate new weights following the posterior distributions
+        """
         for interval_idx in range(len(self._layers_intervals)):
+            #sample the new wights as a vector
             vector_weights = tfp.distributions.Normal(
                 tf.zeros_like(self._posterior_mean_list[interval_idx]),
                 tf.ones_like(self._posterior_mean_list[interval_idx])
@@ -136,6 +187,7 @@ class BBB(Optimizer):
             vector_weights *= tf.math.softplus(self._posterior_std_dev_list[interval_idx])
             vector_weights += self._posterior_mean_list[interval_idx] 
 
+            # reshape the vector and update the base model
             start = self._layers_intervals[interval_idx][0]
             end = self._layers_intervals[interval_idx][1]
             take_from = 0
@@ -155,16 +207,18 @@ class BBB(Optimizer):
         self._prior = kwargs["prior"]
         self._lr = self._hyperparameters.lr
         self._alpha = self._hyperparameters.alpha
-        self._dataloader = (self._dataset.tf_dataset()
-                            .shuffle(self._dataset.tf_dataset().cardinality())
-                            .batch(32))
+        self._dataloader = (self._dataset.training_dataset()
+                            .shuffle(self._dataset.training_dataset().cardinality())
+                            .batch(256))
         self._data_iterator = iter(self._dataloader)
         self._init_BBB_arrays()
         self._priors_list = self._prior.get_model_priors(self._base_model)
 
 
     def _init_BBB_arrays(self):
-
+        """
+        initialises the posterior list, the correlated layers intervals and the trainable layer indices
+        """
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             size = 0
