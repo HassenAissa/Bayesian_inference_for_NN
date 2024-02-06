@@ -1,9 +1,40 @@
+"""Interactive demo of the Gym environment."""
+
 import gymnasium as gym
 import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+import tensorflow_probability as tfp
 
 # Set up the environment
 env = gym.make("LunarLander-v2", render_mode="human")
 observation, info = env.reset(seed=42)
+
+# bayesian dynamics training
+"""
+TODO:  set up the bayesian model and policy for gym env
+
+bnn = prior
+policy = prior
+
+D = create_dataset(env)
+episodes = 1000
+bnn.train(D, epochs=episodes)
+policy.optimize(D, bnn, epochs=episodes)
+
+reward = 0
+for i in range(episodes):
+    x_t = env.reset()
+    H = horizon
+    for t in range(H):
+        a_t = policy.act(x_t)
+        x_t1, r_t, done, _ = env.step(a_t)
+        D.append(x_t, a_t, r_t, x_t1)
+        x_t = x_t1
+        if done:
+            break
+"""
+
 
 plt.ion()  # Turn on interactive mode for non-blocking plotting
 fig, ax = plt.subplots()
