@@ -18,8 +18,8 @@ class GuassianPrior:
                 size += tf.size(w).numpy()
             if size != 0:
                 priors_list.append(tfp.distributions.Normal(
-                    self._mean,
-                    self._std_dev ** 2,
+                    tf.fill((size,1), self._mean),
+                    tf.fill((size,1), self._std_dev)
                 ))
         return priors_list
     
@@ -34,8 +34,8 @@ class GuassianPrior:
                 size += tf.size(w).numpy()
             if size != 0:
                 priors_list.append(tfp.distributions.Normal(
-                    self._mean[mean_index],
-                    self._std_dev[mean_index] ** 2,
+                    tf.fill((size,1), self._mean[mean_index]),
+                    tf.fill((size,1), self._std_dev[mean_index])
                 ))
                 mean_index += 1
         return priors_list
@@ -56,7 +56,7 @@ class GuassianPrior:
             mean = tf.reshape(tf.concat(mean, 0), (-1, 1))
             std_dev = [tf.reshape(i, (-1, 1)) for i in self._std_dev[layer_idx]]
             std_dev = tf.reshape(tf.concat(std_dev, 0), (-1, 1))
-            priors_list.append(tfp.distributions.Normal(mean, std_dev**2))
+            priors_list.append(tfp.distributions.Normal(mean, std_dev))
         return priors_list
     
     def get_model_priors(self, model):
