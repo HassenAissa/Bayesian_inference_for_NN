@@ -59,6 +59,17 @@ class Optimizer(ABC):
         """
         pass
 
+    def _empty_folder(self,path):
+        for filename in os.listdir(path):
+            file_path = os.path.join(path, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+
     def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None, model_save_path: str = None):
         """
         trains the model and saved the training metrics and model status
@@ -81,6 +92,8 @@ class Optimizer(ABC):
         if loss_save_document_path != None and os.path.exists(loss_save_document_path):
             os.remove(loss_save_document_path)
 
+        if model_save_path!= None:
+            self._empty_folder(model_save_path)
         
         saved_model_nbr = 0
         for i in range(nb_iterations):

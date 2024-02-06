@@ -28,12 +28,12 @@ class Distribution(ABC):
         pass
 
     @abstractmethod
-    def serialize(self) -> str:
+    def store(self, path:str) -> str:
         pass
 
     @classmethod
     @abstractmethod
-    def deserialize(cls, data: str) -> 'Distribution':
+    def load(cls, path: str) -> 'Distribution':
         pass
 
 

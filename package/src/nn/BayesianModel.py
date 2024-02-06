@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import tensorflow as tf
 from src.distributions.Distribution import Distribution
@@ -12,8 +13,7 @@ class BayesianModel:
     """
     def __init__(self, model_config: dict):
         self._model_config = model_config
-        # TODO : make it more general
-        model: tf.keras.Model = tf.keras.Sequential().from_config(model_config)
+        model: tf.keras.Model = tf.keras.models.model_from_json(model_config)
         self._layers: list[BayesianModel.Layer] = []
         for layer in model.layers:
             self._layers.append(BayesianModel.Layer([w.shape for w in layer.get_weights()]))
@@ -142,23 +142,39 @@ class BayesianModel:
                     (layers_file.readline()[:-1], int(layers_file.readline()), int(layers_file.readline())))
 
         for i in range(n_intervals):
-            with open(os.path.join(model_path,"distribution" + str(i) + ".json"), "r") as dist_file:
-                distribution = DistributionSerializer.deserialize_from(layers_intervals[i][0], custom_distribution_register,
-                                                             dist_file.read())
-                bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
+            distribution = DistributionSerializer.load_from(
+                layers_intervals[i][0], 
+                custom_distribution_register,
+                os.path.join(model_path,"distribution" + str(i), "distribution.json")
+            )
+            bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
         return bayesian_model
+    
+    def _empty_folder(self,path):
+        for filename in os.listdir(path):
+            file_path = os.path.join(path, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
 
     def store(self, model_path: str):
         """
         store a model to a document
         Args:
-            model_path (str): the path where the model will be stored
+            model_path (str): the path where the model will be stored, this folder should already exist on the system
             custom_distribution_register (dict, optional): If the distribution used is not implemented, 
             a serialiser should be specified in this dctionnary. Defaults to None.
 
         Returns:
             BayesianModel: the loaded bayesian model
         """
+        if os.path.exists(model_path) == False:
+            raise Exception("inexisting directory: " + model_path) 
+        self._empty_folder(model_path)
         with open(os.path.join(model_path,"config.json"), "w") as config_file:
             config_file.write(self._model.to_json())
 
@@ -169,10 +185,9 @@ class BayesianModel:
                 layers_end = self._layers_dtbn_intervals[i][1]
                 layers_file.write(self._distributions[i].__class__.__name__+'\n'+str(layers_start)+'\n'+str(layers_end)+'\n')
 
-        #os.mkdir(os.path.join(model_path, "distributions"))
         for i in range(len(self._layers_dtbn_intervals)):
-            with open(os.path.join(model_path, "distribution"+str(i)+".json"), "w") as distribution_file:
-                distribution_file.write(self._distributions[i].serialize())
+            os.mkdir(os.path.join(model_path, "distribution"+str(i)))
+            self._distributions[i].store(os.path.join(model_path, "distribution"+str(i),"distribution.json"))
 
     class Layer:
         def __init__(self, weights_shape: list[tf.TensorShape]):
