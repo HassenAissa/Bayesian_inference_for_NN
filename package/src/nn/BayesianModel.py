@@ -13,8 +13,7 @@ class BayesianModel:
     """
     def __init__(self, model_config: dict):
         self._model_config = model_config
-        # TODO : make it more general
-        model: tf.keras.Model = tf.keras.Sequential().from_config(model_config)
+        model: tf.keras.Model = tf.keras.models.model_from_json(model_config)
         self._layers: list[BayesianModel.Layer] = []
         for layer in model.layers:
             self._layers.append(BayesianModel.Layer([w.shape for w in layer.get_weights()]))
