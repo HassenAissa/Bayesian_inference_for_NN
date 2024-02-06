@@ -1,4 +1,4 @@
-from control import gym, Policy, Control
+from src.dynamics.control import gym, Policy, Control
 from src.datasets.Dataset import Dataset
 from src.optimizers.Optimizer import Optimizer
 import tensorflow as tf
