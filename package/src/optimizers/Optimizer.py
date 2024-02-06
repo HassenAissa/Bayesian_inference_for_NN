@@ -92,8 +92,8 @@ class Optimizer(ABC):
         if loss_save_document_path != None and os.path.exists(loss_save_document_path):
             os.remove(loss_save_document_path)
 
-        
-        self._empty_folder(model_save_path)
+        if model_save_path!= None:
+            self._empty_folder(model_save_path)
         
         saved_model_nbr = 0
         for i in range(nb_iterations):
