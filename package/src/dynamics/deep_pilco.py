@@ -36,8 +36,10 @@ class DynamicsTraining:
     # learn dynamic model f for state action transitions
     def __init__(self, optimizer: Optimizer, hyperparams, base_model, prior, loss, learn_type, normalise):
         self.optimizer = optimizer
-        self.optimizer.compile(hyperparams, base_model,
-                               dataset=None, prior=prior)
+        self.optimizer.compile(hyperparams, base_model.to_json(),
+                               dataset=None, prior=prior,
+                               starting_model=base_model # TODO: abstract this
+                               )
 
         self.loss = loss    # loss function
         self.learn_type = learn_type    # classification/regression
@@ -75,13 +77,13 @@ class DynamicsTraining:
 class BayesianDynamics(Control):
     def __init__(
         self, env: gym.Env, n_episodes, policy, state_reward, dyntrain_config: list, learn_config: tuple,
-        policy_optimizer: PolicyOptimizer
+        # policy_optimizer: PolicyOptimizer
     ):
-        super.__init__(env, n_episodes, policy, state_reward)
+        super().__init__(env, n_episodes, policy, state_reward)
         # Bayesian Model optimizer learning state-action-transition "f"
         self.training = DynamicsTraining(*dyntrain_config)
         self.dyntrain_epochs, self.kp, self.gamma = learn_config
-        self.policy_optimizer = policy_optimizer
+        # self.policy_optimizer = policy_optimizer
 
     def sample_initial(self):
         # default sampling method
@@ -141,7 +143,7 @@ class BayesianDynamics(Control):
             # evaluate policy and trajectory
             tot_rew = self.reward(traj)
             # # optimize policy
-            # return self.policy.optimize_step(loss=-tot_rew, check_converge=check_converge)
+            return self.policy.optimize_step(loss=-tot_rew, check_converge=check_converge)
             
             # optimize policy using the policy optimizer
             loss = -tot_rew  # Define the loss as the negative of the total reward

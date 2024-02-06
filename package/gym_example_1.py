@@ -6,58 +6,14 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from src.datasets.Dataset import Dataset
+from src.dynamics.deep_pilco import BayesianDynamics, Policy, NNPolicy
+from src.optimizers.SWAG import SWAG
+from src.optimizers.HyperParameters import HyperParameters
 
 # Set up the environment
 env = gym.make("LunarLander-v2", render_mode="human", )
 x_prev, info = env.reset(seed=42)
 
-
-# bayesian dynamics training
-"""
-TODO:  set up the bayesian model and policy for gym env
-
-bnn = prior
-policy = prior
-
-D = create_dataset(env)
-episodes = 1000
-bnn.train(D, epochs=episodes)
-policy.optimize(D, bnn, epochs=episodes)
-
-reward = 0
-for i in range(episodes):
-    x_t = env.reset()
-    H = horizon
-    for t in range(H):
-        a_t = policy.act(x_t)
-        x_t1, r_t, done, _ = env.step(a_t)
-        D.append(x_t, a_t, r_t, x_t1)
-        x_t = x_t1
-        if done:
-            break
-"""
-
-
-# plt.ion()  # Turn on interactive mode for non-blocking plotting
-fig, ax = plt.subplots()
-xdata, ydata = [], []
-
-# Initialize the plot
-ax.set_xlim(0, 1000)
-ax.set_ylim(-500, 300)  # Adjust the y-axis limits according to expected rewards
-line, = ax.plot(xdata, ydata, 'r-', label='Reward per Episode')
-ax.set_title('Reward Graph')  # Title for the graph
-ax.set_xlabel('Episode')  # X-axis label
-ax.set_ylabel('Total Reward')  # Y-axis label
-ax.legend()  # Add a legend
-
-def update_plot(x, y):
-    line.set_xdata(x)
-    line.set_ydata(y)
-    ax.relim()
-    ax.autoscale_view()
-    fig.canvas.draw()
-    fig.canvas.flush_events()
 
 
 x_array = []
@@ -73,6 +29,7 @@ for i in range(1000):
     x, reward, terminated, truncated, info = env.step(action)
     x_data = np.append(x_prev, action)
     
+    
     x_array.append(x_data)
     y_array.append(x)
     
@@ -82,6 +39,7 @@ for i in range(1000):
     #     xdata.append(i)
     #     ydata.append(total_reward)
     #     update_plot(xdata, ydata)  # Update the plot with the latest reward
+
     #     total_reward = 0
         x_prev, info = env.reset()  # Reset the environment
     
@@ -97,4 +55,35 @@ env.close()  # Close the environment when done
 # convert to tf.data.Dataset
 dataset: tf.data.Dataset = tf.data.Dataset.from_tensor_slices((x_array, y_array))
 
-print(dataset)
+
+
+nn_policy = NNPolicy(
+    network=tf.keras.Sequential([
+        tf.keras.layers.Dense(84, activation='relu', input_shape=(8,)),
+        tf.keras.layers.Dense(84, activation='relu'),
+        tf.keras.layers.Dense(4, activation='softmax')
+    ]),
+    hyperparams={"lr": 1e-2}
+)
+
+def state_reward(state):
+    return 1
+  
+  
+base_model = tf.keras.Sequential()
+base_model.add(tf.keras.layers.Dense(84, activation='linear', input_shape=(8,) ))
+
+hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
+optimizer = SWAG()
+
+
+bnn = BayesianDynamics(
+    env=env,
+    n_episodes=100,
+    policy=nn_policy,
+    state_reward=state_reward,
+    dyntrain_config=[optimizer, hyperparams, base_model, None, tf.keras.losses.SparseCategoricalCrossentropy(), "Classification", True],
+    learn_config=(100, 50, .5),
+)
+
+bnn.learn(nb_epochs=1000)
