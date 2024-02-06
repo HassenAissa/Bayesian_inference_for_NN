@@ -7,12 +7,17 @@ from src.distributions.Distribution import Distribution
 
 
 class MultivariateNormalDiagPlusLowRank(Distribution):
-    def serialize(self) -> str:
+    def store(self, path: str) -> str:
         to_json = {"mean": self._mean.numpy().tolist(), "D": self._D.numpy().tolist(), "diag": self._diag.numpy().tolist()}
-        return json.dumps(to_json)
+        data = json.dumps(to_json)
+        with open(path, "w") as file:
+            file.write(data)
         
     @classmethod
-    def deserialize(cls, data: str) -> 'Distribution':
+    def load(cls, path: str) -> 'Distribution':
+        data = ""
+        with open(path, "r") as file:
+            data = file.read()
         from_json = json.loads(data)
         return MultivariateNormalDiagPlusLowRank(tf.convert_to_tensor(from_json["mean"]), tf.convert_to_tensor(from_json["diag"]),
                                                   tf.convert_to_tensor(from_json["D"]))

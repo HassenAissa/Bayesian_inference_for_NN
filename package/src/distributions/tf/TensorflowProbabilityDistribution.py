@@ -38,15 +38,21 @@ class TensorflowProbabilityDistribution(Distribution):
         from src.distributions.tf.BaseSerializer import BaseSerializer
         return BaseSerializer()
 
-    def serialize(self) -> str:
+    def store(self, path: str) -> str:
         distribution_type = type(self._tf_distribution).__name__
+        data = ""
         if distribution_type in self.__DISTRIBUTION_SERIALIZER_REGISTER().keys():
-            return self.__DISTRIBUTION_SERIALIZER_REGISTER()[distribution_type].serialize(self._tf_distribution)
+            data = self.__DISTRIBUTION_SERIALIZER_REGISTER()[distribution_type].serialize(self._tf_distribution)
         else:
-            return self.__DEFAULT_BASE_SERIALIZER().serialize(self._tf_distribution)
+            data = self.__DEFAULT_BASE_SERIALIZER().serialize(self._tf_distribution)
+        with open(path, "w") as file:
+            file.write(data)
 
     @classmethod
-    def deserialize(cls, data: str) -> 'Distribution':
+    def load(cls, path: str) -> 'Distribution':
+        data = ""
+        with open(path, "r") as file:
+            data = file.read()
         dtbn_dict = json.loads(data)
         if dtbn_dict["type"] in cls.__DISTRIBUTION_SERIALIZER_REGISTER():
             return cls.__DISTRIBUTION_SERIALIZER_REGISTER()[dtbn_dict["type"]].deserialize(data)
