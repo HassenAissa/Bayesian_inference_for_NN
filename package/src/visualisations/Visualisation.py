@@ -46,6 +46,7 @@ class Visualisation():
             plt.show()
             
         elif dataset.likelihood_model == "Classification":
+            print(dataset.loss()(y_true, y_pred))
             self.metrics_classification(y_pred, y_true)
             # self.uncertainty_classification(y_samples)
         else: 

@@ -1,4 +1,6 @@
 import copy
+import tensorflow as tf
+import numpy as np
 
 
 class HyperParameters:
@@ -20,4 +22,14 @@ class HyperParameters:
             return self._params[item]
         else:
             raise AttributeError("'HyperParameters' object has no attribute " + str(item))
+        
+        
+
+
+
+
+
+
+
+
 
