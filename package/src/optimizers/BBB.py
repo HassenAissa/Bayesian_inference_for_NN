@@ -195,6 +195,7 @@ class BBB(Optimizer):
                         self._posterior_mean_list[interval_idx][i],
                         tf.math.softplus(self._posterior_std_dev_list[interval_idx][i])
                     ).sample()
+
                     # if(interval_idx == 0 and i == 0):
                     #     print("mean", self._posterior_mean_list[interval_idx][0][0][0])
                     #     print("std_dev", tf.math.softplus(self._posterior_std_dev_list[interval_idx][0])[0][0])
@@ -205,14 +206,13 @@ class BBB(Optimizer):
 
 
     def compile_extra_components(self, **kwargs):
-        self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
-        self._base_model.set_weights(kwargs["starting_model"].get_weights())
+        self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._prior = kwargs["prior"]
         self._lr = self._hyperparameters.lr
         self._alpha = self._hyperparameters.alpha
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(self._dataset.training_dataset().cardinality()))
+                            .batch(128))
         self._data_iterator = iter(self._dataloader)
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()
@@ -231,8 +231,8 @@ class BBB(Optimizer):
             for i in range(len(layer.trainable_variables)):
                 mean_layer_posteriors.append(self._priors_list[trainable_layer_index][i].mean())
                 std_dev_layer_posteriors.append(self._priors_list[trainable_layer_index][i].stddev())
-                self._weight_layers_indices.append(layer_idx)
             if len(layer.trainable_variables) != 0:
+                self._weight_layers_indices.append(layer_idx)
                 trainable_layer_index += 1
                 self._layers_intervals.append([layer_idx, layer_idx])
                 self._posterior_mean_list.append(mean_layer_posteriors)
@@ -261,7 +261,6 @@ class BBB(Optimizer):
             end_idx = len(self._base_model.layers) - 1
             if idx + 1 < len(self._weight_layers_indices):
                 end_idx = self._weight_layers_indices[idx + 1]
-
             model.apply_distribution(tf_dist, start_idx, start_idx)
         return model
 

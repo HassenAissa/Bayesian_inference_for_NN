@@ -34,20 +34,20 @@ base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax)
 # optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
 
 
-hyperparams = HyperParameters(lr=1, alpha = 0.0)
+hyperparams = HyperParameters(lr=5, alpha = 0.00)
 # instantiate your optimizer
 optimizer = BBB()
-prior = GaussianPrior(.0,-10.0)
+prior = GaussianPrior(.0,-2.0)
 
 
 # prior = GuassianPrior(0.0,2.01)
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model, prior = prior)
+optimizer.compile(hyperparams, base_model.to_json(), dataset, prior = prior)
 
 
 
-optimizer.train(100)
+optimizer.train(50)
 
 
 
@@ -58,6 +58,6 @@ bayesian_model: BayesianModel = optimizer.result()
 
 analytics_builder = Visualisation(bayesian_model)
 
-analytics_builder.visualise(dataset, 500)
+analytics_builder.visualise(dataset, 2)
 
 
