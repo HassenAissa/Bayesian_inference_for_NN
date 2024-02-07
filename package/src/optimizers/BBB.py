@@ -52,8 +52,7 @@ class BBB(Optimizer):
                     self._priors_list[mean_idx][i].mean(), 
                     self._priors_list[mean_idx][i].stddev()
                 )
-            if len(layer.trainable_variables) != 0:
-                mean_idx += 1
+            mean_idx += 1
 
         return likelihood
     
@@ -228,15 +227,17 @@ class BBB(Optimizer):
             # iterate through weights and biases of the layer
             mean_layer_posteriors = []
             std_dev_layer_posteriors = []
-            for i in range(len(layer.trainable_variables)):
-                mean_layer_posteriors.append(self._priors_list[trainable_layer_index][i].mean())
-                std_dev_layer_posteriors.append(self._priors_list[trainable_layer_index][i].stddev())
+
             if len(layer.trainable_variables) != 0:
+                for i in range(len(layer.trainable_variables)):
+                    mean_layer_posteriors.append(self._priors_list[trainable_layer_index][i].mean())
+                    std_dev_layer_posteriors.append(self._priors_list[trainable_layer_index][i].stddev())
                 self._weight_layers_indices.append(layer_idx)
-                trainable_layer_index += 1
                 self._layers_intervals.append([layer_idx, layer_idx])
                 self._posterior_mean_list.append(mean_layer_posteriors)
                 self._posterior_std_dev_list.append(std_dev_layer_posteriors)
+            trainable_layer_index += 1
+
 
 
     def result(self) -> BayesianModel:
