@@ -20,7 +20,6 @@ class SWAG(Optimizer):
         self._base_model_optimizer = None
         self._base_model: tf.keras.Model = None
         self._lr = None
-        self._scale = None
         self._frequency = None
         self._k = None
         self._mean: list[tf.Tensor] = []
@@ -45,23 +44,17 @@ class SWAG(Optimizer):
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(loss.numpy()))
 
-        weight_gradient = tape.gradient(loss, self._base_model.trainable_variables)
-        weights = self._base_model.get_weights()
-        new_weights = []
-
-        #update the base model weights
-        for i in range(len(weight_gradient)):
-            wg = tf.math.multiply(weight_gradient[i], self._lr)
-            m = tf.math.subtract(weights[i], wg)
-            new_weights.append(m)
-        self._base_model.set_weights(new_weights)
+        var_grad = tape.gradient(loss, self._base_model.trainable_variables)
+        for var, grad in zip(self._base_model.trainable_variables, var_grad):
+            if grad is not None:
+                var.assign_sub(self._lr * grad)  # assign_sub for SGD update
 
         bayesian_layer_index = 0
         for layer_index in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_index]
 
-            if len(layer.get_weights()) != 0:
-                theta = [tf.reshape(i, (-1, 1)) for i in layer.get_weights()]
+            if len(layer.trainable_variables) != 0:
+                theta = [tf.reshape(i, (-1, 1)) for i in layer.trainable_variables]
                 theta = tf.reshape(tf.concat(theta, 0), (-1, 1))
                 if self._n % self._hyperparameters.frequency == 0:
                     mean = self._mean[bayesian_layer_index]
@@ -90,7 +83,6 @@ class SWAG(Optimizer):
     def compile_extra_components(self, **kwargs):
         self._k = self._hyperparameters.k
         self._frequency = self._hyperparameters.frequency
-        self._scale = self._hyperparameters.scale
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
@@ -108,7 +100,7 @@ class SWAG(Optimizer):
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             size = 0
-            for w in layer.get_weights():
+            for w in layer.trainable_variables:
                 size += tf.size(w).numpy()
             if size != 0:
                 self._mean.append(tf.zeros((size, 1), dtype=tf.float32))

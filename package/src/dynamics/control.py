@@ -5,9 +5,10 @@ from abc import ABC, abstractmethod
 class Policy(ABC):  # Policy optimizer
     def __init__(self):
         pass
-    def setup(self, state_dim, action_dim):
-        self.state_dim = state_dim
-        self.action_dim = action_dim
+
+    @abstractmethod
+    def setup(self, **kwargs):
+        pass
 
     @abstractmethod
     def optimize_step(self, **kwargs):
@@ -32,14 +33,11 @@ class PolicyOptimizer(ABC):
 
 class Control(ABC):
     # Reinforcement learning basics using gymnasium
-    def __init__(self, env:gym.Env, n_episodes:int, policy:Policy, state_reward):
+    def __init__(self, env:gym.Env, horizon:int, policy:Policy):
         self.env = env
-        self.n_episodes = n_episodes
-        state_dim = env.observation_space.shape
-        action_dim = env.action_space.shape
+        self.horizon = horizon
         self.policy = policy
-        self.policy.setup(state_dim,action_dim)
-        self.state_reward = state_reward
+        self.policy.setup(env)
 
     @abstractmethod
     def sample_initial(self):
@@ -56,7 +54,7 @@ class Control(ABC):
         state = self.sample_initial() # initial state
         all_atates = [state]
         all_actions = []
-        for t in self.n_episodes:
+        for t in self.horizon:
             action = self.policy.act(state)
             state, reward, terminated, truncated, info = self.env.step(action)
             all_atates.append(state)

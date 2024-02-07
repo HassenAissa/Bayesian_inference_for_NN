@@ -25,7 +25,7 @@ class Optimizer(ABC):
         """
         pass
 
-    def compile(self, hyperparameters: HyperParameters, model_config: dict,dataset, **kwargs):
+    def compile(self, hyperparameters: HyperParameters, model_config: str,dataset, **kwargs):
         """compile the model
 
         Args:

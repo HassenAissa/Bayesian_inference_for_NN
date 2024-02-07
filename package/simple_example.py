@@ -1,4 +1,4 @@
-from src.distributions.GuassianPrior import GuassianPrior
+from src.distributions.GaussianPrior import GaussianPrior
 from src.optimizers.BBB import BBB
 import tensorflow as tf
 import tensorflow_probability as tfp

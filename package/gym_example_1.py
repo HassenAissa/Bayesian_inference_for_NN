@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from src.datasets.Dataset import Dataset
-from src.dynamics.deep_pilco import BayesianDynamics, Policy, NNPolicy
+from src.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining
 from src.optimizers.SWAG import SWAG
 from src.optimizers.HyperParameters import HyperParameters
 
@@ -56,34 +56,30 @@ env.close()  # Close the environment when done
 dataset: tf.data.Dataset = tf.data.Dataset.from_tensor_slices((x_array, y_array))
 
 
-
-nn_policy = NNPolicy(
-    network=tf.keras.Sequential([
-        tf.keras.layers.Dense(84, activation='relu', input_shape=(8,)),
-        tf.keras.layers.Dense(84, activation='relu'),
-        tf.keras.layers.Dense(4, activation='softmax')
-    ]),
-    hyperparams={"lr": 1e-2}
-)
-
 def state_reward(state):
-    return 1
-  
-  
-base_model = tf.keras.Sequential()
-base_model.add(tf.keras.layers.Dense(84, activation='linear', input_shape=(8,) ))
+    return sum(state)
 
+# Neural network templates: only contain inner layers; no input/output layers
+policy_nn = tf.keras.Sequential()
+policy_nn.add(tf.keras.layers.Dense(32, activation='relu'))
+policy_nn.add(tf.keras.layers.Dense(8, activation='relu'))
+dyntrain_nn = tf.keras.Sequential()
+dyntrain_nn.add(tf.keras.layers.Dense(64, activation='relu'))
+dyntrain_nn.add(tf.keras.layers.Dense(16, activation='relu'))
 hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
-optimizer = SWAG()
 
+dyn_training = DynamicsTraining(SWAG(), [
+    tf.keras.losses.SparseCategoricalCrossentropy(),"Classification", True],
+    dyntrain_nn, 'softmax', hyperparams)
+nn_policy = NNPolicy(policy_nn, 'softmax', hyperparams)
 
 bnn = BayesianDynamics(
     env=env,
-    n_episodes=100,
+    horizon=20,
+    dyntrain_nn=dyn_training,
     policy=nn_policy,
     state_reward=state_reward,
-    dyntrain_config=[optimizer, hyperparams, base_model, None, tf.keras.losses.SparseCategoricalCrossentropy(), "Classification", True],
-    learn_config=(100, 50, .5),
+    learn_config=(100, 30, 0.5),
 )
 
 bnn.learn(nb_epochs=1000)
