@@ -46,14 +46,13 @@ class BBB(Optimizer):
         mean_idx = 0
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
-            if len(layer.get_weights()) != 0:
-                weights = [tf.reshape(i, (-1, 1)) for i in layer.get_weights()]
-                weights = tf.reshape(tf.concat(weights, 0), (-1, 1))
+            for i in range(len(layer.trainable_variables)):
                 likelihood += self._guassian_likelihood(
-                    weights, 
-                    self._priors_list[mean_idx].mean(), 
-                    self._priors_list[mean_idx].stddev()
+                    layer.trainable_variables[i], 
+                    self._priors_list[mean_idx][i].mean(), 
+                    self._priors_list[mean_idx][i].stddev()
                 )
+            if len(layer.trainable_variables) != 0:
                 mean_idx += 1
 
         return likelihood
@@ -68,14 +67,13 @@ class BBB(Optimizer):
         mean_idx = 0
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
-            if len(layer.get_weights()) != 0:
-                weights = [tf.reshape(i, (-1, 1)) for i in layer.get_weights()]
-                weights = tf.reshape(tf.concat(weights, 0), (-1, 1))
+            for i in range(len(layer.trainable_variables)):
                 likelihood += self._guassian_likelihood(
-                    weights, 
-                    mean_list[mean_idx], 
-                    std_dev_list[mean_idx]
+                    layer.trainable_variables[i], 
+                    mean_list[mean_idx][i], 
+                    std_dev_list[mean_idx][i]
                 )
+            if len(layer.trainable_variables) != 0:
                 mean_idx += 1
 
         return likelihood
@@ -125,7 +123,7 @@ class BBB(Optimizer):
 
             print("likelihood",likelihood)
         # get the weight, mean and standard deviation gradients
-        weight_gradients = tape.gradient(likelihood, self._base_model.trainable_weights)
+        weight_gradients = tape.gradient(likelihood, self._base_model.trainable_variables)
         mean_gradients = tape.gradient(likelihood, self._posterior_mean_list)
         std_dev_gradients = tape.gradient(likelihood, self._posterior_std_dev_list)
 
@@ -140,36 +138,36 @@ class BBB(Optimizer):
         gradient_layer_index = 0
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
-            if len(layer.get_weights()) != 0:
-                weight_gradient = []
+            if len(layer.trainable_variables) != 0:
                 # go through weights and biases and merge their gradients into one vector
-                for j in range(len(layer.get_weights())):
-                    weight_gradient.append(tf.reshape(weight_gradients[gradient_layer_index], (-1, 1)))
+                _new_mean_layer_weights = []
+                _new_std_dev_layer_weights = []
+
+                for i in range(len(layer.trainable_variables)):
+                    # calculate the new mean of the posterior
+                    mean_gradient = mean_gradients[trainable_layer_index][i]+weight_gradients[gradient_layer_index]
+                    _new_mean_layer_weights.append(
+                        self._posterior_mean_list[trainable_layer_index][i]-self._lr*mean_gradient
+                    )
+                    # calculate the std_dev gradient
+                    posterior_std_dev = self._posterior_std_dev_list[trainable_layer_index][i]
+                    noise = tfp.distributions.Normal(
+                        tf.zeros(posterior_std_dev.shape),
+                        tf.ones(posterior_std_dev.shape)
+                    ).sample()
+                    std_dev_grad = noise / (1 + tf.math.exp(-posterior_std_dev))
+                    std_dev_grad *= weight_gradients[gradient_layer_index]
+                    std_dev_grad += std_dev_gradients[trainable_layer_index][i]
+
+                    # calculate the new standard deviation of the posterior
+                    _new_std_dev_layer_weights.append(
+                        posterior_std_dev-self._lr*std_dev_grad
+                    )
                     gradient_layer_index += 1
-                weight_gradient = tf.reshape(tf.concat(weight_gradient, 0), (-1, 1))
-
-                # calculate the new mean of the posterior
-                mean_gradient = mean_gradients[trainable_layer_index]+weight_gradient
-                # calculate the new mean of the posterior
-                new_posterior_mean_list.append(
-                    self._posterior_mean_list[trainable_layer_index]-self._lr*mean_gradient
-                )
-                # calculate the std_dev gradient
-                posterior_std_dev = self._posterior_std_dev_list[trainable_layer_index]
-                noise = tfp.distributions.Normal(
-                    tf.zeros(posterior_std_dev.shape),
-                    tf.ones(posterior_std_dev.shape)
-                ).sample()
-                std_dev_grad = noise / (1 + tf.math.exp(-posterior_std_dev))
-                std_dev_grad *= weight_gradient
-                std_dev_grad += std_dev_gradients[trainable_layer_index]
-
-                # calculate the new standard deviation of the posterior
-                new_posterior_std_dev_list.append(
-                    posterior_std_dev-self._lr*std_dev_grad
-                )
-
                 trainable_layer_index += 1
+                new_posterior_mean_list.append(_new_mean_layer_weights)
+                new_posterior_std_dev_list.append(_new_std_dev_layer_weights)
+
         #update the posteriors
         self._posterior_mean_list = new_posterior_mean_list
         self._posterior_std_dev_list = new_posterior_std_dev_list
@@ -183,27 +181,26 @@ class BBB(Optimizer):
         generate new weights following the posterior distributions
         """
         for interval_idx in range(len(self._layers_intervals)):
-            #sample the new wights as a vector
-            vector_weights = tfp.distributions.Normal(
-                self._posterior_mean_list[interval_idx],
-                tf.math.softplus(self._posterior_std_dev_list[interval_idx])
-            ).sample()
-            # if(interval_idx == 0):
-            #     print("mean", self._posterior_mean_list[interval_idx][0])
-            #     print("std_dev", tf.math.softplus(self._posterior_std_dev_list[interval_idx])[0])
-            #     print(vector_weights[0])
+
 
             # reshape the vector and update the base model
             start = self._layers_intervals[interval_idx][0]
             end = self._layers_intervals[interval_idx][1]
-            take_from = 0
             for layer_idx in range(start, end + 1):
-                weights = []
-                for w in self._base_model.layers[layer_idx].get_weights():
-                    size = tf.size(w).numpy()
-                    weights.append(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
-                    take_from += size
-                self._base_model.layers[layer_idx].set_weights(weights)
+                # go through weights and biases of the layer
+                for i in range(len(self._base_model.layers[layer_idx].trainable_variables)):
+                    #sample the new wights as a vector
+                    w = self._base_model.layers[layer_idx].trainable_variables[i]
+                    vector_weights = tfp.distributions.Normal(
+                        self._posterior_mean_list[interval_idx][i],
+                        tf.math.softplus(self._posterior_std_dev_list[interval_idx][i])
+                    ).sample()
+                    # if(interval_idx == 0 and i == 0):
+                    #     print("mean", self._posterior_mean_list[interval_idx][0][0][0])
+                    #     print("std_dev", tf.math.softplus(self._posterior_std_dev_list[interval_idx][0])[0][0])
+                    #     print("sample",vector_weights[0])
+                    new_weights = tf.reshape(vector_weights, w.shape)
+                    self._base_model.layers[layer_idx].trainable_variables[i].assign(new_weights)
 
 
 
@@ -228,22 +225,30 @@ class BBB(Optimizer):
         trainable_layer_index = 0
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
-            size = 0
-            for w in layer.get_weights():
-                size += tf.size(w).numpy()
-            if size != 0:
-                self._layers_intervals.append([layer_idx, layer_idx])
-                self._posterior_mean_list.append(self._priors_list[trainable_layer_index].mean())
-                self._posterior_std_dev_list.append(self._priors_list[trainable_layer_index].stddev())
+            # iterate through weights and biases of the layer
+            mean_layer_posteriors = []
+            std_dev_layer_posteriors = []
+            for i in range(len(layer.trainable_variables)):
+                mean_layer_posteriors.append(self._priors_list[trainable_layer_index][i].mean())
+                std_dev_layer_posteriors.append(self._priors_list[trainable_layer_index][i].stddev())
                 self._weight_layers_indices.append(layer_idx)
+            if len(layer.trainable_variables) != 0:
                 trainable_layer_index += 1
+                self._layers_intervals.append([layer_idx, layer_idx])
+                self._posterior_mean_list.append(mean_layer_posteriors)
+                self._posterior_std_dev_list.append(std_dev_layer_posteriors)
+
 
     def result(self) -> BayesianModel:
         model = BayesianModel(self._model_config)
-        for mean, std_dev, idx in zip(self._posterior_mean_list, self._posterior_std_dev_list, range(len(self._weight_layers_indices))):
+        for layer_mean_list, layer_std_dev_list, idx in zip(self._posterior_mean_list, self._posterior_std_dev_list, range(len(self._weight_layers_indices))):
+            for i in range(len(layer_mean_list)):
+                layer_mean_list[i] = tf.reshape(layer_mean_list[i], (-1,))
+                layer_std_dev_list[i]= tf.reshape(layer_std_dev_list[i], (-1,))
+            mean = tf.concat(layer_mean_list, 0)
+            std_dev = tf.concat(layer_std_dev_list,0)
             tf.debugging.check_numerics(mean, "mean")
             tf.debugging.check_numerics(std_dev, "standard deviation")
-
             tf_dist = tfp.distributions.Normal(
                 tf.reshape(mean, (-1,)),
                 tf.math.softplus(tf.reshape(std_dev, (-1,)))

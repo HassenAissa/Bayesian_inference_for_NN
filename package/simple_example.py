@@ -23,11 +23,11 @@ model = tf.keras.models.Sequential()
 model.add(layers.Dense(5, activation='tanh', input_shape=(1,))) 
 model.add(layers.Dense(1, activation='linear'))
 
-hyperparams = HyperParameters(lr=1e-8, alpha = 1.0)
+hyperparams = HyperParameters(lr=1e-1, alpha = 0.0)
 # instantiate your optimizer
 optimizer = BBB()
-prior = GuassianPrior(
-    0.0,0.5
+prior = GaussianPrior(
+    0.0,-10.0
     )
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
@@ -44,6 +44,6 @@ bayesian_model: BayesianModel = optimizer.result()
 
 analytics_builder = Visualisation(bayesian_model)
 
-analytics_builder.visualise(dataset, 100)
+analytics_builder.visualise(dataset, 2000)
 
 
