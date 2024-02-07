@@ -20,28 +20,25 @@ dataset = Dataset(dataset, tf.keras.losses.MeanSquaredError(), "Regression", nor
 
 
 model = tf.keras.models.Sequential()
-model.add(layers.Dense(100, activation='tanh', input_shape=(1,))) #chnage to tanh
+model.add(layers.Dense(5, activation='tanh', input_shape=(1,))) 
 model.add(layers.Dense(1, activation='linear'))
 
-hyperparams = HyperParameters(lr=1e-3, alpha = 0.0)
+hyperparams = HyperParameters(lr=1e-8, alpha = 1.0)
 # instantiate your optimizer
 optimizer = BBB()
 prior = GuassianPrior(
-    [[tf.zeros_like(model.layers[0].get_weights()[0]),tf.zeros_like(model.layers[0].get_weights()[1])],
-     [tf.zeros_like(model.layers[1].get_weights()[0]),tf.zeros_like(model.layers[1].get_weights()[1])]],
-    [[tf.ones_like(model.layers[0].get_weights()[0]),tf.ones_like(model.layers[0].get_weights()[1])],
-     [tf.ones_like(model.layers[1].get_weights()[0]),tf.ones_like(model.layers[1].get_weights()[1])]]
-     )
+    0.0,0.5
+    )
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, model.get_config(), dataset, starting_model=model, prior = prior)
+optimizer.compile(hyperparams, model.to_json(), dataset, starting_model=model, prior = prior)
 
-optimizer.train(300)
+optimizer.train(100)
 
 
 
 bayesian_model: BayesianModel = optimizer.result()
-# store_path = r"..."
+# store_path = r""
 # bayesian_model.store(store_path)
 # bayesian_model: BayesianModel= BayesianModel.load(store_path)
 

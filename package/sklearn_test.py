@@ -23,7 +23,7 @@ dataset = Dataset(
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 base_model = tf.keras.Sequential()
 
-base_model.add(layers.Dense(50, activation='relu', input_shape=(2,)))
+base_model.add(layers.Dense(50, activation='tanh', input_shape=(2,)))
 base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax))
 
 # hyperparams = HyperParameters(lr=1e-3, k=50, frequency=1, scale=1)
@@ -33,13 +33,15 @@ base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax)
 # # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
 # optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
 
-hyperparams = HyperParameters(lr=1e-10, alpha = 0)
+hyperparams = HyperParameters(lr=1e-3, alpha = 1.0)
 # instantiate your optimizer
 optimizer = BBB()
-prior = GuassianPrior(0,1)
+prior = GuassianPrior(.0,.0005)
+
+# prior = GuassianPrior(0.0,2.01)
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model, prior = prior)
+optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model, prior = prior)
 
 
 
@@ -54,6 +56,6 @@ bayesian_model: BayesianModel = optimizer.result()
 
 analytics_builder = Visualisation(bayesian_model)
 
-analytics_builder.visualise(dataset, 100)
+analytics_builder.visualise(dataset, 500)
 
 
