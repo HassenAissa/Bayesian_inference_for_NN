@@ -5,11 +5,20 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
 
-def complete_model(template:tf.keras.models.Sequential, ipd, opd, out_activation):
-    layers = [tf.keras.Input(shape=(ipd,))
-                  ] + template.layers + [
-                      tf.keras.layers.Dense(opd, out_activation)]
-    return tf.keras.models.Sequential(layers)
+def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
+    # if type(ipd) == tuple:
+    #     ipd = ipd[0]
+    # print(template, ipd, opd, out_activation)
+    
+    
+    network = tf.keras.Sequential()
+    network.add(tf.keras.Input(shape=ipd))
+    for layer in template.layers:
+        network.add(layer)
+    network.add(tf.keras.layers.Dense(opd, out_activation))   
+    
+    # print(network.layers)
+    return network
 
 class NNPolicy(Policy):
     # using tensorflow neural network for optimizing policy params "phi"
@@ -19,7 +28,9 @@ class NNPolicy(Policy):
         self.hyperparams = hyperparams
 
     def setup(self, ipd, opd):
+        # print("setting up", ipd, opd)
         self.network = complete_model(self.network, ipd, opd, self.out_activation)
+        # print(self.network.layers)
         
         
     def optimize_step(self, loss, check_converge=False):
@@ -39,7 +50,15 @@ class NNPolicy(Policy):
             return converge
 
     def act(self, state):
-        return self.network(state)
+        print(state, type(state), state.shape)
+        # convert state to 2D tensor
+        # state = tf.convert_to_tensor(state, dtype=tf.float32)
+        state = np.array(state).reshape(1, -1)  # Reshape the state
+
+        action = self.network.predict([state])[0]
+        # action needs to be a 1D tensor
+        action = int(action[0])
+        return action
 
 
 class DynamicsTraining:
@@ -72,7 +91,7 @@ class DynamicsTraining:
 class BayesianDynamics(Control):
     def __init__(
         self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
-        policy, state_reward, learn_config:tuple
+        policy: NNPolicy, state_reward, learn_config:tuple
     ):
         self.state_d = env.observation_space.shape
         self.action_d = env.action_space.shape
@@ -102,9 +121,15 @@ class BayesianDynamics(Control):
         features = []
         targets = []
         for s in range(len(all_states)-1):
-            features.append(tf.concat(tf.reshape(all_states[s], [self.state_fd]),
-                            tf.reshape(all_actions[s], [self.action_fd])))
-            targets.append(tf.reshape(all_states[s+1], [self.state_fd]))
+            feature = tf.concat([tf.reshape(all_states[s], [1, self.state_fd]),
+                         tf.reshape(all_actions[s], [1, self.action_fd])], axis=1)
+            features.append(feature)
+            
+            target = tf.reshape(all_states[s+1], [1, self.state_fd])
+            targets.append(target)
+            # features.append(tf.concat(tf.reshape(all_states[s], [self.state_fd]),
+            #                 tf.reshape(all_actions[s], [self.action_fd])))
+            # targets.append(tf.reshape(all_states[s+1], [self.state_fd]))
         return features, targets
 
     def k_particles(self, k):

@@ -37,7 +37,7 @@ class Control(ABC):
         self.env = env
         self.horizon = horizon
         self.policy = policy
-        self.policy.setup(env)
+        # self.policy.setup(env)
 
     @abstractmethod
     def sample_initial(self):
@@ -54,8 +54,10 @@ class Control(ABC):
         state = self.sample_initial() # initial state
         all_atates = [state]
         all_actions = []
-        for t in self.horizon:
+        for t in range(self.horizon):
             action = self.policy.act(state)
+            print(action, state)
+            # action = action.numpy()
             state, reward, terminated, truncated, info = self.env.step(action)
             all_atates.append(state)
             all_actions.append(action)
