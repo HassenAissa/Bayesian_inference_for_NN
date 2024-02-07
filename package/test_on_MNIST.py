@@ -37,7 +37,7 @@ hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
 optimizer = SWAG()
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
+optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model)
 optimizer.train(1000)
 
 bayesian_model: BayesianModel = optimizer.result()

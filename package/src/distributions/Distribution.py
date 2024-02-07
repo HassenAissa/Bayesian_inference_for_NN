@@ -28,7 +28,7 @@ class Distribution(ABC):
         pass
 
     @abstractmethod
-    def store(self, path:str) -> str:
+    def store(self, path:str):
         pass
 
     @classmethod

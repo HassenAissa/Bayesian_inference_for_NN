@@ -1,4 +1,4 @@
-from src.distributions.GuassianPrior import GuassianPrior
+from src.distributions.GaussianPrior import GaussianPrior
 from src.optimizers.BBB import BBB
 import tensorflow as tf
 import tensorflow_probability as tfp
@@ -23,10 +23,10 @@ model = tf.keras.models.Sequential()
 model.add(layers.Dense(100, activation='tanh', input_shape=(1,))) #chnage to tanh
 model.add(layers.Dense(1, activation='linear'))
 
-hyperparams = HyperParameters(lr=1e-3, alpha = 0.0)
+hyperparams = HyperParameters(lr=1e-3, alpha = 0.0, k = 5, frequency=10)
 # instantiate your optimizer
-optimizer = BBB()
-prior = GuassianPrior(
+optimizer = SWAG()
+prior = GaussianPrior(
     [[tf.zeros_like(model.layers[0].get_weights()[0]),tf.zeros_like(model.layers[0].get_weights()[1])],
      [tf.zeros_like(model.layers[1].get_weights()[0]),tf.zeros_like(model.layers[1].get_weights()[1])]],
     [[tf.ones_like(model.layers[0].get_weights()[0]),tf.ones_like(model.layers[0].get_weights()[1])],
@@ -34,7 +34,7 @@ prior = GuassianPrior(
      )
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, model.get_config(), dataset, starting_model=model, prior = prior)
+optimizer.compile(hyperparams, model.to_json(), dataset, starting_model=model)
 
 optimizer.train(300)
 
@@ -42,8 +42,8 @@ optimizer.train(300)
 
 bayesian_model: BayesianModel = optimizer.result()
 # store_path = r"..."
-# bayesian_model.store(store_path)
-# bayesian_model: BayesianModel= BayesianModel.load(store_path)
+bayesian_model.store("test")
+bayesian_model: BayesianModel= BayesianModel.load("test")
 
 analytics_builder = Visualisation(bayesian_model)
 

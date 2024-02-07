@@ -11,13 +11,10 @@ class BayesianModel:
     """
         a class that represents a trained bayesian model that could predict outputs. It could also be stored and loaded.
     """
-    def __init__(self, model_config: dict):
+    def __init__(self, model_config: str):
         self._model_config = model_config
         model: tf.keras.Model = tf.keras.models.model_from_json(model_config)
-        self._layers: list[BayesianModel.Layer] = []
-        for layer in model.layers:
-            self._layers.append(BayesianModel.Layer([w.shape for w in layer.get_weights()]))
-        self._n_layers = len(self._layers)
+        self._n_layers = len(model.layers)
         self._layers_dtbn_intervals = []
         self._distributions: list[Distribution] = []
         self._model: tf.keras.Model = model
@@ -65,8 +62,10 @@ class BayesianModel:
             pass
         """
 
+
     def apply_distributions_layers(self, layer_list, dtbn_list):
         """
+        DEPRECATED
         set the correlated layers and their distributions
         Args:
             layer_list (_type_): _description_
@@ -85,21 +84,19 @@ class BayesianModel:
             end = self._layers_dtbn_intervals[interval_idx][1]
             take_from = 0
             for layer_idx in range(start, end + 1):
-                weights = []
-                for w in self._model.layers[layer_idx].get_weights():
+                for w in self._model.layers[layer_idx].trainable_variables:
                     size = tf.size(w).numpy()
-                    weights.append(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
+                    w.assign(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
                     take_from += size
-                self._model.layers[layer_idx].set_weights(weights)
 
 
     def predict(self, x: tf.Tensor, nb_samples: int):
-        """        
+        """
         use monte carlo approxiamtion over nb_samples to predict the result for the input
-        
+
 
         Args:
-            x (tf.Tensor): the inuput 
+            x (tf.Tensor): the inuput
             nb_samples (int): number of samples for monte carlo approximation
 
         Returns:
@@ -121,7 +118,7 @@ class BayesianModel:
         load a model from a document
         Args:
             model_path (str): the path where the model is stored
-            custom_distribution_register (dict, optional): If the distribution used is not implemented, 
+            custom_distribution_register (dict, optional): If the distribution used is not implemented,
             a deserialiser should be specified in this dctionnary. Defaults to None.
 
         Returns:
@@ -130,8 +127,7 @@ class BayesianModel:
         if custom_distribution_register is None:
             custom_distribution_register = dict()
         with open(os.path.join(model_path, "config.json"), "r") as config_file:
-            
-            bayesian_model = BayesianModel(tf.keras.models.model_from_json(config_file.read()).get_config())
+            bayesian_model = BayesianModel(config_file.read())
 
         layers_intervals = []
         with open(os.path.join(model_path,"layers_config.txt"), "r") as layers_file:
@@ -143,13 +139,13 @@ class BayesianModel:
 
         for i in range(n_intervals):
             distribution = DistributionSerializer.load_from(
-                layers_intervals[i][0], 
+                layers_intervals[i][0],
                 custom_distribution_register,
                 os.path.join(model_path,"distribution" + str(i), "distribution.json")
             )
             bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
         return bayesian_model
-    
+
     def _empty_folder(self,path):
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)
@@ -166,14 +162,14 @@ class BayesianModel:
         store a model to a document
         Args:
             model_path (str): the path where the model will be stored, this folder should already exist on the system
-            custom_distribution_register (dict, optional): If the distribution used is not implemented, 
+            custom_distribution_register (dict, optional): If the distribution used is not implemented,
             a serialiser should be specified in this dctionnary. Defaults to None.
 
         Returns:
             BayesianModel: the loaded bayesian model
         """
         if os.path.exists(model_path) == False:
-            raise Exception("inexisting directory: " + model_path) 
+            raise Exception("inexisting directory: " + model_path)
         self._empty_folder(model_path)
         with open(os.path.join(model_path,"config.json"), "w") as config_file:
             config_file.write(self._model.to_json())
@@ -189,13 +185,4 @@ class BayesianModel:
             os.mkdir(os.path.join(model_path, "distribution"+str(i)))
             self._distributions[i].store(os.path.join(model_path, "distribution"+str(i),"distribution.json"))
 
-    class Layer:
-        def __init__(self, weights_shape: list[tf.TensorShape]):
-            self.weights_shape = weights_shape
-            self._n_params = 0
-            for w in weights_shape:
-                self._n_params += tf.math.reduce_sum(w).numpy()
 
-        @property
-        def n_params(self) -> int:
-            return self._n_params
