@@ -1,5 +1,6 @@
 import tensorflow as tf
 import gymnasium as gym
+import numpy as np
 from abc import ABC, abstractmethod
 
 class Policy(ABC):  # Policy optimizer
@@ -35,9 +36,21 @@ class Control(ABC):
     # Reinforcement learning basics using gymnasium
     def __init__(self, env:gym.Env, horizon:int, policy:Policy):
         self.env = env
+        self.state_d = env.observation_space.shape
+        self.action_d = env.action_space.shape
+        self.action_fd = Control.space_flat(self.action_d)
+        self.state_fd = Control.space_flat(self.state_d)
+        print(self.state_d, self.state_fd, self.action_d, self.action_fd)
         self.horizon = horizon
         self.policy = policy
         # self.policy.setup(env)
+    def space_flat(orig_shape):
+        if orig_shape == ():
+            return (1,)
+        shape = 1
+        for s in orig_shape:
+            shape *= s
+        return (shape,)
 
     @abstractmethod
     def sample_initial(self):
@@ -55,12 +68,12 @@ class Control(ABC):
         all_atates = [state]
         all_actions = []
         for t in range(self.horizon):
-            action = self.policy.act(state)
-            print(action, state)
+            action = self.policy.act(state).reshape(self.action_d)
+            print("action", action)
             # action = action.numpy()
             state, reward, terminated, truncated, info = self.env.step(action)
             all_atates.append(state)
-            all_actions.append(action)
+            all_actions.append(np.float32(action))
         return all_atates, all_actions
     
     @abstractmethod

@@ -14,8 +14,6 @@ from src.optimizers.HyperParameters import HyperParameters
 env = gym.make("LunarLander-v2", render_mode=None )
 x_prev, info = env.reset(seed=42)
 
-
-
 # x_array = []
 # y_array = []
 
@@ -70,9 +68,9 @@ dyntrain_nn.add(tf.keras.layers.Dense(16, activation='relu'))
 hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
 
 dyn_training = DynamicsTraining(SWAG(), [
-    tf.keras.losses.SparseCategoricalCrossentropy(),"Classification", True],
-    dyntrain_nn, 'softmax', hyperparams)
-nn_policy = NNPolicy(policy_nn, 'softmax', hyperparams)
+    tf.keras.losses.MeanSquaredError(),"Regression", True],
+    dyntrain_nn, 'relu', hyperparams)
+nn_policy = NNPolicy(policy_nn, 'relu', hyperparams)
 
 
 bnn = BayesianDynamics(
@@ -83,5 +81,6 @@ bnn = BayesianDynamics(
     state_reward=state_reward,
     learn_config=(100, 30, 0.5),
 )
+dyn_training.compile_more(starting_model=dyn_training.model)
 
 bnn.learn(nb_epochs=1000)
