@@ -69,9 +69,9 @@ class Control(ABC):
         all_actions = []
         for t in range(self.horizon):
             action = self.policy.act(state).reshape(self.action_d)
-            print("action", action)
             # action = action.numpy()
             state, reward, terminated, truncated, info = self.env.step(action)
+            state = state.tolist()
             all_atates.append(state)
             all_actions.append(np.float32(action))
         return all_atates, all_actions

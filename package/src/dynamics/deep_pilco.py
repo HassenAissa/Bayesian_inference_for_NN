@@ -15,22 +15,23 @@ def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
 
 class NNPolicy(Policy):
     # using tensorflow neural network for optimizing policy params "phi"
-    def __init__(self, network, out_activation, hyperparams: dict):
+    def __init__(self, network, out_activation, hyperparams):
         self.network = network # template network consisting of inner layers
         self.out_activation = out_activation
         self.hyperparams = hyperparams
 
     def setup(self, ipd, opd):
-        print("policy", ipd, opd)
+        print("Policy network input output dimensions:", ipd, opd)
         self.network = complete_model(self.network, ipd, opd, self.out_activation)
         
-    def optimize_step(self, loss, check_converge=False):
-        with tf.GradientTape(persistent=True) as tape:
-            grad = tape.gradient(loss, self.network.trainable_variables)
+    def optimize_step(self, grad, check_converge=False):
+        print("Policy optimization gradient", grad)
+        if grad:
             weights = self.network.get_weights()
             new_weights = []
             for i in range(len(grad)):
-                wg = tf.math.multiply(grad[i], self.hyperparams["lr"])
+                print("gradient", i, grad[i])
+                wg = tf.math.multiply(grad[i], self.hyperparams.lr)
                 m = tf.math.subtract(weights[i], wg)
                 new_weights.append(m)
             self.network.set_weights(new_weights)
@@ -41,10 +42,8 @@ class NNPolicy(Policy):
             return converge
 
     def act(self, state):
-        print(state, type(state), state.shape)
         # convert state to 2D tensor
         # state = tf.convert_to_tensor(state, dtype=tf.float32)
-        state = np.array(state).reshape(1, -1)  # Reshape the state
         action = self.network.predict([state])[0]
         action = np.int32(action)
         # action needs to be a 1D tensor
@@ -62,7 +61,7 @@ class DynamicsTraining:
 
     def create_model(self, sfd, afd):
         ipd = (sfd[0]+afd[0],)
-        model = complete_model(self.template, ipd, afd, self.out_activation) 
+        model = complete_model(self.template, ipd, sfd, self.out_activation) 
         self.model = model   
 
     def compile_more(self, **kwargs):
@@ -74,7 +73,6 @@ class DynamicsTraining:
         train_dataset = Dataset(
             dataset.train_data, *self.data_specs)
         if not self.start:
-            print(self.rems)
             self.optimizer.compile(self.hyperparams, self.model.to_json(), 
                                    train_dataset, **self.rems)
             self.start = True
@@ -99,52 +97,62 @@ class BayesianDynamics(Control):
 
     def sample_initial(self):
         # default sampling method
-        print("initial sample from bayesian dynamics")
-        return self.env.observation_space.sample()
+        return self.env.observation_space.sample().tolist()
     
+    def dyn_feature(self, state0, action0):
+        s0 = tf.reshape(state0, self.state_fd)
+        a0 = tf.reshape(action0, self.action_fd)
+        feature = s0.numpy().tolist()
+        for a in a0.numpy():
+            feature.append(a)
+        return feature
+    
+    def dyn_target(self, state1):
+        target = tf.reshape(state1, self.state_fd)
+        return target.numpy().tolist()
+        
     def execute(self):
         all_states, all_actions = super().execute()
         features = []
         targets = []
         for s in range(len(all_states)-1):
-            s0 = tf.reshape(all_states[s], self.state_fd)
-            s1 = tf.reshape(all_states[s+1], self.state_fd)
-            a0 = tf.reshape(all_actions[s], self.action_fd)
-            feature = s0.numpy().tolist()
-            for a in a0.numpy():
-                feature.append(a)
+            feature = self.dyn_feature(all_states[s], all_actions[s])
+            target = self.dyn_target(all_states[s+1])
             features.append(feature)
-            target = s1.numpy().tolist()
             targets.append(target)
         return tf.constant(features),tf.constant(targets)
 
-    def k_particles(self, k):
+    def k_particles(self):
         # create k random bnn weights and k random inputs
         self.models = []
-        self.inputs = []
+        samples = []
         bnn = self.dyn_training.optimizer.result()
-        for i in range(k):
+        for i in range(self.kp):
             bnn._sample_weights()
             self.models.append(copy.deepcopy(bnn._model))
-            sample = np.array(self.sample_initial()).reshape(1, -1)
-            self.inputs.append([sample])
+            samples.append(self.sample_initial())
+        return samples
 
-    def predict_trajectory(self, k):
+    def predict_trajectory(self):
         # Step 6 of pilco algorithm using k particles
-        self.k_particles(k)
-        xs = self.inputs
+        xs = self.k_particles()
         traj = [xs]
         for t in range(self.horizon):
             ys = []
-            for i in range(k):
-                ys.append(self.models[i].predict(xs[i][0]))
-            ymean = np.mean(ys)
-            ystd = np.std(ys)
+            print("Time step: "+str(t)+"/"+str(self.horizon))
+            for i in range(self.kp):
+                state = xs[i]
+                action = self.policy.act(state)
+                feature = self.dyn_feature(state, action)
+                ys.append(self.models[i].predict([feature])[0].tolist())
+            ys = np.array(ys)
+            ymean = np.mean(ys, axis=0)
+            ystd = np.std(ys, axis=0)
             dtbn = tfp.distributions.Normal(ymean, ystd)
             xs = []
-            for i in range(k):
+            for i in range(self.kp):
                 x = dtbn.sample()
-                xs.append(x)
+                xs.append(x.numpy().tolist())
             traj.append(xs)
         return traj
 
@@ -162,27 +170,37 @@ class BayesianDynamics(Control):
         return tot_rew
 
     def learn(self, nb_epochs):
-        def step(check_converge=False):
+        def calc_loss():
             # train dynamic model using transition dataset
             xs, ys = self.execute()
+            with tf.GradientTape(persistent=True) as tape:
+                tape.watch(self.policy.network.trainable_variables)
             self.dyn_training.train(xs, ys, self.dyntrain_ep)
             # predict trajectory
-            traj = self.predict_trajectory(self.kp)
-            # evaluate policy and trajectory
+            traj = self.predict_trajectory()
             tot_rew = self.reward(traj)
-            # # optimize policy
-            return self.policy.optimize_step(loss=-tot_rew, check_converge=check_converge)
+            loss = tf.constant(-tot_rew)
+            return loss
+        
+        def step(check_converge=False):
+            # with tf.GradientTape(persistent=True) as tape:
+            #     tape.watch(self.policy.network.trainable_variables)
+            #     loss = tf.constant(calc_loss())
+            # grad = tape.gradient(loss, self.policy.network.trainable_variables)
+            loss = tf.constant(calc_loss())
+            print("Loss value:", loss)
+            grad = None
+
+            return self.policy.optimize_step(grad, check_converge=check_converge)
             
-            # optimize policy using the policy optimizer
-            loss = -tot_rew  # Define the loss as the negative of the total reward
-            policy_loss = self.policy_optimizer.optimize(self.policy, loss, check_converge)
-            return policy_loss
 
         if nb_epochs:
             # learning for a given number of epochs
             for ep in range(nb_epochs):
+                print(">>Learning epoch", ep)
                 step()
         else:
             while not step(check_converge=True):
                 # continue learning if policy not converge
                 continue
+        print("--Learning completed--")

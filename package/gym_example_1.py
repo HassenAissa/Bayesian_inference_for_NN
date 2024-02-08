@@ -11,7 +11,7 @@ from src.optimizers.SWAG import SWAG
 from src.optimizers.HyperParameters import HyperParameters
 
 # Set up the environment
-env = gym.make("LunarLander-v2", render_mode=None )
+env = gym.make("Acrobot", render_mode=None)
 x_prev, info = env.reset(seed=42)
 
 # x_array = []
@@ -75,12 +75,12 @@ nn_policy = NNPolicy(policy_nn, 'relu', hyperparams)
 
 bnn = BayesianDynamics(
     env=env,
-    horizon=20,
+    horizon=17,
     dyn_training=dyn_training,
     policy=nn_policy,
     state_reward=state_reward,
-    learn_config=(100, 30, 0.5),
+    learn_config=(5, 7, 0.5),
 )
 dyn_training.compile_more(starting_model=dyn_training.model)
 
-bnn.learn(nb_epochs=1000)
+bnn.learn(nb_epochs=2)
