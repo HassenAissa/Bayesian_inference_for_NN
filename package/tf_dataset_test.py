@@ -12,7 +12,7 @@ import tensorflow_datasets as tfds
 dataset = Dataset(
     "mnist",
     tf.keras.losses.SparseCategoricalCrossentropy(),
-    "Classification"
+    "Classification",
 )
 
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
@@ -35,7 +35,7 @@ optimizer = SWAG()
 
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
+optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model)
 
 loss_save_file = r"package/src/visualisations/loss_save_file"
 optimizer.train(1000, loss_save_file)

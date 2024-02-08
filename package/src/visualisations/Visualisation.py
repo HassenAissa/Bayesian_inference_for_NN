@@ -17,7 +17,7 @@ class Visualisation():
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
         self.learning_diagnostics(loss_save_file)
         # Prediction Plot
-        if dataset.likelihoodModel == "Regression":
+        if dataset.likelihood_model == "Regression":
 
             plt.figure(figsize=(10, 5))
             plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
