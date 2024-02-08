@@ -6,6 +6,7 @@ from src.nn.BayesianModel import BayesianModel
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
 from src.visualisations.Visualisation import Visualisation
+from src.visualisations.Robustness import Robustness
 import tensorflow_datasets as tfds
 
 
@@ -46,7 +47,11 @@ bayesian_model: BayesianModel = optimizer.result()
 # bayesian_model: BayesianModel= BayesianModel.load(store_path)
 
 analytics_builder = Visualisation(bayesian_model)
+robustness_builder = Robustness(bayesian_model)
 
+print("Starting performence analysis")
 analytics_builder.visualise(dataset, 100, loss_save_file)
+#print("Starting robustness analysis")
+#robustness_builder.c_robustness(dataset, 100)
 
 
