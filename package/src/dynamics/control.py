@@ -58,9 +58,18 @@ class Control(ABC):
         pass
 
     @abstractmethod
-    def reward(self, **kwargs):
+    def ep_reward(self, **kwargs):
         # if calculating cost, reward is negative
         pass
+
+    def reward(self, **kwargs):
+        discount = 1
+        tot_rew = 0
+        for t in self.horizon:
+            rew = self.ep_reward()
+            tot_rew += discount * rew
+            discount *= self.gamma
+        return tot_rew
 
     def execute(self):
         # take actions according to policy for n episodes

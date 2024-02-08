@@ -132,68 +132,55 @@ class BayesianDynamics(Control):
             self.models.append(copy.deepcopy(bnn._model))
             samples.append(self.sample_initial())
         return samples
-
-    def predict_trajectory(self):
-        # Step 6 of pilco algorithm using k particles
-        xs = self.k_particles()
-        traj = [xs]
-        for t in range(self.horizon):
-            ys = []
-            print("Time step: "+str(t)+"/"+str(self.horizon))
-            for i in range(self.kp):
-                state = xs[i]
-                action = self.policy.act(state)
-                feature = self.dyn_feature(state, action)
-                ys.append(self.models[i].predict([feature])[0].tolist())
-            ys = np.array(ys)
-            ymean = np.mean(ys, axis=0)
-            ystd = np.std(ys, axis=0)
-            dtbn = tfp.distributions.Normal(ymean, ystd)
-            xs = []
-            for i in range(self.kp):
-                x = dtbn.sample()
-                xs.append(x.numpy().tolist())
-            traj.append(xs)
-        return traj
-
-    def reward(self, trajectory):
-        tot_rew = 0
-        discount = 1
-        for states in trajectory:
-            k_rew = 0
-            for s in states:
-                # if calculating cost, use negative state reward
-                k_rew += self.state_reward(s)
-            k_rew /= self.kp
-            tot_rew += discount * k_rew
-            discount *= self.gamma
-        return tot_rew
+    
+    def forward(self, samples):
+        for i in range(self.kp):
+            state = samples[i]
+            action = self.policy.act(state)
+            feature = self.dyn_feature(state, action)
+            ys.append(self.models[i].predict([feature])[0].tolist())
+        ys = np.array(ys)
+        ymean = np.mean(ys, axis=0)
+        ystd = np.std(ys, axis=0)
+        dtbn = tfp.distributions.Normal(ymean, ystd)
+        states = []
+        for i in range(self.kp):
+            x = dtbn.sample()
+            states.append(x.numpy().tolist())
+        return states
+        
+    def ep_reward(self, states):
+        k_rew = 0
+        for s in states:
+            # if calculating cost, use negative state reward
+            k_rew += self.state_reward(s)
+        k_rew /= self.kp
+        return k_rew
 
     def learn(self, nb_epochs):
-        def calc_loss():
-            # train dynamic model using transition dataset
-            xs, ys = self.execute()
-            with tf.GradientTape(persistent=True) as tape:
-                tape.watch(self.policy.network.trainable_variables)
-            self.dyn_training.train(xs, ys, self.dyntrain_ep)
-            # predict trajectory
-            traj = self.predict_trajectory()
-            tot_rew = self.reward(traj)
-            loss = tf.constant(-tot_rew)
-            return loss
         
         def step(check_converge=False):
-            # with tf.GradientTape(persistent=True) as tape:
-            #     tape.watch(self.policy.network.trainable_variables)
-            #     loss = tf.constant(calc_loss())
-            # grad = tape.gradient(loss, self.policy.network.trainable_variables)
-            loss = tf.constant(calc_loss())
-            print("Loss value:", loss)
-            grad = None
-
-            return self.policy.optimize_step(grad, check_converge=check_converge)
+            # train dynamic model using transition dataset
+            xs, ys = self.execute()
+            self.dyn_training.train(xs, ys, self.dyntrain_ep)
+            # k sample inputs and k dynamic bnn
+            states = self.k_particles()
+            # predict trajectory and calculate gradient
+            discount = 1
+            tot_grad = None
+            for t in range(self.horizon):
+                with tf.GradientTape(persistent=True) as tape:
+                    tape.watch(self.policy.network.trainable_variables)
+                    states = self.forward(states)
+                    loss = tf.constant(self.ep_reward(states))
+                print("Time step: "+str(t)+"/"+str(self.horizon), "loss", loss)
+                grad = tape.gradient(loss, self.policy.network.trainable_variables)
+                if not tot_grad:
+                    tot_grad = grad
+                tot_grad += grad * discount
+                discount *= self.gamma
+            return self.policy.optimize_step(tot_grad, check_converge=check_converge)
             
-
         if nb_epochs:
             # learning for a given number of epochs
             for ep in range(nb_epochs):
