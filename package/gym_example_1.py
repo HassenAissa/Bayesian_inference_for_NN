@@ -11,7 +11,7 @@ from src.optimizers.SWAG import SWAG
 from src.optimizers.HyperParameters import HyperParameters
 
 # Set up the environment
-env = gym.make("Acrobot", render_mode=None)
+env = gym.make("LunarLander-v2", render_mode=None)
 x_prev, info = env.reset(seed=42)
 
 # x_array = []
@@ -84,3 +84,28 @@ bnn = BayesianDynamics(
 dyn_training.compile_more(starting_model=dyn_training.model)
 
 bnn.learn(nb_epochs=2)
+
+
+# Run an interactive demo of the trained policy
+# Create the environment
+env = gym.make("LunarLander-v2", render_mode="human")  # Use "human" render mode for visualization
+observation, info = env.reset(seed=42)
+
+total_rewards = 0
+done = False
+
+# Run the game loop
+while not done:
+    action = nn_policy.act(observation[np.newaxis, :])  # Add batch dimension
+    action = action[0]  # Remove batch dimension
+    state, reward, terminated, truncated, info = env.step(action)  # Take the action in the environment
+    total_rewards += reward  # Accumulate the reward
+    
+    if terminated or truncated:
+        done = True
+
+    # You can add a delay here if the visualization is too fast
+    # time.sleep(0.01)
+
+print(f"Total reward: {total_rewards}")
+env.close()  # Close the environment when done
