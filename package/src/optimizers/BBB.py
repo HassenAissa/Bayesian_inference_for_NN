@@ -119,7 +119,6 @@ class BBB(Optimizer):
                 label, 
                 predictions
             )
-
             print("likelihood",likelihood)
         # get the weight, mean and standard deviation gradients
         weight_gradients = tape.gradient(likelihood, self._base_model.trainable_variables)
