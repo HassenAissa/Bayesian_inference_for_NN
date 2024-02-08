@@ -31,7 +31,7 @@ prior = GaussianPrior(
     )
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, model.to_json(), dataset, starting_model=model, prior = prior)
+optimizer.compile(hyperparams, model.to_json(), dataset, prior = prior)
 
 optimizer.train(100)
 

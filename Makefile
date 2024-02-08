@@ -5,4 +5,4 @@ venv:
 install:
 	pip install -r requirements.txt
 gym:
-	python3 package/gym_example.py
+	python3 package/gym_example_1.py
