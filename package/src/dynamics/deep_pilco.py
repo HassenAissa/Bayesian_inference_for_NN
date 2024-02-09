@@ -20,33 +20,43 @@ class NNPolicy(Policy):
         self.out_activation = out_activation
         self.hyperparams = hyperparams
 
-    def setup(self, ipd, opd):
-        print("Policy network input output dimensions:", ipd, opd)
+    def setup(self, ipd, opd, aspace:gym.spaces):
         self.network = complete_model(self.network, ipd, opd, self.out_activation)
+        if isinstance(aspace, gym.spaces.Discrete):
+            self.bounded = True
+            self.low = tf.fill(opd, 0.0)
+            self.high = tf.fill(opd, float(aspace.n-1))
+        else:
+            self.bounded = aspace.is_bounded()
+            if self.bounded:
+                self.low = tf.convert_to_tensor(aspace.low)
+                self.high = tf.convert_to_tensor(aspace.high)
         
     def optimize_step(self, grad, check_converge=False):
-        if None not in grad:
-            weights = self.network.get_weights()
-            new_weights = []
-            for i in range(len(grad)):
-                print("gradient", i, grad[i])
-                wg = tf.math.multiply(grad[i], self.hyperparams.lr)
-                m = tf.math.subtract(weights[i], wg)
-                new_weights.append(m)
-            self.network.set_weights(new_weights)
+        print("Updating policy Valid gradient; length", len(grad))
+        weights = self.network.get_weights()
+        new_weights = []
+        for i in range(len(grad)):
+            wg = tf.math.multiply(grad[i], self.hyperparams.lr)
+            m = tf.math.subtract(weights[i], wg)
+            new_weights.append(m)
+        self.network.set_weights(new_weights)
 
         # To be implemented: check convergence
         if check_converge:
             converge = False
             return converge
 
-    def act(self, states):
+    def act(self, state):
         # convert state to 2D tensor
         # state = tf.convert_to_tensor(state, dtype=tf.float32)
-        actions = self.network(tf.reshape(states, shape=(1, -1)))
-        actions = tf.reshape(actions, shape=(-1,))
+        action = self.network(tf.reshape(state, shape=(1, -1)))
+        action = tf.reshape(action, shape=(-1,))
         # action needs to be a 1D tensor
-        return actions
+        if self.bounded:
+            action = tf.math.maximum(self.low, action)
+            action = tf.math.minimum(self.high, action)
+        return action
 
 
 class DynamicsTraining:
@@ -89,7 +99,7 @@ class BayesianDynamics(Control):
         dyn_training.create_model(
             self.state_fd, self.action_fd)
         self.dyn_training = dyn_training
-        self.policy.setup(self.state_d, self.action_fd)        
+        self.policy.setup(self.state_d, self.action_fd, self.env.action_space)        
         self.state_reward = state_reward
         self.dyntrain_ep, self.kp, self.gamma = learn_config
         # self.policy_optimizer = policy_optimizer
@@ -133,9 +143,11 @@ class BayesianDynamics(Control):
     
     def forward(self, samples):  
         ys = []      
+        actions = []
         for i in range(self.kp):
             state = samples[i]
             action = self.policy.act(state) 
+            actions.append(action)
             feature = self.dyn_feature(state, action)
             y = self.models[i](tf.reshape(feature, shape=(1,-1)))
             ys.append(tf.reshape(y, shape=(-1,)))
@@ -143,17 +155,17 @@ class BayesianDynamics(Control):
         ymean = tf.math.reduce_mean(ys, axis=0)
         ystd = tf.math.reduce_std(ys, axis=0)
         dtbn = tfp.distributions.Normal(ymean, ystd)
-        states = []
+        new_states = []
         for i in range(self.kp):
             x = dtbn.sample()
-            states.append(x)
-        return ys, tf.convert_to_tensor(states) 
+            new_states.append(x)
+        return ys, actions, tf.convert_to_tensor(new_states) 
         
-    def ep_reward(self, ys):
+    def t_reward(self, ys, actions, t):
         k_rew = 0
-        for s in ys:
+        for i in range(self.kp):
             # if calculating cost, use negative state reward
-            k_rew += self.state_reward(s)
+            k_rew += self.state_reward(ys[i], actions[i], t)
         exp_rew = k_rew / self.kp
         return exp_rew
 
@@ -167,19 +179,25 @@ class BayesianDynamics(Control):
             # predict trajectory and calculate gradient
             discount = 1
             tot_grad = None
+            prev_tmark = 0
             for t in range(self.horizon):
                 with tf.GradientTape(persistent=True) as tape:
                     tape.watch(self.policy.network.trainable_variables)
-                    ys, states = self.forward(states)
-                    loss = -self.ep_reward(ys)
+                    ys, actions, states = self.forward(states)
+                    loss = -self.t_reward(ys, actions, t)
                     loss = tf.fill([1], loss)
                 grad = tape.gradient(loss, self.policy.network.trainable_variables)
-                print("Time step: "+str(t)+"/"+str(self.horizon), "grad tensor count", len(grad))
+                tmark = int(10*t/self.horizon)
+                if tmark > prev_tmark and tmark % 2 == 0:
+                    print("Time step: "+str(t)+"/"+str(self.horizon))
+                prev_tmark = tmark
                 if not tot_grad:
                     tot_grad = grad
                 elif None not in grad: 
                     for g in range(len(grad)):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
+                else:
+                    print("!!Invalid gradient calculation")
                 discount *= self.gamma
             return self.policy.optimize_step(tot_grad, check_converge=check_converge)
             

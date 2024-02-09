@@ -40,7 +40,8 @@ class Control(ABC):
         self.action_d = env.action_space.shape
         self.action_fd = Control.space_flat(self.action_d)
         self.state_fd = Control.space_flat(self.state_d)
-        print(self.state_d, self.state_fd, self.action_d, self.action_fd)
+        print("Observation and action space/flatten",
+            self.state_d, self.state_fd, self.action_d, self.action_fd)
         self.horizon = horizon
         self.policy = policy
         # self.policy.setup(env)
@@ -58,7 +59,7 @@ class Control(ABC):
         pass
 
     @abstractmethod
-    def ep_reward(self, **kwargs):
+    def t_reward(self, **kwargs):
         # if calculating cost, reward is negative
         pass
 
@@ -66,7 +67,7 @@ class Control(ABC):
         discount = 1
         tot_rew = 0
         for t in self.horizon:
-            rew = self.ep_reward()
+            rew = self.t_reward()
             tot_rew += discount * rew
             discount *= self.gamma
         return tot_rew
@@ -79,7 +80,8 @@ class Control(ABC):
         for t in range(self.horizon):
             action = tf.reshape(self.policy.act(state), shape=self.action_d)
             # action = action.numpy()
-            state, reward, terminated, truncated, info = self.env.step(tf.cast(action, tf.int32))
+            state, reward, terminated, truncated, info = self.env.step(
+                tf.cast(action, self.env.action_space.dtype))
             all_atates.append(tf.convert_to_tensor(state))
             all_actions.append(action)
         return all_atates, all_actions
