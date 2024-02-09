@@ -12,7 +12,7 @@ class Visualisation():
         self.model = model
     
     # https://seaborn.pydata.org
-    def visualise(self, dataset: Dataset, nb_samples: int, loss_save_file):
+    def visualise(self, dataset: Dataset, nb_samples: int, loss_save_file = None):
         x, y_true = next(iter(dataset.valid_data.batch(dataset.valid_data.cardinality())))
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
         self.learning_diagnostics(loss_save_file)
@@ -43,7 +43,7 @@ class Visualisation():
             plt.ylabel('Pred-True difference')
             plt.show()
             
-        elif dataset.likelihoodModel == "Classification":
+        elif dataset.likelihood_model == "Classification":
             y_pred_labels = tf.argmax(y_pred, axis=1)
             self.metrics_classification(y_pred, y_true)
             self.plot_2d_3d(x, y_true, y_pred_labels)
@@ -60,7 +60,7 @@ class Visualisation():
         _, eigenvectors = tf.linalg.eigh(tf.tensordot(tf.transpose(x_2d), x_2d, axes=1))
         x_pca = tf.tensordot(x_2d, eigenvectors, axes=1)
         self.plot_2d(x_pca, y_true, y_pred)
-        self.plot_3d(x_pca, y_true, y_pred)
+        #self.plot_3d(x_pca, y_true, y_pred)
         
     
     def plot_2d(self, x_pca, y_true, y_pred):

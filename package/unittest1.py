@@ -35,6 +35,9 @@ def SWAG_test(dataset, base_model):
 def HMC_test(dataset, base_model):
     pass
 
+def SGLD_test(dataset, base_model):
+    pass
+
 x,y = sklearn.datasets.make_moons(n_samples=2000)
 dataset = Dataset(
     tf.data.Dataset.from_tensor_slices((x, y)),

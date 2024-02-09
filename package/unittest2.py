@@ -35,6 +35,9 @@ def SWAG_test(dataset, base_model):
 def HMC_test(dataset, base_model):
     pass
 
+def SGLD_test(dataset, base_model):
+    pass
+
 x = tf.random.uniform(shape=(600,1), minval=1, maxval=20, dtype=tf.float32)
 y = 2*x+2
 dataset = tf.data.Dataset.from_tensor_slices((x, y))
