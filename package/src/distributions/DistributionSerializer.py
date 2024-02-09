@@ -1,5 +1,5 @@
 from src.distributions.Distribution import Distribution
-from src.distributions.tf import Sampled
+from src.distributions.Sampled import Sampled
 from src.distributions.tf.Constant import Constant
 from src.distributions.MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
 
@@ -15,8 +15,8 @@ class DistributionSerializer:
     }
 
     @classmethod
-    def deserialize_from(cls, name: str, extension_register: dict, data: str) -> 'Distribution':
+    def load_from(cls, name: str, extension_register: dict, path: str) -> 'Distribution':
         if name in cls.__DISTRIBUTION_REGISTER:
-            return cls.__DISTRIBUTION_REGISTER[name].deserialize(data)
+            return cls.__DISTRIBUTION_REGISTER[name].load(path)
         else:
-            return extension_register[name].deserialize(data)
+            return extension_register[name].load(path)

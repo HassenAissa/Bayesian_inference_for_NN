@@ -1,3 +1,4 @@
+from src.optimizers.HyperparametersSelector import HyperParametersSelector
 from src.distributions.GaussianPrior import GaussianPrior
 from src.optimizers.BBB import BBB
 import tensorflow as tf
@@ -20,44 +21,20 @@ dataset = Dataset(
     "Classification"    
 )
 
-initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 base_model = tf.keras.Sequential()
-
 base_model.add(layers.Dense(50, activation='tanh', input_shape=(2,)))
 base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax))
 
-# hyperparams = HyperParameters(lr=1e-3, k=50, frequency=1, scale=1)
-# # instantiate your optimizer
-# optimizer = SWAG()¨
-# # compile the optimizer with your data
-# # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-# optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
-
-
-hyperparams = HyperParameters(lr=5, alpha = 0.00)
 # instantiate your optimizer
-optimizer = BBB()
-prior = GaussianPrior(.0,-2.0)
+optimizer = BBB
+prior = GaussianPrior(.0,-10.0)
 
 
 # prior = GuassianPrior(0.0,2.01)
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.to_json(), dataset, prior = prior)
+hyperparameters_selector = HyperParametersSelector(dataset, lr = (1e-6,1e-4), alpha = (0.000001,0.0001))
+hyperparameters_selector.cross_validation(base_model.to_json(), optimizer, prior = prior)
 
-
-
-optimizer.train(50)
-
-
-
-bayesian_model: BayesianModel = optimizer.result()
-# store_path = r"..."
-# bayesian_model.store(store_path)
-# bayesian_model: BayesianModel= BayesianModel.load(store_path)
-
-analytics_builder = Visualisation(bayesian_model)
-
-analytics_builder.visualise(dataset, 2)
 
 
