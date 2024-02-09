@@ -1,3 +1,5 @@
+from src.optimizers.BBB import BBB
+from src.distributions.GaussianPrior import GaussianPrior
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
@@ -29,15 +31,16 @@ base_model.add(tf.keras.layers.Dense(120, activation='relu'))
 base_model.add(tf.keras.layers.Dense(84, activation='relu'))
 base_model.add(tf.keras.layers.Dense(62, activation=tf.keras.activations.softmax))
 
-hyperparams = HyperParameters(lr=1e-3, k=50, frequency=1, scale=1)
+hyperparams = HyperParameters(lr=1e-3, alpha = 0.00)
 # instantiate your optimizer
-optimizer = SWAG()
+optimizer = BBB()
+prior = GaussianPrior(.0,-10.0)
 
 # compile the optimizer with your data
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
-optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model)
+optimizer.compile(hyperparams, base_model.to_json(), dataset, prior = prior)
 
-optimizer.train(1000)
+optimizer.train(100)
 
 
 
