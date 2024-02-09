@@ -56,11 +56,12 @@ class Visualisation():
             print("Invalid loss function")  
         
     def plot_2d_3d(self, x, y_true, y_pred):
-        x_2d = tf.convert_to_tensor(np.reshape(x, (x.shape[0], -1)), dtype=tf.dtypes.float32)
+        x_2d = tf.reshape(x, (x.shape[0], -1))
         _, eigenvectors = tf.linalg.eigh(tf.tensordot(tf.transpose(x_2d), x_2d, axes=1))
         x_pca = tf.tensordot(x_2d, eigenvectors, axes=1)
         self.plot_2d(x_pca, y_true, y_pred)
-        #self.plot_3d(x_pca, y_true, y_pred)
+        if(x_pca.shape[1]>=3):
+            self.plot_3d(x_pca, y_true, y_pred)
         
     
     def plot_2d(self, x_pca, y_true, y_pred):
