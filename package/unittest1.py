@@ -1,3 +1,4 @@
+from src.optimizers.SGLD import SGLD
 from src.distributions.GaussianPrior import GaussianPrior
 from src.optimizers.BBB import BBB
 import tensorflow as tf
@@ -45,8 +46,17 @@ def HMC_test(dataset, base_model):
     bayesian_model: BayesianModel = optimizer.result()
     return bayesian_model
 
+def lr_(step):
+    return 0.1 - step * 0.001
+
 def SGLD_test(dataset, base_model):
-    pass
+    hyperparams = HyperParameters(lr=lr_, k=10, frequency=1, batch_size=5)
+
+    optimizer = SGLD()
+    optimizer.compile(hyperparams, base_model.to_json(), dataset)
+    optimizer.train(100)
+    bayesian_model: BayesianModel = optimizer.result()
+    return bayesian_model
 
 x,y = sklearn.datasets.make_moons(n_samples=2000)
 dataset = Dataset(
@@ -60,8 +70,8 @@ base_model = tf.keras.Sequential()
 
 base_model.add(layers.Dense(50, activation='relu', input_shape=(2,)))
 base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax))
-tests = [HMC_test, BBB_test, SWAG_test]
-names = ["Testing HMC", "Testing BBB", "Testing SWAG"]
+tests = [HMC_test, BBB_test, SWAG_test, SGLD_test]
+names = ["Testing HMC", "Testing BBB", "Testing SWAG", "Testing SGLD"]
 for test, name in zip(tests, names):
     print(name)
     bayesian_model = test(dataset, base_model)
