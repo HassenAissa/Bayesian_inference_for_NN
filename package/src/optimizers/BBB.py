@@ -34,7 +34,7 @@ class BBB(Optimizer):
             tf.Tensor: the likelihood
         """
         guassian_distribution = tfp.distributions.Normal(mean, tf.math.softplus(std_dev))
-        return tf.reduce_mean(guassian_distribution.log_prob(weights)) #TODO: mena or sum, paper says sum but other sources say sum
+        return tf.reduce_sum(guassian_distribution.log_prob(weights))
 
     def _prior_guassian_likelihood(self):
         """
@@ -120,7 +120,6 @@ class BBB(Optimizer):
                 predictions
             )
 
-            print("likelihood",likelihood)
         # get the weight, mean and standard deviation gradients
         weight_gradients = tape.gradient(likelihood, self._base_model.trainable_variables)
         mean_gradients = tape.gradient(likelihood, self._posterior_mean_list)
