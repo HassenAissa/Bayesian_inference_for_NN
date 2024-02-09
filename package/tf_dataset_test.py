@@ -41,7 +41,8 @@ prior = GaussianPrior(.0,-10.0)
 # this is a specification of SWAG, SWAG needs a starting_model from which to start the gradient descend
 optimizer.compile(hyperparams, base_model.to_json(), dataset, prior = prior)
 
-optimizer.train(100)
+loss_save_file = r"package/src/visualisations/loss_save_file"
+optimizer.train(100, loss_save_file)
 
 
 

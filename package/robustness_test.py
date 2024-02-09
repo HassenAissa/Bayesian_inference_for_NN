@@ -15,7 +15,6 @@ dataset = Dataset(
     tf.keras.losses.SparseCategoricalCrossentropy(),
     "Classification",
 )
-
 initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 base_model = tf.keras.Sequential()
 
@@ -52,4 +51,4 @@ robustness_builder = Robustness(bayesian_model)
 #print("Starting performence analysis")
 #analytics_builder.visualise(dataset, 100, loss_save_file)
 print("Starting robustness analysis")
-robustness_builder.c_robustness(dataset, 100)
+robustness_builder.c_robustness(dataset, 10)
