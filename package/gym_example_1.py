@@ -11,7 +11,7 @@ from src.optimizers.SWAG import SWAG
 from src.optimizers.HyperParameters import HyperParameters
 
 # Set up the environment
-env = gym.make("LunarLander-v2", render_mode=None)
+env = gym.make("Acrobot")
 x_prev, info = env.reset(seed=42)
 
 # x_array = []
@@ -55,7 +55,7 @@ x_prev, info = env.reset(seed=42)
 
 
 def state_reward(state):
-    return sum(state)
+    return np.sum((state.numpy()))
 
 # Neural network templates: only contain inner layers; no input/output layers
 policy_nn = tf.keras.Sequential()
@@ -88,7 +88,7 @@ bnn.learn(nb_epochs=2)
 
 # Run an interactive demo of the trained policy
 # Create the environment
-env = gym.make("LunarLander-v2", render_mode="human")  # Use "human" render mode for visualization
+env = gym.make("Acrobot")  # Use "human" render mode for visualization
 observation, info = env.reset(seed=42)
 
 total_rewards = 0

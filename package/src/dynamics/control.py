@@ -77,12 +77,11 @@ class Control(ABC):
         all_atates = [state]
         all_actions = []
         for t in range(self.horizon):
-            action = self.policy.act(state).reshape(self.action_d)
+            action = tf.reshape(self.policy.act(state), shape=self.action_d)
             # action = action.numpy()
-            state, reward, terminated, truncated, info = self.env.step(action)
-            state = state.tolist()
-            all_atates.append(state)
-            all_actions.append(np.float32(action))
+            state, reward, terminated, truncated, info = self.env.step(tf.cast(action, tf.int32))
+            all_atates.append(tf.convert_to_tensor(state))
+            all_actions.append(action)
         return all_atates, all_actions
     
     @abstractmethod
