@@ -1,3 +1,4 @@
+import os.path
 from math import sqrt
 import json
 import tensorflow as tf
@@ -10,13 +11,13 @@ class MultivariateNormalDiagPlusLowRank(Distribution):
     def store(self, path: str) -> str:
         to_json = {"mean": self._mean.numpy().tolist(), "D": self._D.numpy().tolist(), "diag": self._diag.numpy().tolist()}
         data = json.dumps(to_json)
-        with open(path, "w") as file:
+        with open(os.path.join(path, "distribution.json"), "w") as file:
             file.write(data)
         
     @classmethod
     def load(cls, path: str) -> 'Distribution':
         data = ""
-        with open(path, "r") as file:
+        with open(os.path.join(path, "distribution.json"), "r") as file:
             data = file.read()
         from_json = json.loads(data)
         return MultivariateNormalDiagPlusLowRank(tf.convert_to_tensor(from_json["mean"]), tf.convert_to_tensor(from_json["diag"]),

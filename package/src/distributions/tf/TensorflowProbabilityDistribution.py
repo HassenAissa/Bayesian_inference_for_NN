@@ -2,7 +2,7 @@ import json
 
 import tensorflow as tf
 import tensorflow_probability as tfp
-
+import os
 from src.distributions.Distribution import Distribution
 
 
@@ -45,13 +45,13 @@ class TensorflowProbabilityDistribution(Distribution):
             data = self.__DISTRIBUTION_SERIALIZER_REGISTER()[distribution_type].serialize(self._tf_distribution)
         else:
             data = self.__DEFAULT_BASE_SERIALIZER().serialize(self._tf_distribution)
-        with open(path, "w") as file:
+        with open(os.path.join(path, "distribution.json"), "w") as file:
             file.write(data)
 
     @classmethod
     def load(cls, path: str) -> 'Distribution':
         data = ""
-        with open(path, "r") as file:
+        with open(os.path.join(path, "distribution.json"), "r") as file:
             data = file.read()
         dtbn_dict = json.loads(data)
         if dtbn_dict["type"] in cls.__DISTRIBUTION_SERIALIZER_REGISTER():

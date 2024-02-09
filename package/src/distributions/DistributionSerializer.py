@@ -1,5 +1,5 @@
 from src.distributions.Distribution import Distribution
-from src.distributions.tf import Sampled
+from src.distributions.Sampled import Sampled
 from src.distributions.tf.Constant import Constant
 from src.distributions.MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
 

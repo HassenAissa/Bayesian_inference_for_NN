@@ -5,6 +5,7 @@ from tensorflow.keras import models, layers
 
 from src.datasets.Dataset import Dataset
 from src.nn.BayesianModel import BayesianModel
+from src.optimizers.HMC import HMC
 from src.optimizers.HyperParameters import HyperParameters
 from src.optimizers.SWAG import SWAG
 from src.visualisations.Visualisation import Visualisation
@@ -33,7 +34,16 @@ def SWAG_test(dataset, base_model):
     return bayesian_model
 
 def HMC_test(dataset, base_model):
-    pass
+    hyperparams = HyperParameters(epsilon=1e-3, L=100, m=2)
+    # instantiate your optimizer
+    prior = GaussianPrior(
+        0.0, 1.0
+    )
+    optimizer = HMC()
+    optimizer.compile(hyperparams, base_model.to_json(), dataset, prior=prior)
+    optimizer.train(100, nb_burn_epoch=10)
+    bayesian_model: BayesianModel = optimizer.result()
+    return bayesian_model
 
 def SGLD_test(dataset, base_model):
     pass
@@ -48,8 +58,8 @@ initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 base_model = tf.keras.models.Sequential()
 base_model.add(layers.Dense(5, activation='tanh', input_shape=(1,))) 
 base_model.add(layers.Dense(1, activation='linear'))
-tests = [BBB_test, SWAG_test]
-names = ["Testing BBB", "testing SWAG"]
+tests = [HMC_test, BBB_test, SWAG_test]
+names = ["Testing HMC", "Testing BBB", "Testing SWAG"]
 for test, name in zip(tests, names):
     print(name)
     bayesian_model = test(dataset, base_model)

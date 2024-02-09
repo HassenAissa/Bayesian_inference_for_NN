@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 
 from src.datasets.Dataset import Dataset
@@ -7,17 +8,19 @@ import tensorflow as tf
 import os
 import shutil
 
+
 class Optimizer(ABC):
 
     def __init__(self):
         self._model_config = None
         self._hyperparameters = None
         self.__compiled = False
-        self._dataset : Dataset = None
+        self._dataset: Dataset = None
 
     @abstractmethod
-    def step(self, save_document_path = None):
+    def step(self, save_document_path=None):
         """
+        TODO : Add loss return signature
         Performs one step of the training
 
         Args:
@@ -25,7 +28,7 @@ class Optimizer(ABC):
         """
         pass
 
-    def compile(self, hyperparameters: HyperParameters, model_config: str,dataset, **kwargs):
+    def compile(self, hyperparameters: HyperParameters, model_config: str, dataset, **kwargs):
         """compile the model
 
         Args:
@@ -59,7 +62,7 @@ class Optimizer(ABC):
         """
         pass
 
-    def _empty_folder(self,path):
+    def _empty_folder(self, path):
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)
             try:
@@ -70,7 +73,8 @@ class Optimizer(ABC):
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-    def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None, model_save_path: str = None):
+    def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None,
+              model_save_path: str = None):
         """
         trains the model and saved the training metrics and model status
 
@@ -92,22 +96,22 @@ class Optimizer(ABC):
         if loss_save_document_path != None and os.path.exists(loss_save_document_path):
             os.remove(loss_save_document_path)
 
-        if model_save_path!= None:
+        if model_save_path != None:
             self._empty_folder(model_save_path)
-        
+
         saved_model_nbr = 0
         for i in range(nb_iterations):
             self.step(loss_save_document_path)
-            if model_save_frequency != None and i%model_save_frequency == 0:
+            if model_save_frequency != None and i % model_save_frequency == 0:
                 bayesian_model = self.result()
-                if os.path.exists(os.path.join(model_save_path, "model"+str(saved_model_nbr))):
-                    shutil.rmtree(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
-                os.makedirs(os.path.join(model_save_path, "model"+str(saved_model_nbr)))               
-                bayesian_model.store(os.path.join(model_save_path, "model"+str(saved_model_nbr)))
+                if os.path.exists(os.path.join(model_save_path, "model" + str(saved_model_nbr))):
+                    shutil.rmtree(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
+                os.makedirs(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
+                bayesian_model.store(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
                 saved_model_nbr += 1
                 # if int(i/nb_iterations *100) > int((i-1)/nb_iterations *100):
-            print(" Training in progress... \r{} %".format(int(i/nb_iterations *100)), end = '')
-        print(" Training in progress... \r{} %".format(100), end = '')
+            print(" Training in progress... \r{} %".format(int(i / nb_iterations * 100)), end='')
+        print(" Training in progress... \r{} %".format(100), end='')
         print()
 
     @abstractmethod
@@ -120,3 +124,12 @@ class Optimizer(ABC):
         """
         pass
 
+    def _print_progress(self, progress: float, bar_length=10, suffix="Training", **kwargs):
+        nb_chars = math.ceil(progress * bar_length)
+        bar = "[" + nb_chars * "="
+        if nb_chars < bar_length:
+            bar += ">"
+        bar += "]"
+        infos = ' '.join("{}: {}".format(k, v) for k, v in kwargs.items())
+        percentage = str(math.ceil(progress*100))
+        print("\r"+suffix + " "+percentage+" % " + bar + " " + infos, end="")

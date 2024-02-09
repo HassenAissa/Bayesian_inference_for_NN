@@ -141,7 +141,7 @@ class BayesianModel:
             distribution = DistributionSerializer.load_from(
                 layers_intervals[i][0],
                 custom_distribution_register,
-                os.path.join(model_path,"distribution" + str(i), "distribution.json")
+                os.path.join(model_path, "distribution" + str(i))
             )
             bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
         return bayesian_model
@@ -168,8 +168,8 @@ class BayesianModel:
         Returns:
             BayesianModel: the loaded bayesian model
         """
-        if os.path.exists(model_path) == False:
-            raise Exception("inexisting directory: " + model_path)
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
         self._empty_folder(model_path)
         with open(os.path.join(model_path,"config.json"), "w") as config_file:
             config_file.write(self._model.to_json())
@@ -183,6 +183,6 @@ class BayesianModel:
 
         for i in range(len(self._layers_dtbn_intervals)):
             os.mkdir(os.path.join(model_path, "distribution"+str(i)))
-            self._distributions[i].store(os.path.join(model_path, "distribution"+str(i),"distribution.json"))
+            self._distributions[i].store(os.path.join(model_path, "distribution"+str(i)))
 
 

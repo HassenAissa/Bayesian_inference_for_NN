@@ -54,7 +54,7 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=False):
+    def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=False, train_proportion=0.8, test_proportion=0.1, valid_proportion=0.1):
         """
         constructor of a dataset
 
@@ -69,6 +69,9 @@ class Dataset:
         Raises:
             Exception: _description_
         """
+        self._train_proportion = train_proportion
+        self._test_proportion = test_proportion
+        self._valid_proportion = valid_proportion
         self._loss = loss
         self.likelihood_model = likelihoodModel
         if isinstance(dataset, str) and (dataset in tfds.list_builders()):
@@ -98,9 +101,9 @@ class Dataset:
     #this is just to be in line with old api
     def _init_from_tf_dataset(self, dataset: tf.data.Dataset):
         self.size = tf.data.experimental.cardinality(dataset).numpy()
-        self.train_size = int(0.8 * self.size)
-        self.test_size = int(0.1 * self.size)
-        self.valid_size = int(0.1 * self.size)
+        self.train_size = int(self._train_proportion * self.size)
+        self.test_size = int(self._test_proportion * self.size)
+        self.valid_size = int(self._valid_proportion * self.size)
         self.train_data = dataset.take(self.train_size)
         self.test_data = dataset.skip(self.train_size)
         self.valid_data = self.test_data.skip(self.test_size)
