@@ -55,7 +55,7 @@ x_prev, info = env.reset(seed=42)
 
 
 def state_reward(state):
-    return np.sum((state.numpy()))
+    return tf.reduce_sum(state)
 
 # Neural network templates: only contain inner layers; no input/output layers
 policy_nn = tf.keras.Sequential()
@@ -88,17 +88,18 @@ bnn.learn(nb_epochs=2)
 
 # Run an interactive demo of the trained policy
 # Create the environment
-env = gym.make("Acrobot")  # Use "human" render mode for visualization
+env = gym.make("Acrobot", render_mode="human")  # Use "human" render mode for visualization
 observation, info = env.reset(seed=42)
 
 total_rewards = 0
 done = False
 
 # Run the game loop
+print("--Start real game")
 while not done:
-    action = nn_policy.act(observation[np.newaxis, :])  # Add batch dimension
-    action = action[0]  # Remove batch dimension
-    state, reward, terminated, truncated, info = env.step(action)  # Take the action in the environment
+    action = tf.reshape(bnn.policy.act(tf.convert_to_tensor(observation)), shape=bnn.action_d)
+    # action = action.numpy()
+    state, reward, terminated, truncated, info = bnn.env.step(tf.cast(action, tf.int32))
     total_rewards += reward  # Accumulate the reward
     
     if terminated or truncated:
@@ -106,6 +107,6 @@ while not done:
 
     # You can add a delay here if the visualization is too fast
     # time.sleep(0.01)
-
+print("--Game finished--")
 print(f"Total reward: {total_rewards}")
 env.close()  # Close the environment when done

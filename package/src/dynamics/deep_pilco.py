@@ -25,7 +25,6 @@ class NNPolicy(Policy):
         self.network = complete_model(self.network, ipd, opd, self.out_activation)
         
     def optimize_step(self, grad, check_converge=False):
-        print("Policy optimization gradient", grad)
         if None not in grad:
             weights = self.network.get_weights()
             new_weights = []
@@ -138,7 +137,8 @@ class BayesianDynamics(Control):
             state = samples[i]
             action = self.policy.act(state) 
             feature = self.dyn_feature(state, action)
-            ys.append(self.models[i](tf.reshape(feature, shape=(1,-1))))
+            y = self.models[i](tf.reshape(feature, shape=(1,-1)))
+            ys.append(tf.reshape(y, shape=(-1,)))
         ys = tf.convert_to_tensor(ys)
         ymean = tf.math.reduce_mean(ys, axis=0)
         ystd = tf.math.reduce_std(ys, axis=0)
@@ -172,14 +172,14 @@ class BayesianDynamics(Control):
                     tape.watch(self.policy.network.trainable_variables)
                     ys, states = self.forward(states)
                     loss = -self.ep_reward(ys)
-                    print("loss",loss)
                     loss = tf.fill([1], loss)
                 grad = tape.gradient(loss, self.policy.network.trainable_variables)
-                print("Time step: "+str(t)+"/"+str(self.horizon), "grad", grad)
+                print("Time step: "+str(t)+"/"+str(self.horizon), "grad tensor count", len(grad))
                 if not tot_grad:
                     tot_grad = grad
-                if None not in grad: 
-                    tot_grad += grad * discount
+                elif None not in grad: 
+                    for g in range(len(grad)):
+                        tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
                 discount *= self.gamma
             return self.policy.optimize_step(tot_grad, check_converge=check_converge)
             
