@@ -16,7 +16,7 @@ def state_reward(state, action, t):
     c1, c2, s1, s2 = state[0],state[2],state[1],state[3]
     height = -c1-(c1*c2-s1*s2)
     speed = pow(state[4] + state[5]/2, 2)
-    return height*5+speed
+    return 100*(height*100+speed*37)
 
 print(">>Start learning")
 # Neural network templates: only contain inner layers; no input/output layers

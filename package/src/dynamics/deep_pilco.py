@@ -183,8 +183,7 @@ class BayesianDynamics(Control):
             prev_tmark = 0
             for t in range(self.horizon):
                 with tf.GradientTape(persistent=True) as tape:
-                    tape.watch(self.policy.network.trainable_variables)
-                    ys, actions, states = self.forward(states)
+                    ys, actions, new_states = self.forward(states)
                     loss = -self.t_reward(ys, actions, t)
                     loss = tf.fill([1], loss)
                 grad = tape.gradient(loss, self.policy.network.trainable_variables)
@@ -198,7 +197,8 @@ class BayesianDynamics(Control):
                     for g in range(len(grad)):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
                 discount *= self.gamma
-            f = open("src/dynamics/learning.txt", "a")
+                states = new_states
+            f = open("learning.txt", "a")
             f.write("Learning epoch "+str(ep)+"\n")
             if None in grad:
                 f.write("Invalid gradient!\n")
@@ -210,7 +210,7 @@ class BayesianDynamics(Control):
             f.close()
             return self.policy.optimize_step(tot_grad, check_converge=check_converge)
         
-        f = open("src/dynamics/learning.txt", "w")
+        f = open("learning.txt", "w")
         f.write("")
         f.close()
         if nb_epochs:
