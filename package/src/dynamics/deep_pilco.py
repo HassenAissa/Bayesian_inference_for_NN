@@ -170,7 +170,8 @@ class BayesianDynamics(Control):
         return exp_rew
 
     def learn(self, nb_epochs):
-        def step(check_converge=False):
+        def step(ep, check_converge=False):
+            print(">>Learning epoch", ep)
             # train dynamic model using transition dataset
             xs, ys = self.execute()
             self.dyn_training.train(xs, ys, self.dyntrain_ep)
@@ -196,18 +197,30 @@ class BayesianDynamics(Control):
                 elif None not in grad: 
                     for g in range(len(grad)):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
-                else:
-                    print("!!Invalid gradient calculation")
                 discount *= self.gamma
+            f = open("src/dynamics/learning.txt", "a")
+            f.write("Learning epoch "+str(ep)+"\n")
+            if None in grad:
+                f.write("Invalid gradient!\n")
+                f.close()
+                return 
+            for g in range(len(tot_grad)):
+                f.write("gradient "+str(g)+"\n")
+                f.write(str(tot_grad[g])+"\n")
+            f.close()
             return self.policy.optimize_step(tot_grad, check_converge=check_converge)
-            
+        
+        f = open("src/dynamics/learning.txt", "w")
+        f.write("")
+        f.close()
         if nb_epochs:
             # learning for a given number of epochs
-            for ep in range(nb_epochs):
-                print(">>Learning epoch", ep)
-                step()
+            for ep in range(1, nb_epochs+1):
+                step(ep)
         else:
-            while not step(check_converge=True):
+            ep = 1
+            while not step(ep, check_converge=True):
                 # continue learning if policy not converge
+                ep += 1
                 continue
         print("--Learning completed--")

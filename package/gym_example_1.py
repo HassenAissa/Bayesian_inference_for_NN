@@ -13,7 +13,10 @@ env = gym.make("Acrobot")
 x_prev, info = env.reset(seed=42)
 
 def state_reward(state, action, t):
-    return tf.reduce_sum(state)+tf.reduce_sum(action)+t/10
+    c1, c2, s1, s2 = state[0],state[2],state[1],state[3]
+    height = -c1-(c1*c2-s1*s2)
+    speed = pow(state[4] + state[5]/2, 2)
+    return height*5+speed
 
 print(">>Start learning")
 # Neural network templates: only contain inner layers; no input/output layers

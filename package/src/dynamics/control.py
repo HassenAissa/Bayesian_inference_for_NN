@@ -87,7 +87,7 @@ class Control(ABC):
         return all_atates, all_actions
     
     @abstractmethod
-    def learn(self):
+    def learn(self, nb_epochs, record):
         pass
     
 
