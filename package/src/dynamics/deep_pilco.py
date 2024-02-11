@@ -47,10 +47,10 @@ class NNPolicy(Policy):
             converge = False
             return converge
 
-    def act(self, state):
+    def act(self, state, training=False):
         # convert state to 2D tensor
         # state = tf.convert_to_tensor(state, dtype=tf.float32)
-        action = self.network(tf.reshape(state, shape=(1, -1)))
+        action = self.network(tf.reshape(state, shape=(1, -1)), training=training)
         action = tf.reshape(action, shape=(-1,))
         # action needs to be a 1D tensor
         if self.bounded:
@@ -146,7 +146,7 @@ class BayesianDynamics(Control):
         actions = []
         for i in range(self.kp):
             state = samples[i]
-            action = self.policy.act(state) 
+            action = self.policy.act(state, training=True) 
             actions.append(action)
             feature = self.dyn_feature(state, action)
             y = self.models[i](tf.reshape(feature, shape=(1,-1)))
