@@ -32,20 +32,22 @@ class FSVI(Optimizer):
         xs = tf.convert_to_tensor(pred_samples)
         return tf.reshape(xs, shape=(1,-1)) 
     
-    def vi_init(self):
+    def vi_noise(self):
         layers_weights = self._vi_model.layers.get_weights()
         for layer_w in layers_weights:
-            w_mean = layer_w
+            w_mean = tf.fill(layer_w.shape, 0)
             w_std = tf.fill(layer_w.shape, self._vi_std)
             dtbn = tfp.distributions.Normal(w_mean, w_std) 
             self._layers_dtbn.append(dtbn)
 
     def vi_fwd_noise(self, t_samples, p_samples):
-        layers_weights = []
-        for dtbn in self._layers_dtbn:
-            layer_w = dtbn.sample()
-            layers_weights.append(layer_w)
-        self._vi_model.set_weights(layers_weights)
+        layers_weights = self._vi_model.layers.get_weights()
+        vi_weights = []
+        for l in range(len(self._layers_dtbn)):
+            layer_noise = self._layers_dtbn[l].sample()
+            vi_w = tf.math.add(layers_weights[l], layer_noise)
+            vi_weights.append(vi_w)
+        self._vi_model.set_weights(vi_weights)
 
         t_funcs = self._vi_model(t_samples, training=True)
         p_funcs = self._vi_model(p_samples, training=True)
