@@ -1,6 +1,6 @@
 # Function space variational inference
-from optimizers.Optimizer import Optimizer
-from distributions.Distribution import Distribution
+from PyAce.optimizers import Optimizer
+from PyAce.distributions import Distribution
 import tensorflow as tf
 import tensorflow_probability as tfp
 

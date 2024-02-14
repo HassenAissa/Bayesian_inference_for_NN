@@ -1,4 +1,4 @@
-from datasets.Dataset import Dataset
+from .Dataset import Dataset
 from os.path import dirname, basename, isfile, join
 import glob
 modules = glob.glob(join(dirname(__file__), "*.py"))

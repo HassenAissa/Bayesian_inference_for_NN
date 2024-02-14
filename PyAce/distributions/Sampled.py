@@ -1,5 +1,5 @@
 import tensorflow as tf
-from distributions.Distribution import Distribution
+from . import Distribution
 import os, json
 import random
 import bisect

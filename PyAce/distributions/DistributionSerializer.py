@@ -1,9 +1,9 @@
-from distributions.Distribution import Distribution
-from distributions.Sampled import Sampled
-from distributions.tf.Constant import Constant
-from distributions.MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
+from .Distribution import Distribution
+from .Sampled import Sampled
+from .tf.Constant import Constant
+from .MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
 
-from distributions.tf.TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
+from .tf.TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
 
 
 class DistributionSerializer:

@@ -3,8 +3,8 @@ import os
 import shutil
 
 import tensorflow as tf
-from distributions.Distribution import Distribution
-from distributions.DistributionSerializer import DistributionSerializer
+from PyAce.distributions import Distribution
+from PyAce.distributions import DistributionSerializer
 
 
 class BayesianModel:

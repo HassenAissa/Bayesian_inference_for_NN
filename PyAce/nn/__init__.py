@@ -1,4 +1,4 @@
-from nn.BayesianModel import BayesianModel
+from .BayesianModel import BayesianModel
 
 from os.path import dirname, basename, isfile, join
 import glob

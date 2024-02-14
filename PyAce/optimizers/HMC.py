@@ -1,13 +1,13 @@
 import random
 
-from distributions.GaussianPrior import GaussianPrior
-from nn.BayesianModel import BayesianModel
-from optimizers.Optimizer import Optimizer
+from PyAce.distributions import GaussianPrior
+from PyAce.nn import BayesianModel
+from . import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
 import random
 import math
-from distributions.Sampled import Sampled
+from PyAce.distributions import Sampled
 
 
 class HMC(Optimizer):

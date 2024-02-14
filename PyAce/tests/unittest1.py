@@ -1,4 +1,4 @@
-from optimizers.SGLD import SGLD
+from optimizers import SGLD
 from distributions.GaussianPrior import GaussianPrior
 from optimizers import BBB
 import tensorflow as tf

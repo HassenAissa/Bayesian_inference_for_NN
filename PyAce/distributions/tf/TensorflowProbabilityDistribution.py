@@ -3,7 +3,7 @@ import json
 import tensorflow as tf
 import tensorflow_probability as tfp
 import os
-from distributions.Distribution import Distribution
+from PyAce.distributions import Distribution
 
 
 class TensorflowProbabilityDistribution(Distribution):

@@ -4,7 +4,7 @@ import json
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from distributions.Distribution import Distribution
+from . import Distribution
 
 
 class MultivariateNormalDiagPlusLowRank(Distribution):

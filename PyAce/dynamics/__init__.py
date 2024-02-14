@@ -1,8 +1,8 @@
-from dynamics.control import NNPolicyOptimizer
-from dynamics.control import Policy
-from dynamics.deep_pilco import NNPolicy
-from dynamics.deep_pilco import BayesianDynamics
-from dynamics.simple_policy import Policy
+from .control import NNPolicyOptimizer
+from .control import Policy
+from .deep_pilco import NNPolicy
+from .deep_pilco import BayesianDynamics
+from .simple_policy import Policy
 
 
 from os.path import dirname, basename, isfile, join

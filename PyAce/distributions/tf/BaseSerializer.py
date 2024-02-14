@@ -2,7 +2,7 @@ import tensorflow_probability as tfp
 import tensorflow as tf
 import json
 
-from distributions.tf.TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
+from .TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
 
 
 class BaseSerializer:

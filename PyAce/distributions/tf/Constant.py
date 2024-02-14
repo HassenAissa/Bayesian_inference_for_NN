@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from distributions.Distribution import Distribution
+from PyAce.distributions import Distribution
 
 
 class Constant(Distribution):

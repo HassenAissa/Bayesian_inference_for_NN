@@ -1,9 +1,9 @@
 import math
 from abc import ABC, abstractmethod
 
-from datasets.Dataset import Dataset
-from nn.BayesianModel import BayesianModel
-from optimizers.HyperParameters import HyperParameters
+from PyAce.datasets import Dataset
+from PyAce.nn import BayesianModel
+from PyAce.optimizers import HyperParameters
 import tensorflow as tf
 import os
 import shutil

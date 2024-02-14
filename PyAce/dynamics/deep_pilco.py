@@ -1,6 +1,6 @@
-from dynamics.control import gym, Policy, Control,np
-from datasets.Dataset import Dataset
-from optimizers.Optimizer import Optimizer
+from .control import gym, Policy, Control,np
+from PyAce.datasets import Dataset
+from PyAce.optimizers import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy

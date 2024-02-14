@@ -1,11 +1,12 @@
 import math
 import os
-from distributions.GaussianPrior import GaussianPrior
-from distributions.tf.TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
-from nn.BayesianModel import BayesianModel
-from optimizers.Optimizer import Optimizer
+from PyAce.distributions import GaussianPrior
+from PyAce.distributions.tf import TensorflowProbabilityDistribution
+from PyAce.nn import BayesianModel
+from . import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
+
 
 
 class BBB(Optimizer):

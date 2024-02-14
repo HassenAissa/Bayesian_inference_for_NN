@@ -1,9 +1,9 @@
 import copy
 from functools import cmp_to_key
 import math
-from datasets.Dataset import Dataset
-from optimizers import Optimizer
-from optimizers.HyperParameters import HyperParameters
+from PyAce.datasets import Dataset
+from . import Optimizer
+from . import HyperParameters
 import numpy as np
 import matplotlib.pyplot as plt
 

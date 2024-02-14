@@ -1,10 +1,10 @@
 from math import sqrt
 import os
 
-from distributions.MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
-from distributions.tf.TensorflowProbabilityDistribution import TensorflowProbabilityDistribution
-from nn.BayesianModel import BayesianModel
-from optimizers.Optimizer import Optimizer
+from PyAce.distributions import MultivariateNormalDiagPlusLowRank
+from PyAce.distributions.tf import TensorflowProbabilityDistribution
+from PyAce.nn import BayesianModel
+from . import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy
