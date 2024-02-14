@@ -1,14 +1,14 @@
-from optimizers.BBB import BBB
-from distributions.GaussianPrior import GaussianPrior
+from PyAce.optimizers import BBB
+from PyAce.distributions import GaussianPrior
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from datasets.Dataset import Dataset
-from nn.BayesianModel import BayesianModel
-from optimizers.HyperParameters import HyperParameters
-from optimizers.SWAG import SWAG
-from visualisations.Visualisation import Visualisation
-from visualisations.Robustness import Robustness
+from PyAce.datasets import Dataset
+from PyAce.nn import BayesianModel
+from PyAce.optimizers import HyperParameters
+from PyAce.optimizers import SWAG
+from PyAce.visualisations import Visualisation
+from PyAce.visualisations import Robustness
 import tensorflow_datasets as tfds
 
 def runner():

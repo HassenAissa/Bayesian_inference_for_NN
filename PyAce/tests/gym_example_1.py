@@ -4,9 +4,9 @@ import gymnasium as gym, time
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining
-from optimizers.SWAG import SWAG
-from optimizers.HyperParameters import HyperParameters
+from PyAce.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining
+from PyAce.optimizers import SWAG
+from PyAce.optimizers import HyperParameters
 
 def runner():
     # Set up the environment

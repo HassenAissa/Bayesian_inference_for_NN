@@ -1,14 +1,14 @@
-from optimizers.HyperparametersSelector import HyperParametersSelector
-from distributions.GaussianPrior import GaussianPrior
-from optimizers.BBB import BBB
+from PyAce.optimizers import HyperParametersSelector
+from PyAce.distributions import GaussianPrior
+from PyAce.optimizers import BBB
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from datasets.Dataset import Dataset
-from nn.BayesianModel import BayesianModel
-from optimizers.HyperParameters import HyperParameters
-from optimizers.SWAG import SWAG
-from visualisations.Visualisation import Visualisation
+from PyAce.datasets import Dataset
+from PyAce.nn import BayesianModel
+from PyAce.optimizers import HyperParameters
+from PyAce.optimizers import SWAG
+from PyAce.visualisations import Visualisation
 import tensorflow_datasets as tfds
 import sklearn
 import tensorflow_probability as tfp
@@ -20,7 +20,7 @@ def runner():
     #     tf.keras.losses.SparseCategoricalCrossentropy(),
     #     "Classification"    
     # )
-    dataset = Dataset(r"C:\Users\hasse\Documents\Hassen\SEGP\Datasets\Boston.csv",tf.keras.losses.MeanSquaredError(), "Regression", normalise=True)
+    dataset = Dataset(r"C:\Users\hasse\Documents\Hassen\SEGP\Datasets\Boston.csv",tf.keras.losses.MeanSquaredError(), "Regression", feature_normalisation=True)
 
     base_model = tf.keras.Sequential()
     base_model.add(layers.Dense(10, activation='relu', input_shape=(13,)))

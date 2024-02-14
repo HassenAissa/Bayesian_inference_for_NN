@@ -1,1 +1,1 @@
-from visualisations.Visualisation import Visualisation
+from .Visualisation import Visualisation

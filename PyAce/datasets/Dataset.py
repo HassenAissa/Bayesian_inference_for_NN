@@ -20,7 +20,11 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, dataset, loss, likelihoodModel="Classification", normalise=False, train_proportion=0.8, test_proportion=0.1, valid_proportion=0.1):
+    def __init__(self, 
+                 dataset, loss, likelihoodModel="Classification", 
+                 feature_normalisation=False, label_normalisation = False,
+                 train_proportion=0.8,
+                 test_proportion=0.1,valid_proportion=0.1):
         """
         constructor of a dataset
 
@@ -40,6 +44,8 @@ class Dataset:
         self._valid_proportion = valid_proportion
         self._loss = loss
         self.likelihood_model = likelihoodModel
+        self._label_mean = None
+        self._label_std = None
         if isinstance(dataset, str) and (dataset in tfds.list_builders()):
             dataset = tfds.load(dataset, split="train", try_gcs=True)
             dataset = dataset.map(lambda data: [data["image"], data["label"]])
@@ -53,8 +59,10 @@ class Dataset:
         else:
             raise Exception("Unsupported dataset format")
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
-        if (normalise):
-            self.normalise()
+        if (feature_normalisation):
+            self.feature_normalisation()
+        if (label_normalisation):
+            self.label_normalisation()
 
     # def get_likelihood_type(self):
     #     if isinstance(self._loss, tf.keras.losses.MeanSquaredError):
@@ -102,10 +110,25 @@ class Dataset:
         """
         return self._loss
 
-    def _map(self, x,y, mean, std):
+    def _normalise_feature(self, x,y, mean, std):
         return ((x-mean)/std, y)
     
-    def normalise(self):
+    def _normalise_label(self, x,y, mean, std):
+        return (x, (y-mean)/std)
+    
+    def label_normalisation(self):
+        if self.likelihood_model == "Regression":
+            input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
+            self._label_mean = tf.reduce_mean(label)
+            self._label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float64))
+            self.train_data = self.train_data.map(
+                lambda x,y: self._normalise_label(x,y, self._label_mean,self._label_std+1e-8))
+            self.valid_data = self.valid_data.map(
+                lambda x,y: self._normalise_label(x,y, self._label_mean,self._label_std+1e-8))
+            self.test_data = self.test_data.map(
+                lambda x,y: self._normalise_label(x,y, self._label_mean,self._label_std+1e-8))
+    
+    def feature_normalisation(self):
         """
         normalises the dataset
         """
@@ -113,65 +136,13 @@ class Dataset:
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
             input = tf.reshape(input, (-1,))
             mean = tf.reduce_mean(input)
-            std = tf.math.reduce_std(tf.cast(input, dtype = tf.float32))
-            label_mean = tf.reduce_mean(label)
-            label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float64))
-            #TODO: do we normalize the labels for regression???????
-            self.train_data = self.train_data.map(lambda x,y: self._map(x,y,mean,std+1e-8))
-            self.valid_data = self.valid_data.map(lambda x,y: self._map(x,y,mean,std+1e-8))
-            self.test_data = self.test_data.map(lambda x,y: self._map(x,y,mean,std+1e-8))
+            std = tf.math.reduce_std(tf.cast(input, dtype = tf.float64))
+
+            self.train_data = self.train_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
+            self.valid_data = self.valid_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
+            self.test_data = self.test_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
 
 
         
 
-
-def load_from_tf_dataset(dataset_name, likelihoodModel: str) -> Dataset:
-    data = tfds.load(dataset_name, split='train', shuffle_files=True)
-    assert isinstance(data, tf.data.Dataset)
-    loss = tf.keras.losses.MeanSquaredError() if likelihoodModel == "Classification" else tf.keras.losses.SparseCategoricalCrossentropy()
-    return Dataset(data, loss, likelihoodModel)
     
-"""
-def convert_sklearn_dataset(dataset, likelihood):
-    df = dataset["data"].insert(4, "target", dataset["target"])
-    print(df)
-    train, test_valid = train_test_split(df, test_size=0.2, shuffle=True)
-    test, valid = train_test_split(test_valid, test_size=0.5, shuffle=True)
-    train_data = {"input": None, "labels": None}
-    test_data = {"input": None, "labels": None}
-    valid_data = {"input": None, "labels": None}
-    train_data["labels"] = tf.convert_to_tensor(train["target"])
-    test_data["labels"] = tf.convert_to_tensor(test["target"])
-    valid_data["labels"] = tf.convert_to_tensor(valid["target"])
-    train_data["input"] = tf.convert_to_tensor(train.drop("target"))
-    test_data["input"] = tf.convert_to_tensor(test.drop("target"))
-    valid_data["input"] = tf.convert_to_tensor(valid.drop("target"))
-    new_dataset = Dataset(train=train_data, test=test_data, valid=test_data, likelihood=likelihood)
-    return new_dataset
-"""
-"""
-def convert_csv_dataset(filename, likelihood):
-    df = pd.read_csv(filename)
-    train, test_valid = train_test_split(df, test_size=0.2, shuffle=True)
-    test, valid = train_test_split(test_valid, test_size=0.5, shuffle=True)
-    train_data = {"input": None, "labels": None}
-    test_data = {"input": None, "labels": None}
-    valid_data = {"input": None, "labels": None}
-    train_data["labels"] = tf.convert_to_tensor(train["target"])
-    test_data["labels"] = tf.convert_to_tensor(test["target"])
-    valid_data["labels"] = tf.convert_to_tensor(valid["target"])
-    train_data["input"] = tf.convert_to_tensor(train.drop("target"))
-    test_data["input"] = tf.convert_to_tensor(test.drop("target"))
-    valid_data["input"] = tf.convert_to_tensor(valid.drop("target"))
-    new_dataset = Dataset(train=train_data, test=test_data, valid=test_data, likelihood=likelihood)
-    return new_dataset
-"""
-
-# load_tf_dataset('mnist')
-"""
-data = tfds.load('mnist', split='train')
-assert isinstance(data, tf.data.Dataset)
-print(data.take(10))
-print(data.__dict__)
-dataset = convert_tf_dataset(data, 100)
-print(dataset.train_data)"""

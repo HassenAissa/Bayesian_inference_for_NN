@@ -1,15 +1,15 @@
-from optimizers import SGLD
-from distributions.GaussianPrior import GaussianPrior
-from optimizers import BBB
+from PyAce.optimizers import SGLD
+from PyAce.distributions import GaussianPrior
+from PyAce.optimizers import BBB
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from datasets.Dataset import Dataset
-from nn.BayesianModel import BayesianModel
-from optimizers.HMC import HMC
-from optimizers.HyperParameters import HyperParameters
-from optimizers.SWAG import SWAG
-from visualisations.Visualisation import Visualisation
+from PyAce.datasets import Dataset
+from PyAce.nn import BayesianModel
+from PyAce.optimizers import HMC
+from PyAce.optimizers import HyperParameters
+from PyAce.optimizers import SWAG
+from PyAce.visualisations import Visualisation
 import tensorflow_datasets as tfds
 import sklearn
 import tensorflow_probability as tfp

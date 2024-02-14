@@ -1,10 +1,10 @@
 import tensorflow as tf
-from datasets.Dataset import Dataset
-from nn.BayesianModel import BayesianModel
-from optimizers.HyperParameters import HyperParameters
-from optimizers.SWAG import SWAG
-from visualisations.Visualisation import Visualisation
-from datasets.utils import imgdata_preprocess, get_n_classes
+from PyAce.datasets import Dataset
+from PyAce.nn import BayesianModel
+from PyAce.optimizers import HyperParameters
+from PyAce.optimizers import SWAG
+from PyAce.visualisations import Visualisation
+from PyAce.datasets.utils import imgdata_preprocess, get_n_classes
 
 
 def runner():

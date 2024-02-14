@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-from datasets.Dataset import Dataset
+from PyAce.datasets import Dataset
 
 
 def runner():
