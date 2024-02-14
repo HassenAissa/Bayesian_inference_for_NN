@@ -1,9 +1,5 @@
 test:
-	python3 package/simple_example.py
-test1:
-	python3 package/unittest1.py
-test2:
-	python3 package/unittest2.py
+	python3 PyAce/test_runner.py
 venv:
 	python3 -m venv venv
 install:
