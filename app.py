@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request
 from matplotlib import pyplot as plt
-import package.src.datasets.utils as dsu
-import package.src.datasets.Dataset as ds
 import tensorflow as tf
 import os
 
@@ -20,6 +18,10 @@ def find_values(text):
     return csv.split(',')
 
 info = ModelInfo()
+
+@app.route('/reinforce', methods=['GET', 'POST'])    # main page
+def reinforce():
+    return render_template('reinforce.html')
 
 @app.route('/', methods=['GET', 'POST'])    # main page
 def index():
