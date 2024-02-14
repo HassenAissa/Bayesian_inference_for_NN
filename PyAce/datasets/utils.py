@@ -56,7 +56,7 @@ def get_n_classes(labels):
     """
     return int(np.max(labels) + 1)
 
-def imgdata_preprocess(directory, fraction_train, input_shape: tuple):
+def imgdata_preprocess(directory, fraction_train, input_shape):
     x, _, y,_ = load_data(directory)
     x = x.reshape(x.shape[0], -1)
 

@@ -1,0 +1,60 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bayesian NN</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Create two equal columns that floats next to each other */
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      /* height: 300px; Should be removed. Only for demonstration */
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    table, th, td {
+      border: 0.5px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
+    <div class="row">
+    <div class="column" style="background-color: lightgoldenrodyellow;">
+        <h2>Dataset and neural network model</h2>
+        <form action="/" method="post">
+            dataset category: <select name="dcat">{% for c in options[0] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
+            learning category: <select name="lcat">{% for c in  options[1] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
+            loss function: <select name="loss">{% for l in options[2] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>,
+            training fraction (default 0.1): <input type="number" name="tfrac" min="0" max="1" step="0.01">,
+            neural network category: <select name="nncat">{% for c in  options[3] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
+            input dimensions: <input type="text" name="ic">, dataset folder: test/<select name="dataset">{% for d in options[4] %}<option value="{{d}}">{{d}}</option>{% endfor %}</select><br>
+            <a href="/">Reset data and nueral network</a> | <input type="submit" value="continue>>"> 
+        </form>
+        {{inputs}}
+        <form action="/" method="post">
+        batch size: <input type="number" min="1">; 
+        {% if category == "Convolutional" %}
+            kernel size: <input type="number" name="kernel" min="1" max="999">; filters list (use comma ',' to separate): <br><textarea name="filters" cols="70" rows="1"></textarea> <br>
+        {% endif %}
+        fully connected part's hidden dimensions list (use comma ',' to separate): <br><textarea name="hidden" cols="70" rows="1"></textarea> <br>all activation functions (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh): <br><textarea name="activations" cols="70" rows="1"></textarea>
+        <input type="submit" value="create neural network">
+        </form>
+        <h2>Select optimizer</h2>
+        SWAG <input type="submit" value="start training">
+    </div>
+    <div class="column">
+      {% if graph %}
+      <img src="static/drawnn.png" alt="graph">
+      {% endif %}
+    </div>
