@@ -133,11 +133,9 @@ class Dataset:
         normalises the dataset
         """
         if self.likelihood_model == "Regression":
-            input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
-            input = tf.reshape(input, (-1,))
-            mean = tf.reduce_mean(input)
-            std = tf.math.reduce_std(tf.cast(input, dtype = tf.float64))
-
+            input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy())))
+            mean = tf.reduce_mean(input, axis = 0)
+            std = tf.math.reduce_std(tf.cast(input, dtype = tf.float64), axis = 0)
             self.train_data = self.train_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
             self.valid_data = self.valid_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
             self.test_data = self.test_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
