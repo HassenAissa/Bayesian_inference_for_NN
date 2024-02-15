@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from matplotlib import pyplot as plt
+import PyAce.datasets.Dataset as ds, PyAce.datasets.utils as dsu
 import tensorflow as tf
 import os
 
@@ -8,7 +9,7 @@ app = Flask(__name__)
 class ModelInfo:
     def __init__(self, ):
         self.dataset:ds.Dataset = None
-        self.tfmodel = tf.keras.models.Sequential()
+        self.tfmodel = ""
         
 def find_values(text):
     csv = ""
@@ -18,6 +19,14 @@ def find_values(text):
     return csv.split(',')
 
 info = ModelInfo()
+options = [["", "Folder with files and labels", "Single table"], 
+               ["", "Regression", "Classification"],
+               ["", "Mean squared error", "Cross entropy"],
+               ["", "Fully connected", "Convolutional"],
+               [""]+os.listdir("PyAce/tests"),
+               [""]+["BBB", "FSVI", "HMC", "SLGD", "SWAG"]]
+mspecs = ["dcat", "lcat", "loss", "tfrac", "nnjson", "nncat", "ipd"]
+tspecs = ["dfolder", "dtable", "batch", "kernel", "filters", "hidden", "activations", "optim"]
 
 @app.route('/reinforce', methods=['GET', 'POST'])    # main page
 def reinforce():
@@ -27,48 +36,40 @@ def reinforce():
 def index():
     fm = request.form
     print(fm)
-    options = [["", "Images", "Table"], 
-               ["", "Regression", "Classification"],
-               ["", "Mean squared error", "Cross entropy"],
-               ["", "Fully connected", "Convolutional"],
-               [""]+os.listdir("test")]
-    dcat = fm.get("dcat")
-    nncat = fm.get("nncat")
-    dfolder = fm.get("dataset")
-    loss = fm.get("loss")
-    lcat = fm.get("lcat")
-    tfrac = fm.get("tfrac")
-    ic = fm.get("ic")
-    shape = [[],[]]
-    base_model = None
-    if not tfrac:
-        tfrac = "0.1"
-    inputs = [dcat, nncat, dfolder, loss, tfrac, ic]
-    if "" in inputs: 
+    if not fm:
         return render_template('index.html', options=options)
-    elif None not in inputs:
-        # form no.1 dataset and neural netork category
-        info.nncat = nncat
-        lfunc = None
-        if loss == options[2][0]:
-            lfunc = tf.keras.losses.MeanSquaredError()
-        elif loss ==  options[2][1]:
-            lfunc = tf.keras.losses.SparseCategoricalCrossentropy()
 
+    elif fm.get("f1"):
+        # form no.1 dataset and neural netork category
+        inputs = [fm.get(k) for k in mspecs]
+        if "" in inputs[:4] or (inputs[4]=="" and "" in inputs[5:]):
+            return render_template('index.html', options=options)
+        if inputs[4]:
+            info.tfmodel = "static/models/"+inputs[4]
+        else:
+            info.nncat = inputs[5]
+            info.ipd = find_values(inputs[6])
+        if inputs[2] == options[2][0]:
+            info.lfunc = tf.keras.losses.MeanSquaredError()
+        elif inputs[2] ==  options[2][1]:
+            info.lfunc = tf.keras.losses.SparseCategoricalCrossentropy()
+        info.lcat = inputs[1]
+        info.tfrac = int(inputs[3])/100
+    elif fm.get("f2"):
+        # form no.2 neural network config
+        inputs = [fm.get(k) for k in tspecs]
         x_train, y_train = None, None
-        if dcat == options[0][1]: # images
+        if inputs[0] == options[0][1]: # images folder and labels
             info.ipd = [int(i) for i in find_values(ic)] # input dimension
-            x_train, y_train = dsu.imgdata_preprocess("test/"+dfolder, float(tfrac), info.ipd)
+            x_train, y_train = dsu.imgdata_preprocess("static/datasets/"+inputs[0], info.tfrac, info.ipd)
             info.n_classes = dsu.get_n_classes(y_train)
             info.dataset.__init__(
                 tf.data.Dataset.from_tensor_slices((x_train, y_train)),
-                lfunc,
-                lcat
+                info.lfunc,
+                info.lcat
             )
-        elif dcat == options[0][2]: # dataframe
+        elif inputs[0] == options[0][1]: # dataframe table
             pass
-    else:
-        # form no.2 neural network config
         if info.nncat == options[3][1]: # fully connected
             hidden = fm.get("hidden")
             if hidden:
