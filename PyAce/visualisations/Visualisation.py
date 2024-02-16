@@ -8,11 +8,22 @@ import matplotlib.pyplot as plt
 
 
 class Visualisation():
+    """
+        a class representing the performance analysis of a model
+    """
     def __init__(self, model):
         self.model = model
     
     # https://seaborn.pydata.org
     def visualise(self, dataset: Dataset, nb_samples: int, loss_save_file = None):
+        """
+        outputs visualisations of performance metrics, learning diagnostic and uncertainty calculated upon the testing sub-dataset of given dataset. 
+
+        Args:
+            dataset (Dataset): dataset to perform analysis upon. Will use the testing sub-dataset.
+            nb_samples (int): number of samples
+            loss_save_file (_type_, optional): Path to file storing loss values throughout training. Defaults to None.
+        """
         x, y_true = next(iter(dataset.valid_data.batch(dataset.valid_data.cardinality())))
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
         self.learning_diagnostics(loss_save_file)

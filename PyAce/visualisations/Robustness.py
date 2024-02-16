@@ -6,6 +6,9 @@ import numpy as np
 # import cv2
 
 class Robustness():
+    """
+        a class representing the robustness analysis of a model
+    """
     def __init__(self, model):
         self.model = model
         self.corruptions = np.array(['gaussian_noise', 'defocus_blur', 'snow', 'contrast'])
@@ -15,6 +18,13 @@ class Robustness():
         self.baseline_clean = 0.164
     
     def c_robustness(self, dataset, nb_samples):
+        """
+        outputs visualisaitons for the corruption robustness analysis. Applies some corruptions to datasets, and outputs accuracy and error rates on predictions.
+
+        Args:
+            dataset (Dataset): dataset to perform analysis on
+            nb_samples (int): number of samples
+        """
         x, y_true = next(iter(dataset.valid_data.batch(dataset.valid_data.cardinality())))
         _, y_pred = self.model.predict(x, nb_samples)
         if dataset.likelihood_model == "Classification":
