@@ -23,7 +23,7 @@ class Dataset:
     def __init__(self, 
                  dataset, loss, likelihoodModel="Classification", 
                  feature_normalisation=False, label_normalisation = False,
-                 train_proportion=0.8,
+                 train_proportion=0.8, target_names = None,
                  test_proportion=0.1,valid_proportion=0.1):
         """
         constructor of a dataset
@@ -55,7 +55,7 @@ class Dataset:
         elif(isinstance(dataset, pd.DataFrame)):
             self._init_from_dataframe(dataset) 
         elif(isinstance(dataset, str)):
-            self._init_from_csv(dataset)
+            self._init_from_csv(dataset, target_names)
         else:
             raise Exception("Unsupported dataset format")
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
@@ -83,14 +83,18 @@ class Dataset:
         self.valid_data = self.test_data.skip(self.test_size)
         self.test_data = self.test_data.take(self.test_size)
 
-    def _init_from_dataframe(self, dataframe: pd.DataFrame):
-        targets = dataframe.pop('target')
+    def _init_from_dataframe(self, dataframe: pd.DataFrame, target_names: list = None):
+        if target_names == None:
+            targets = dataframe.pop('target')
+        else:
+            targets = pd.concat([dataframe.pop(x) for x in target_names], axis=1)
+
         dataset = tf.data.Dataset.from_tensor_slices((dataframe.values, targets.values))
         self._init_from_tf_dataset(dataset)
 
-    def _init_from_csv(self, filename: str):
+    def _init_from_csv(self, filename: str, target_names: list):
         dataframe = pd.read_csv(filename)
-        self._init_from_dataframe(dataframe)
+        self._init_from_dataframe(dataframe, target_names)
 
     def training_dataset(self) -> tf.data.Dataset:
         """
