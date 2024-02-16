@@ -24,7 +24,7 @@ class Dataset:
                  dataset, loss, likelihoodModel="Classification", 
                  target_dim=1,
                  feature_normalisation=False, label_normalisation = False,
-                 train_proportion=0.8, target_names = None,
+                 train_proportion=0.8,
                  test_proportion=0.1,valid_proportion=0.1):
         """
         constructor of a dataset
@@ -57,7 +57,7 @@ class Dataset:
         elif(isinstance(dataset, pd.DataFrame)):
             self._init_from_dataframe(dataset) 
         elif(isinstance(dataset, str)):
-            self._init_from_csv(dataset, target_names)
+            self._init_from_csv(dataset)
         else:
             raise Exception("Unsupported dataset format")
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())

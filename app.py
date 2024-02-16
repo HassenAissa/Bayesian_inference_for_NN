@@ -21,14 +21,13 @@ def find_values(text):
     return csv.split(',')
 
 info = ModelInfo()
-options = [["", "Folder with files and labels", "Single table"], 
-               ["", "Regression", "Classification"],
+options = [["", "Regression", "Classification"],
                ["", "Mean squared error", "Cross entropy"],
                ["", "Fully connected", "Convolutional"],
-               [""]+os.listdir("PyAce/tests"),
+               [""]+os.listdir("static/datasets/"),
                [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"]]
 mspecs = ["dcat", "lcat", "loss", "tfrac", "nnjson", "nncat", "ipd", "opd", "mname"]
-tspecs = ["dfolder", "dtable", "batch", "kernel", "filters", "hidden", "activations", "optim", "hyp", "ite"]
+tspecs = ["dfile", "batch", "kernel", "filters", "hidden", "activations", "optim", "hyp", "ite"]
 
 @app.route('/reinforce', methods=['GET', 'POST'])    # main page
 def reinforce():
@@ -40,11 +39,12 @@ def index():
     print(fm)
     inputs = []
     if not fm:
+        info.__init__()
         return render_template('index.html', options=options)
     elif fm.get("f1"):
         # form no.1 dataset and neural netork category
         inputs = [fm.get(k) for k in mspecs]
-        if "" in inputs[:4] or (inputs[4]=="" and "" in inputs[5:-1]):
+        if "" in inputs[:3] or (inputs[4]=="" and "" in inputs[5:-1]):
             return render_template('index.html', options=options)
         if inputs[4]:
             info.model_file = "static/models/"+inputs[4]
@@ -54,9 +54,9 @@ def index():
             info.nncat = inputs[5]
             info.ipd = find_values(inputs[6])
             info.opd = int(inputs[7])
-        if inputs[2] == options[2][0]:
+        if inputs[2] == options[1][0]:
             info.lfunc = tf.keras.losses.MeanSquaredError()
-        elif inputs[2] ==  options[2][1]:
+        elif inputs[2] ==  options[1][1]:
             info.lfunc = tf.keras.losses.SparseCategoricalCrossentropy()
         info.lcat = inputs[1]
         info.tfrac = int(inputs[3])/100
@@ -65,31 +65,38 @@ def index():
         inputs = [fm.get(k) for k in tspecs]
         # Create dataset
         x_train, y_train = None, None
-        if inputs[0] == options[0][1]: # images folder and labels
-            ipd = [int(i) for i in find_values(info.ipd)] # input dimension
-            x_train, y_train = dsu.imgdata_preprocess("static/datasets/"+inputs[0], info.tfrac, ipd)
-            if info.lcat == options[1][2]:
-                # classification
-                info.n_classes = dsu.get_n_classes(y_train)
-            else:
-                info.n_classes = info.opd
-            info.dataset.__init__(
-                tf.data.Dataset.from_tensor_slices((x_train, y_train)),
-                info.lfunc,
-                info.lcat,
-                target_dim=info.opd
-            )
-        elif inputs[0] == options[0][1]: # dataframe table
-            pass
+        if inputs[0]: # images folder and labels
+            ipd = [int(i) for i in find_values(info.ipd)]
+            if "." not in inputs[0]:    # dataset FOLDER
+                x_train, y_train = dsu.imgdata_preprocess("static/datasets/"+inputs[0], info.tfrac, ipd)
+                info.dataset.__init__(
+                    tf.data.Dataset.from_tensor_slices((x_train, y_train)),
+                    info.lfunc,
+                    info.lcat,
+                    target_dim=info.opd
+                )
+            else: # dataframe table
+                info.dataset.__init__(
+                    "static/datasets/"+inputs[0],
+                    info.lfunc,
+                    info.lcat,
+                    target_dim=info.opd
+                )
+        if info.lcat == options[0][2]:
+            # classification
+            info.n_classes = dsu.get_n_classes(y_train)
+        else:
+            info.n_classes = info.opd
+            
 
         # Create basic nn model
         layers = []
         model_config = ""
-        if not info.model_ready and inputs[6] and inputs[5]: 
-            acts = find_values(inputs[6])
+        if not info.model_ready and inputs[4] and inputs[5]: 
+            acts = find_values(inputs[5])
             activations = []
             ai = 1
-            hiddens = [h for h in find_values(inputs[5])]
+            hiddens = [h for h in find_values(inputs[4])]
             for a in acts:
                 match a:
                     case 'r':
@@ -103,13 +110,13 @@ def index():
                     case _:
                         activations.append('linear')
 
-            if info.nncat == options[3][1]: # Fully connected specific
+            if info.nncat == options[2][1]: # Fully connected specific
                 layers.append(tf.keras.layers.Dense(hiddens.pop(0), activation=activations[0], input_shape=info.ipd))
             
-            elif info.nncat == options[3][2]: # Convolutional specific
-                if inputs[4] and inputs[3]:
-                    filters = [int(f) for f in find_values(inputs[4])]
-                    kernel = int(inputs[3])
+            elif info.nncat == options[2][2]: # Convolutional specific
+                if inputs[2] and inputs[3]:
+                    filters = [int(f) for f in find_values(inputs[3])]
+                    kernel = int(inputs[32])
                     layers += [tf.keras.layers.Conv2D(filters[0], kernel, activation=activations[0], input_shape=info.ipd),
                             tf.keras.layers.MaxPooling2D(2)]
                     for f in filters:
@@ -129,7 +136,7 @@ def index():
                 f.close()
 
         # Start training
-        if info.dataset and info.model_ready and inputs[7]:
+        if info.dataset and info.model_ready and inputs[6]:
             if not model_config:
                 # model json file is uploaded by user
                 f = open(info.model_file, "r")
@@ -137,24 +144,24 @@ def index():
                 f.close()
             
             optim = None
-            oname = inputs[7]
-            if oname == options[0][1]:
+            oname = inputs[6]
+            if oname == options[4][1]:
                 optim = om.BBB()
-            elif oname == options[0][2]:
+            elif oname == options[4][2]:
                 optim = om.FSVI()
-            elif oname == options[0][3]:
+            elif oname == options[4][3]:
                 optim = om.HMC()
-            elif oname == options[0][4]:
+            elif oname == options[4][4]:
                 optim = om.SGLD()
-            elif oname == options[0][1]:
+            elif oname == options[4][1]:
                 optim = om.SWAG()
 
             hyp = om.HyperParameters()
-            if optim and inputs[9]:
+            if optim and inputs[8]:
                 optim.compile(hyp, model_config, info.dataset)
                 optim.compile_extra_components()
 
-                optim.train(int(inputs[9]))
+                optim.train(int(inputs[8]))
                 
     return render_template('index.html', options=options, inputs=inputs)
 
