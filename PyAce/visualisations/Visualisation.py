@@ -17,21 +17,23 @@ class Visualisation():
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
         self.learning_diagnostics(loss_save_file)
         # Prediction Plot
-        if dataset.likelihood_model == "Regression":
+        if dataset.likelihood_model == "Regression" :
             y_true = tf.reshape(y_true, y_pred.shape)
-            plt.figure(figsize=(10, 5))
-            plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
-            plt.scatter(range(len(y_pred)), y_pred, label='Predicted Mean', alpha=0.5)
-            plt.legend()
-            plt.title('True vs Predicted Values')
-            plt.xlabel('Sample Index')
-            plt.ylabel('Output')
-            plt.show()
+            if y_true.shape[1] == 1:
+                plt.figure(figsize=(10, 5))
+                plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
+                plt.scatter(range(len(y_pred)), y_pred, label='Predicted Mean', alpha=0.5)
+                plt.legend()
+                plt.title('True vs Predicted Values')
+                plt.xlabel('Sample Index')
+                plt.ylabel('Output')
+                plt.show()
+
+
 
             self.metrics_regression(y_pred, y_true)
-            err = np.sqrt(self.uncertainty_regression(y_samples))
-            pred_dev = y_pred.numpy() - y_true.numpy()
-
+            err = np.mean(np.sqrt(self.uncertainty_regression(y_samples)), axis = 1)
+            pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
             # uncertainty
             plt.figure(figsize=(10, 5))
             plt.hlines([0], 0, len(err))
@@ -42,6 +44,7 @@ class Visualisation():
             plt.title('Epistemic Uncertainty')
             plt.ylabel('Pred-True difference')
             plt.show()
+
             
         elif dataset.likelihood_model == "Classification":
             y_pred_labels = tf.argmax(y_pred, axis=1)
