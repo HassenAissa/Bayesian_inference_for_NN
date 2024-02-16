@@ -40,8 +40,9 @@
             Training percentage (default 10%): <input type="number" name="tfrac" min="1" max="100" step="1">% <br>
             <h3>--Basic neural network model information--</h3>
             Upload model (.json): static/models/<input type="file" name="nnjson">; Alternatively: <br>
+            Name the model to be created: <input type="text" name="mname">; 
             Network category: <select name="nncat">{% for c in  options[3] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
-            Input dimensions: <input type="text" name="ipd">
+            Input dimensions: <input type="text" name="ipd">; Output dimension: <input type="number" name="opd" min="1" step="1"> <br>
             <a href="/">Reset data and model</a> | <input type="submit" name="f1" value="continue>>"> 
         </form>
         {{inputs}}
@@ -53,9 +54,11 @@
         {% if category == "Convolutional" %}
             kernel size: <input type="number" name="kernel" min="1" max="999">; filters list (use comma ',' to separate): <br><textarea name="filters" cols="70" rows="1"></textarea> <br>
         {% endif %}
-        hidden dimensions of fully connected part (use comma ',' to separate): <br><textarea name="hidden" cols="70" rows="1"></textarea> <br>all activation functions (<b>s</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh): <br><textarea name="activations" cols="70" rows="1"></textarea>
-        Optimizer:  <select name="optim">{% for c in options[0] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select> <br>
-        <input type="submit" name="f2" value="start training">
+        hidden dimensions of fully connected part (use comma ',' to separate): <br><textarea name="hidden" cols="70" rows="1"></textarea> <br>all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="activations" cols="70" rows="1"></textarea>
+        Optimizer:  <select name="optim">{% for c in options[5] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select> <br>
+        Hyperparameters: <input type="text" name="hyp">
+        Iterations: <input type="number" name="ite" min="1" step="1">
+        <input type="submit" name="f2" value="Register model and start training">
         </form>
     </div>
     <div class="column">

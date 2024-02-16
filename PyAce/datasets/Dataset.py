@@ -22,6 +22,7 @@ class Dataset:
 
     def __init__(self, 
                  dataset, loss, likelihoodModel="Classification", 
+                 target_dim=1,
                  feature_normalisation=False, label_normalisation = False,
                  train_proportion=0.8,
                  test_proportion=0.1,valid_proportion=0.1):
@@ -44,6 +45,7 @@ class Dataset:
         self._valid_proportion = valid_proportion
         self._loss = loss
         self.likelihood_model = likelihoodModel
+        self.target_dim = target_dim
         self._label_mean = None
         self._label_std = None
         if isinstance(dataset, str) and (dataset in tfds.list_builders()):
@@ -83,9 +85,10 @@ class Dataset:
         self.valid_data = self.test_data.skip(self.test_size)
         self.test_data = self.test_data.take(self.test_size)
 
-    def _init_from_dataframe(self, dataframe: pd.DataFrame):
-        targets = dataframe.pop('target')
-        dataset = tf.data.Dataset.from_tensor_slices((dataframe.values, targets.values))
+    def _init_from_dataframe(self, dataframe: pd.DataFrame):            
+        features = dataframe.iloc[:, :-self.target_dim]
+        targets = dataframe.iloc[:, -self.target_dim:]
+        dataset = tf.data.Dataset.from_tensor_slices((features.values, targets.values))
         self._init_from_tf_dataset(dataset)
 
     def _init_from_csv(self, filename: str):
