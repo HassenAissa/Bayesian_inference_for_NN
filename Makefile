@@ -7,3 +7,6 @@ install:
 
 pdoc:
 	pydoc --html PyAce
+
+vis:
+	python3 visualize.py
