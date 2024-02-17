@@ -25,6 +25,9 @@ class Optimizer(ABC):
 
         Args:
             save_document_path (_type_, optional): The path to save the losses during the training. Defaults to None.
+
+        Returns:
+            float: the loss value after the step
         """
         pass
 
@@ -101,7 +104,7 @@ class Optimizer(ABC):
 
         saved_model_nbr = 0
         for i in range(nb_iterations):
-            self.step(loss_save_document_path)
+            loss = self.step(loss_save_document_path)
             if model_save_frequency != None and i % model_save_frequency == 0:
                 bayesian_model = self.result()
                 if os.path.exists(os.path.join(model_save_path, "model" + str(saved_model_nbr))):
@@ -109,9 +112,7 @@ class Optimizer(ABC):
                 os.makedirs(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
                 bayesian_model.store(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
                 saved_model_nbr += 1
-                # if int(i/nb_iterations *100) > int((i-1)/nb_iterations *100):
-            print(" Training in progress... \r{} %".format(int(i / nb_iterations * 100)), end='')
-        print(" Training in progress... \r{} %".format(100), end='')
+            self._print_progress(i/nb_iterations, loss = loss)
         print()
 
     @abstractmethod

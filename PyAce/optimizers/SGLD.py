@@ -80,6 +80,7 @@ class SGLD(Optimizer):
                         (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
+        return loss
         
         
     def _init_arrays(self):

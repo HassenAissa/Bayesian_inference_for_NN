@@ -26,6 +26,7 @@ class BBB(Optimizer):
         self._prior2: GaussianPrior = None
         self._prior1: GaussianPrior = None
         self._prior: GaussianPrior = None
+        self._step = 0
 
 
 
@@ -55,7 +56,6 @@ class BBB(Optimizer):
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             for i in range(len(layer.trainable_variables)):
-                # print(tf.math.softplus(tf.math.sqrt((self._priors_list[mean_idx][i].stddev()*self._pi)**2+(tf.ones_like(self._priors_list[mean_idx][i].stddev())*0.01*(1-self._pi))**2)))
                 likelihood += self._guassian_likelihood(
                     layer.trainable_variables[i], 
                     self._priors_list[mean_idx][i].mean(),
@@ -65,7 +65,7 @@ class BBB(Optimizer):
 
         return likelihood
     
-    def _posterior_guassian_likelihood(self, mean_list, std_dev_list):
+    def _posterior_guassian_likelihood(self):
         """
         calculates the guassian likelihood of the weights with respect to the posterior
         Returns:
@@ -78,8 +78,8 @@ class BBB(Optimizer):
             for i in range(len(layer.trainable_variables)):
                 likelihood += self._guassian_likelihood(
                     layer.trainable_variables[i], 
-                    mean_list[mean_idx][i], 
-                    std_dev_list[mean_idx][i]
+                    self._posterior_mean_list[mean_idx][i], 
+                    self._posterior_std_dev_list[mean_idx][i]
                 )
             if len(layer.trainable_variables) != 0:
                 mean_idx += 1
@@ -98,7 +98,7 @@ class BBB(Optimizer):
         Returns:
             tf.Tensor: the cost
         """
-        posterior_likelihood = self._posterior_guassian_likelihood(self._posterior_mean_list, self._posterior_std_dev_list)
+        posterior_likelihood = self._posterior_guassian_likelihood()
         prior_likelihood = self._prior_guassian_likelihood()
         kl_divergence = tf.math.subtract(posterior_likelihood, prior_likelihood)
         data_likelihood = self._dataset.loss()(labels, predictions)
@@ -108,8 +108,9 @@ class BBB(Optimizer):
 
 
     def step(self, save_document_path = None):
+        self._step += 1
         #update the weights
-        self._update_weights()
+        noises = self._update_weights()
 
         # get sample and label
         sample,label = next(self._data_iterator, (None,None))
@@ -127,7 +128,6 @@ class BBB(Optimizer):
                 label, 
                 predictions
             )
-        print(likelihood)
         # get the weight, mean and standard deviation gradients
         weight_gradients = tape.gradient(likelihood, self._base_model.trainable_variables)
         mean_gradients = tape.gradient(likelihood, self._posterior_mean_list)
@@ -157,19 +157,16 @@ class BBB(Optimizer):
                     )
                     # calculate the std_dev gradient
                     posterior_std_dev = self._posterior_std_dev_list[trainable_layer_index][i]
-                    noise = tfp.distributions.Normal(
-                        tf.zeros(posterior_std_dev.shape),
-                        tf.ones(posterior_std_dev.shape)
-                    ).sample()
+                    noise = noises[gradient_layer_index]
                     std_dev_grad = noise / (1 + tf.math.exp(-posterior_std_dev))
                     std_dev_grad *= weight_gradients[gradient_layer_index]
                     std_dev_grad += std_dev_gradients[trainable_layer_index][i]
-
                     # calculate the new standard deviation of the posterior
                     _new_std_dev_layer_weights.append(
                         posterior_std_dev-self._lr*std_dev_grad
                     )
                     gradient_layer_index += 1
+
                 trainable_layer_index += 1
                 new_posterior_mean_list.append(_new_mean_layer_weights)
                 new_posterior_std_dev_list.append(_new_std_dev_layer_weights)
@@ -177,6 +174,7 @@ class BBB(Optimizer):
         #update the posteriors
         self._posterior_mean_list = new_posterior_mean_list
         self._posterior_std_dev_list = new_posterior_std_dev_list
+        return likelihood
 
 
 
@@ -187,9 +185,8 @@ class BBB(Optimizer):
         """
         generate new weights following the posterior distributions
         """
+        noises = []
         for interval_idx in range(len(self._layers_intervals)):
-
-
             # reshape the vector and update the base model
             start = self._layers_intervals[interval_idx][0]
             end = self._layers_intervals[interval_idx][1]
@@ -198,18 +195,17 @@ class BBB(Optimizer):
                 for i in range(len(self._base_model.layers[layer_idx].trainable_variables)):
                     #sample the new wights as a vector
                     w = self._base_model.layers[layer_idx].trainable_variables[i]
-                    vector_weights = tfp.distributions.Normal(
-                        self._posterior_mean_list[interval_idx][i],
-                        tf.math.softplus(self._posterior_std_dev_list[interval_idx][i])
+                    noise = tfp.distributions.Normal(
+                        tf.zeros(self._posterior_mean_list[interval_idx][i].shape),
+                        tf.ones(self._posterior_std_dev_list[interval_idx][i].shape)
                     ).sample()
+                    noises.append(noise)
+                    vector_weights = noise * tf.math.softplus(self._posterior_std_dev_list[interval_idx][i])
+                    vector_weights += self._posterior_mean_list[interval_idx][i]
 
-                    # if(interval_idx == 0 and i == 0):
-                    #     print("mean", self._posterior_mean_list[interval_idx][0][0][0])
-                    #     print("without softplus", self._posterior_std_dev_list[interval_idx][0][0][0])
-                    #     print("std_dev", tf.math.softplus(self._posterior_std_dev_list[interval_idx][0])[0][0])
-                    #     print("sample",vector_weights[0])
                     new_weights = tf.reshape(vector_weights, w.shape)
                     self._base_model.layers[layer_idx].trainable_variables[i].assign(new_weights)
+        return noises
 
 
 
@@ -232,7 +228,7 @@ class BBB(Optimizer):
         self._alpha = self._hyperparameters.alpha
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(128))
+                            .batch(64))
         self._data_iterator = iter(self._dataloader)
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()

@@ -78,12 +78,14 @@ class SWAG(Optimizer):
                             (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
+        return loss
 
 
     def compile_extra_components(self, **kwargs):
         self._k = self._hyperparameters.k
         self._frequency = self._hyperparameters.frequency
         self._lr = self._hyperparameters.lr
+        self._scale = self._hyperparameters.scale
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._dataloader = (self._dataset.training_dataset()
@@ -115,7 +117,7 @@ class SWAG(Optimizer):
             tf.debugging.check_numerics(dev, "dev")
             tf.debugging.check_numerics(mean, "mean")
             tf.debugging.check_numerics(sq_mean, "sq_meqn")
-
+            #TODO add scale
             tf_dist = MultivariateNormalDiagPlusLowRank(
                 tf.reshape(mean, (-1,)),
                 tf.reshape(sq_mean - mean ** 2, (-1,)),
