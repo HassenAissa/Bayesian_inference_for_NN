@@ -11,6 +11,7 @@ class ModelInfo:
     def __init__(self, ):
         self.dataset:ds.Dataset = None
         self.model_file = None
+        self.setup = False
         self.model_ready = False
         
 def find_values(text):
@@ -21,13 +22,13 @@ def find_values(text):
     return csv.split(',')
 
 info = ModelInfo()
-options = [["", "Regression", "Classification"],
-               ["", "Mean squared error", "Cross entropy"],
-               ["", "Fully connected", "Convolutional"],
+options = [["Classification","Regression"],
+               ["Cross entropy","Mean squared error"],
+               ["Fully connected", "Convolutional"],
                [""]+os.listdir("static/datasets/"),
                [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"]]
-mspecs = ["dcat", "lcat", "loss", "tfrac", "nnjson", "nncat", "ipd", "opd", "mname"]
-tspecs = ["dfile", "batch", "kernel", "filters", "hidden", "activations", "optim", "hyp", "ite"]
+mspecs = ["lcat", "loss", "tfrac", "nnjson", "nncat", "ipd", "opd", "mname"]
+tspecs = ["dfile", "batch", "kernel", "filters", "hidden", "activations", "optim", "hyp", "hypf", "ite"]
 
 @app.route('/reinforce', methods=['GET', 'POST'])    # main page
 def reinforce():
@@ -36,7 +37,7 @@ def reinforce():
 @app.route('/', methods=['GET', 'POST'])    # main page
 def index():
     fm = request.form
-    print(fm)
+    print(fm, info.setup, info.model_ready)
     inputs = []
     if not fm:
         info.__init__()
@@ -44,50 +45,58 @@ def index():
     elif fm.get("f1"):
         # form no.1 dataset and neural netork category
         inputs = [fm.get(k) for k in mspecs]
-        if "" in inputs[:3] or (inputs[4]=="" and "" in inputs[5:-1]):
+        if inputs[3]=="" and "" in inputs[4:-1]:
+            info.__init__()
             return render_template('index.html', options=options)
-        if inputs[4]:
-            info.model_file = "static/models/"+inputs[4]
+        if inputs[3]:
+            info.model_file = "static/models/"+inputs[3]
             info.model_ready = True
         else:
-            info.model_file = "static/models/"+inputs[8]+".json"
-            info.nncat = inputs[5]
-            info.ipd = find_values(inputs[6])
-            info.opd = int(inputs[7])
-        if inputs[2] == options[1][0]:
+            info.model_file = "static/models/"+inputs[7]+".json"
+            info.nncat = inputs[4]
+            info.ipd = find_values(inputs[5])
+            info.opd = int(inputs[6])
+        if inputs[1] == options[1][1]:
             info.lfunc = tf.keras.losses.MeanSquaredError()
-        elif inputs[2] ==  options[1][1]:
+        elif inputs[1] ==  options[1][0]:
             info.lfunc = tf.keras.losses.SparseCategoricalCrossentropy()
-        info.lcat = inputs[1]
-        info.tfrac = int(inputs[3])/100
+        info.lcat = inputs[0]
+        info.tfrac = int(inputs[2])/100
+        info.setup = True
     elif fm.get("f2"):
         # form no.2 neural network config
         inputs = [fm.get(k) for k in tspecs]
+        if not info.model_ready:
+            if not info.setup or (info.lcat == options[2][1] and (inputs[2]=="" and inputs[3]=="")):
+                return render_template('index.html', options=options, inputs=inputs, info=info)
+        for num in [0,1,6,9]:
+            if inputs[num] == "":
+                return render_template('index.html', options=options, inputs=inputs, info=info)
+        print("data sufficient")
         # Create dataset
         x_train, y_train = None, None
-        if inputs[0]: # images folder and labels
-            ipd = [int(i) for i in find_values(info.ipd)]
-            if "." not in inputs[0]:    # dataset FOLDER
-                x_train, y_train = dsu.imgdata_preprocess("static/datasets/"+inputs[0], info.tfrac, ipd)
-                info.dataset.__init__(
-                    tf.data.Dataset.from_tensor_slices((x_train, y_train)),
-                    info.lfunc,
-                    info.lcat,
-                    target_dim=info.opd
-                )
-            else: # dataframe table
-                info.dataset.__init__(
-                    "static/datasets/"+inputs[0],
-                    info.lfunc,
-                    info.lcat,
-                    target_dim=info.opd
-                )
-        if info.lcat == options[0][2]:
+        info.ipd = [int(i) for i in find_values(info.ipd)]
+        if "." not in inputs[0]:    # dataset FOLDER
+            x_train, y_train = dsu.imgdata_preprocess("static/datasets/"+inputs[0], info.tfrac, info.ipd)
+            info.dataset.__init__(
+                tf.data.Dataset.from_tensor_slices((x_train, y_train)),
+                info.lfunc,
+                info.lcat,
+                target_dim=info.opd
+            )
+        else: # dataframe table
+            info.dataset.__init__(
+                "static/datasets/"+inputs[0],
+                info.lfunc,
+                info.lcat,
+                target_dim=info.opd
+            )
+        if info.lcat == options[0][0]:
             # classification
             info.n_classes = dsu.get_n_classes(y_train)
-        else:
+        elif info.lcat == options[0][1]:
+            # regression
             info.n_classes = info.opd
-            
 
         # Create basic nn model
         layers = []
@@ -110,13 +119,13 @@ def index():
                     case _:
                         activations.append('linear')
 
-            if info.nncat == options[2][1]: # Fully connected specific
+            if info.nncat == options[2][0]: # Fully connected specific
                 layers.append(tf.keras.layers.Dense(hiddens.pop(0), activation=activations[0], input_shape=info.ipd))
             
-            elif info.nncat == options[2][2]: # Convolutional specific
+            elif info.nncat == options[2][1]: # Convolutional specific
                 if inputs[2] and inputs[3]:
                     filters = [int(f) for f in find_values(inputs[3])]
-                    kernel = int(inputs[32])
+                    kernel = int(inputs[2])
                     layers += [tf.keras.layers.Conv2D(filters[0], kernel, activation=activations[0], input_shape=info.ipd),
                             tf.keras.layers.MaxPooling2D(2)]
                     for f in filters:
@@ -126,16 +135,18 @@ def index():
             for h in hiddens:   # Common to both types
                 layers.append(tf.keras.layers.Dense(h, activation=activations[ai]))
                 ai += 1
+            layers.append(tf.keras.layers.Dense(info.n_classes, activation=activations[ai]))
             if layers:
                 # nn layers have been added properly
                 model = tf.keras.Sequential(layers)
                 model_config= model.to_json()
                 info.model_ready = True
                 f = open(info.model_file, "w")
-                f.write(info.model_config)
+                f.write(model_config)
                 f.close()
 
         # Start training
+        print("start training", info.dataset, info.model_ready)
         if info.dataset and info.model_ready and inputs[6]:
             if not model_config:
                 # model json file is uploaded by user
@@ -153,17 +164,21 @@ def index():
                 optim = om.HMC()
             elif oname == options[4][4]:
                 optim = om.SGLD()
-            elif oname == options[4][1]:
+            elif oname == options[4][5]:
                 optim = om.SWAG()
 
             hyp = om.HyperParameters()
-            if optim and inputs[8]:
+            if inputs[7]:
+                hyp.parse(inputs[7])
+            elif inputs[8]:
+                hyp.from_file("static/hyperparams/"+inputs[8])
+            if optim and inputs[9]:
                 optim.compile(hyp, model_config, info.dataset)
                 optim.compile_extra_components()
 
-                optim.train(int(inputs[8]))
+                optim.train(int(inputs[9]))
                 
-    return render_template('index.html', options=options, inputs=inputs)
+    return render_template('index.html', options=options, inputs=inputs, info=info)
 
 def draw_nn(shape):
     # Auxilliary function, currently not used 

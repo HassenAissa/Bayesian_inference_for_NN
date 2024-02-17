@@ -32,35 +32,35 @@
     <a href="/">[Supervised learning]</a> | <a href="/reinforce">Reinforcement learning >></a>
     <div class="row">
     <div class="column" style="background-color: lightgoldenrodyellow;">
+      <h3>--Dateset and neural network specifications--</h3>
         <form action="/" method="post">
-            <h3>--Dateset specifications--</h3>
-            Learning type: <select name="lcat">{% for c in  options[0] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
-            Loss function: <select name="loss">{% for l in options[1] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>,
+            Learning type: <select name="lcat">{% for c in  options[0] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+            Loss function: <select name="loss">{% for l in options[1] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
             Training percentage: <input type="number" name="tfrac" value="10" min="1" max="100" step="1">% <br>
-            <h3>--Basic neural network model information--</h3>
-            <b>Upload model (.json):</b> static/models/<input type="file" name="nnjson">; <b>Alternatively:</b><br>
-            Name the model to be created: <input type="text" name="mname">; 
-            Network category: <select name="nncat">{% for c in  options[2] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>,
-            Input dimensions: <input type="text" name="ipd">; Output dimension: <input type="number" name="opd" min="1" step="1"> <br>
-            <a href="/">Reset data and model</a> | <input type="submit" name="f1" value="continue>>"> 
+            Upload .json model: static/models/<input type="file" name="nnjson">; Or create manually: <br>
+            Model name: <input type="text" name="mname">; 
+            Category: <select name="nncat">{% for c in  options[2] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select><br>
+            Input dimensions: <input type="text" name="ipd"> Output dimension: <input type="number" name="opd" min="1" step="1"> <br>
+            <a href="/"><button>Reset all</button></a> | <input type="submit" name="f1" value="Continue>>"> 
         </form>
-        {{inputs}}
-        <h3>--Training information--</h3>
+      <h3>--Training information--</h3>
         <form action="/" method="post">
-        Select dataset folder or table file: static/datasets/<select name="dfile">{% for d in options[3] %}<option value="{{d}}">{{d}}</option>{% endfor %}</select>; 
+        Select dataset: static/datasets/<select name="dfile">{% for d in options[3] %}<option value="{{d}}">{{d}}</option>{% endfor %}</select><br>
         Batch size: <input type="number" min="1" name="batch">; 
         Optimizer:  <select name="optim">{% for c in options[4] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
-        {% if category == "Convolutional" %}
-            <br>kernel size: <input type="number" name="kernel" min="1" max="999">; filters list: <br><textarea name="filters" cols="70" rows="1"></textarea> <br>
-        {% endif %}
-        <br>hidden dimensions of fully connected part: <br><textarea name="hidden" cols="70" rows="1"></textarea> <br>
-        all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="activations" cols="70" rows="1"></textarea><br>
-        Hyperparameters: <input type="text" name="hyp">
         Iterations: <input type="number" name="ite" min="1" step="1"><br>
-        <input type="submit" name="f2" value="Register model and start training">
+        Hyperparameters: <input type="file" name="hypf">; or write details here: <textarea name="hyp" cols="70" rows="1"></textarea><br>
+        <b>-- If a new model is created above, provide more details -- </b><br>
+        {% if info.nncat == "Convolutional" %}
+            kernel size: <input type="number" name="kernel" min="1" max="999">; filters list: <br><textarea name="filters" cols="70" rows="1"></textarea> <br>
+        {% endif %}
+        hidden dimensions of fully connected part: <br><textarea name="hidden" cols="70" rows="1"></textarea> <br>
+        all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="activations" cols="70" rows="1"></textarea><br>
+        <input type="submit" name="f2" value="Register model and start training>>">
         </form>
     </div>
     <div class="column">
+      {{inputs}}
       {% if graph %}
       <img src="static/drawnn.png" alt="graph">
       {% endif %}
