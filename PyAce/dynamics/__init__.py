@@ -2,7 +2,7 @@ from .control import NNPolicyOptimizer
 from .control import Policy
 from .deep_pilco import NNPolicy
 from .deep_pilco import BayesianDynamics
-from .simple_policy import Policy
+# from .simple_policy import Policy
 
 
 from os.path import dirname, basename, isfile, join
