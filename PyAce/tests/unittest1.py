@@ -84,3 +84,4 @@ def runner():
         analytics_builder.visualise(dataset, 2)
 
 
+runner()

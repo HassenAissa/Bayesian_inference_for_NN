@@ -135,7 +135,6 @@ class Visualisation():
         # For classification, we might use the entropy of the predicted probabilities
         # as a measure of aleatoric uncertainty and variance of multiple stochastic
         # forward passes as epistemic uncertainty.
-
         # Assuming predict returns a distribution over classes for each sample
         if regression:
             variance = np.var(y_samples, axis=0)
