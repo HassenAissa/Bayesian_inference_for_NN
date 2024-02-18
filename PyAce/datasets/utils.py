@@ -48,13 +48,18 @@ def normalize_fn(data, means, stds):
     return (data - means) / stds
 
 
-def get_n_classes(labels):
+def get_n_classes(labels, dim=1):
     """
     Return the number of classes present in the data labels.
 
     This is approximated by taking the maximum label + 1 (as we count from 0).
     """
-    return int(np.max(labels) + 1)
+    if dim == 1:
+        return int(np.max(labels) + 1)
+    num = 1
+    for col in labels:
+        num *= int(np.max(col) + 1)
+    return num
 
 def imgdata_preprocess(directory, fraction_train, input_shape):
     x, _, y,_ = load_data(directory)

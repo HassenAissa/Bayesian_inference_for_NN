@@ -55,9 +55,9 @@ class Dataset:
         elif (isinstance(dataset, tf.data.Dataset)):
             self._init_from_tf_dataset(dataset)
         elif(isinstance(dataset, pd.DataFrame)):
-            self._init_from_dataframe(dataset) 
+            self.target_values = self._init_from_dataframe(dataset) 
         elif(isinstance(dataset, str)):
-            self._init_from_csv(dataset)
+            self.target_values = self._init_from_csv(dataset)
         else:
             raise Exception("Unsupported dataset format")
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
@@ -90,10 +90,11 @@ class Dataset:
         targets = dataframe.iloc[:, -self.target_dim:]
         dataset = tf.data.Dataset.from_tensor_slices((features.values, targets.values))
         self._init_from_tf_dataset(dataset)
+        return targets.values
 
     def _init_from_csv(self, filename: str):
         dataframe = pd.read_csv(filename)
-        self._init_from_dataframe(dataframe)
+        return self._init_from_dataframe(dataframe)
 
     def training_dataset(self) -> tf.data.Dataset:
         """
