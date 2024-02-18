@@ -116,7 +116,7 @@ info = ModelInfo()
 def settings():
     fm = request.form
     snum = fm.get("snum")
-    if fm:
+    if fm.get("session"):
         f = open("static/sessions/db.csv", "r")
         lines = f.readlines()
         f.close()
@@ -143,6 +143,15 @@ def settings():
         f = open("static/sessions/db.csv", "w")
         f.writelines(lines)
         f.close()
+    elif fm.get("model"):
+        msel = fm.get("msel")
+        if msel:
+            mnew, mdel = fm.get("mnew"), fm.get("mdel")
+            if mnew:
+                os.rename("static/models/"+msel,
+                          "static/models/"+mnew+".json")
+            elif mdel:
+                os.remove("static/models/"+msel)
 
     return render_template('settings.html', options=info.options)
 
