@@ -29,18 +29,18 @@
 
 <body>
     <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
-    <a href="/"><b>[Supervised learning]</b></a> | <a href="/reinforce">Reinforcement learning >> </a> 
+    <a href="/"><b style="background-color: aqua;">[Supervised learning]</b></a> | <a href="/reinforce">Reinforcement learning >> </a> 
     <a href="/settings"><button># User preferences</button> </a>
     <div class="row">
     <div class="column" style="background-color: lightgoldenrodyellow;">
       <h3>Train bayesian model or create neural network <a href="/"><button>Reset all</button></a> </h3>
       <form action="/" method="post">
-      Autofill from recent sessions of training: <select name="sessions">{% for c in  options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+      Autofill from saved sessions: <select name="sessions">{% for c in  options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
       <input type="submit" value="Continue>>">
       </form><form action="/" method="post">
       Name the current session (Optional): <textarea name="sname" cols="50" rows="1"></textarea><br>
       <b>--Base model and dataset--</b> 
-      Upload .json model: static/models/ <br><input type="file" name="nnjson" value="{{info.form["nnjson"]}}">; Or create model manually:<br>
+      Upload .json model:<br><input type="file" name="nnjson" value="{{info.form["nnjson"]}}">; Or create model manually:<br>
         Learning category: <select name="lcat">{% for l in options["lcat"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
         Loss function: <select name="loss">{% for l in options["loss"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
         Frac train: <input type="number" name="tfrac" value="10" min="1" max="100" step="1">% <br>
@@ -57,11 +57,11 @@
         Batch size: <input type="number" min="1" name="batch" value="{{info.form["batch"]}}">; 
         Optimizer:  <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
         Iterations: <input type="number" name="ite" min="1" step="1" value="{{info.form["ite"]}}"><br>
-        start model (for SWAG): <input type="file" name="nnjson" value="{{info.form["startjson"]}}"> <br>
-        prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
-          standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s""]}}" min="-999", max="999" step="0.01">) <br>
-        prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 
-          standard deviation: <input type="number" name="pri2s" value=" value="{{info.form["pri2s"]}}" min="-999", max="999" step="0.01">)
+        start model (for SWAG): <input type="radio" name="mstart"> same as base model | or <input type="file" name="startjson"> <br>
+        prior 1: Gaussian (mean: <input type="number" name="pri1m" value="{{info.form["pri1m"]}}" min="-999" max="999" step="0.01">, 
+          standard deviation: <input type="number" name="pri1s" value="{{info.form["pri1s"]}}" min="-999" max="999" step="0.01">) <br>
+        prior 2: Gaussian (mean: <input type="number" name="pri2m" value="{{info.form["pri2m"]}}" min="-999" max="999" step="0.01">, 
+          standard deviation: <input type="number" name="pri2s" value="{{info.form["pri2s"]}}" min="-999" max="999" step="0.01">)
         Hyperparameters: <input type="file" name="hypf" value="{{info.form["hypf"]}}">; or write details here: <textarea name="hyp" cols="70" rows="1">{{info.form["hyp"]}}</textarea><br>
         <input type="submit" name="f2" value="Start training  >>">
       </form>

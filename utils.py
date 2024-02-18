@@ -2,11 +2,11 @@ import PyAce.optimizers as om
 import tensorflow as tf
 from PyAce.distributions import GaussianPrior
 from matplotlib import pyplot as plt
-import json
+import json, pickle
 
 connectors = "._-"
 
-def find_values(connectors, text:str):
+def find_values(text:str):
     res = []
     word = ""
     for c in text:
@@ -39,9 +39,9 @@ def check_mandatory(form, term):
                 return check_mandatory(form, term[3])
             return True
 
-def read_sessions():
+def read_sessions(scat):
     res = []
-    f = open("static/sessions/db.csv", "r")
+    f = open("static/sessions/"+scat+"/db.csv", "r")
     f.readline()
     while True:
         l = f.readline()
@@ -49,8 +49,8 @@ def read_sessions():
             return res
         res.append(l[:-1]+".json")
 
-def add_sessions(sname:str):
-    f = open("static/sessions/db.csv", "r")
+def add_sessions(sname:str, scat):
+    f = open("static/sessions/"+scat+"/db.csv", "r")
     lim = int(f.readline())
     names = []
     found = False
@@ -76,7 +76,7 @@ def add_sessions(sname:str):
                 break
             i += 1
     names = [sname] + names
-    f = open("static/sessions/db.csv", "w")
+    f = open("static/sessions/"+scat+"/db.csv", "w")
     f.write(str(lim)+"\n")
     for n in names:
         f.write(n+"\n")
@@ -86,10 +86,10 @@ def add_sessions(sname:str):
 def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
     # Depending on whether input/output shape is defined, create a template/complete nn model
     layers = []
-    acts = find_values(connectors, acts)
+    acts = find_values(acts)
     activations = []
     ai = 1
-    hiddens = [h for h in find_values(connectors, hidden)]
+    hiddens = [h for h in find_values(hidden)]
     for a in acts:
         match a:
             case 'r':
@@ -109,7 +109,7 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
         else:
             layers.append(tf.keras.layers.Dense(hiddens.pop(0), activation=activations[0]))
     else: # Convolutional specific
-        filters = [int(f) for f in find_values(connectors, filters)]
+        filters = [int(f) for f in find_values(filters)]
         kernel = int(kernel)
         if ipd:
             layers.append(tf.keras.layers.Conv2D(filters[0], kernel, activation=activations[0]))
@@ -132,6 +132,14 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
         return model
     return None
 
+def hyp_get(hypf, hyp):
+    hyperparams = om.HyperParameters()
+    if hyp:
+        hyperparams.parse(hyp)
+    elif hypf:
+        hyperparams.from_file("static/hyperparams/"+hypf)
+    return hyperparams
+
 def optim_select(oname, options, fm):
     optim = None
     if oname == options["optim"][1]:
@@ -144,34 +152,38 @@ def optim_select(oname, options, fm):
         optim = om.SGLD()
     elif oname == options["optim"][5]:
         optim = om.SWAG()
-    hyp, hypf = fm.get("hyp"), fm.get("hypf")
-    hyperparams = om.HyperParameters()
-    if hyp:
-        hyperparams.parse(hyp)
-    elif hypf:
-        hyperparams.from_file("static/hyperparams/"+hypf)
+    
     pr1 = [fm.get("pri1m"), fm.get("pri1s")]
     pr2 = [fm.get("pri2m"), fm.get("pri2s")]
-    start_model = fm.get("startjson")
     extra = {}
     if "" not in pr1:
         extra["prior"] = GaussianPrior(float(pr1[0], float(pr1[1])))
     if "" not in pr2:
         extra["prior2"] = GaussianPrior(float(pr2[0], float(pr2[1])))
+    return optim, extra
+
+def optim_mstart(fm, model_config):
+    start_model = fm.get("startjson")
+    config = None
     if start_model:
         f = open("static/models/"+start_model,)
         config = json.load(f)
         f.close()
-        extra["starting_model"] = tf.keras.models.model_from_json(config)
-    return optim, hyperparams, extra
+    elif fm.get("mstart"):
+        config = model_config
+    if config:
+        return tf.keras.models.model_from_json(config)
+    return None
 
-def optim_dataset(oname, options, fm, model_config, dataset):
-    optim, hyperparams, extra = optim_select(oname, options, fm)
+def optim_dataset(oname, options, fm, hypf, hyp, model_config, dataset):
+    optim, extra = optim_select(oname, options, fm)
+    hyperparams = hyp_get(hypf, hyp)
+    extra["starting_model"] = optim_mstart(fm, model_config)
     if optim:
         optim.compile(hyperparams, model_config, dataset)
         optim.compile_extra_components(extra)
-    return optim
-    
+    return optim    
+
 def draw_nn(shape):
     # Auxilliary function, currently not used 
     plt.title("Visualize neural network")

@@ -61,7 +61,7 @@ class NNPolicy(Policy):
 
 class DynamicsTraining:
     # learn dynamic model f for state action transitions
-    def __init__(self, optimizer:Optimizer, data_specs:list, 
+    def __init__(self, optimizer:Optimizer, data_specs:dict, 
                  template, out_activation, hyperparams):
         self.optimizer, self.template, self.out_activation = optimizer, template, out_activation
         self.hyperparams = hyperparams
@@ -78,9 +78,9 @@ class DynamicsTraining:
 
     def train(self, features, targets, nb_epochs):
         data = tf.data.Dataset.from_tensor_slices((features, targets))
-        dataset = Dataset(data, *self.data_specs)
+        dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], self.sfd[0])
         train_dataset = Dataset(
-            dataset.train_data, *self.data_specs)
+            dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], self.sfd[0])
         if not self.start:
             self.optimizer.compile(self.hyperparams, self.model.to_json(), 
                                    train_dataset, **self.rems)
