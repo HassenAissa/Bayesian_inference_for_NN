@@ -27,8 +27,31 @@ class Visualisation():
         x, y_true = next(iter(dataset.valid_data.batch(dataset.valid_data.cardinality())))
         y_samples, y_pred = self.model.predict(x, nb_samples)  # pass in the x value
         self.learning_diagnostics(loss_save_file)
-        # Prediction Plot
+
         if dataset.likelihood_model == "Regression" :
+            self.pred_true_graph(x, y_true, y_pred, regression=True)
+            self.uncertainty(y_samples, y_pred, y_true, regression=True)
+            print("MSE:", self.mse(y_pred, y_true))
+            print("RMSE:", self.rmse(y_pred, y_true))
+            print("MAE:", self.mae(y_pred, y_true))
+            print("R2:", self.r2(y_pred, y_true))
+            
+        elif dataset.likelihood_model == "Classification":
+            self.pred_true_graph(x, y_true, y_pred)
+            self.confusion_matrix(y_true, y_pred)
+            self.uncertainty(y_samples, y_pred, y_true)
+            print("Accuracy: {}%".format(self.accuracy(y_pred, y_true)))
+            print("Recall: {}%".format(self.recall(y_pred, y_true)))
+            print("Precision: {}%".format(self.precision(y_pred, y_true)))
+            print("F1 Score: {}%".format(self.f1_score(y_pred, y_true)))
+            #skplt.metrics.plot_precision_recall(y_true, y_pred, title = 'Precision-Recall Curve')
+            #plt.show()
+            # self.uncertainty_classification(y_samples)
+        else: 
+            print("Invalid loss function")
+            
+    def pred_true_graph(self, x, y_true, y_pred, regression=False):
+        if regression:
             y_true = tf.reshape(y_true, y_pred.shape)
             if y_true.shape[1] == 1:
                 plt.figure(figsize=(10, 5))
@@ -39,44 +62,49 @@ class Visualisation():
                 plt.xlabel('Sample Index')
                 plt.ylabel('Output')
                 plt.show()
-
-
-
-            self.metrics_regression(y_pred, y_true)
-            err = np.mean(np.sqrt(self.uncertainty_regression(y_samples)), axis = 1)
-            pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
-            # uncertainty
-            plt.figure(figsize=(10, 5))
-            plt.hlines([0], 0, len(err))
-            plt.plot(range(len(err)), pred_dev-err, label='Epistemic Lower', alpha=0.5)
-            plt.scatter(range(len(err)), pred_dev, label='Averaged deviation', alpha=0.5, c="k")
-            plt.plot(range(len(err)), pred_dev+err, label='Epistemic Upper', alpha=0.5)
-            plt.legend()
-            plt.title('Epistemic Uncertainty')
-            plt.ylabel('Pred-True difference')
-            plt.show()
-
-            
-        elif dataset.likelihood_model == "Classification":
+        else:
             y_pred_labels = tf.argmax(y_pred, axis=1)
-            self.metrics_classification(y_pred, y_true)
-            self.plot_2d_3d(x, y_true, y_pred_labels)
-            skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = 'Confusion Matrix')
-            plt.show()
-            #skplt.metrics.plot_precision_recall(y_true, y_pred, title = 'Precision-Recall Curve')
-            #plt.show()
-            # self.uncertainty_classification(y_samples)
-        else: 
-            print("Invalid loss function")  
+            x_2d = tf.reshape(x, (x.shape[0], -1))
+            _, eigenvectors = tf.linalg.eigh(tf.tensordot(tf.transpose(x_2d), x_2d, axes=1))
+            x_pca = tf.tensordot(x_2d, eigenvectors, axes=1)
+            self.plot_2d(x_pca, y_true, y_pred_labels)
+            if(x_pca.shape[1]>=3):
+                self.plot_3d(x_pca, y_true, y_pred_labels)
+            
         
-    def plot_2d_3d(self, x, y_true, y_pred):
-        x_2d = tf.reshape(x, (x.shape[0], -1))
-        _, eigenvectors = tf.linalg.eigh(tf.tensordot(tf.transpose(x_2d), x_2d, axes=1))
-        x_pca = tf.tensordot(x_2d, eigenvectors, axes=1)
-        self.plot_2d(x_pca, y_true, y_pred)
-        if(x_pca.shape[1]>=3):
-            self.plot_3d(x_pca, y_true, y_pred)
+    # Regression performance metrics
+    
+    def mse(self, y_pred, y_true):
+        return skmet.mean_squared_error(y_true, y_pred)
+    
+    def rmse(self, y_pred, y_true):
+        return skmet.mean_squared_error(y_true, y_pred, squared=False)
+    
+    def mae(self, y_pred, y_true):
+        return skmet.mean_absolute_error(y_true, y_pred)
+    
+    def r2(self, y_pred, y_true):
+        return skmet.r2_score(y_true, y_pred)
+            
         
+    # Classification performance metrics
+    
+    def accuracy(self, y_pred, y_true):
+        return skmet.accuracy_score(y_true, tf.argmax(y_pred, axis = 1)) * 100
+    
+    def precision(self, y_pred, y_true):
+        return skmet.recall_score(y_true, tf.argmax(y_pred, axis = 1), average= "macro") * 100
+    
+    def recall(self, y_pred, y_true):
+        return skmet.precision_score(y_true, tf.argmax(y_pred, axis = 1), average= "micro") * 100
+    
+    def f1_score(self, y_pred, y_true):
+        return skmet.f1_score(y_true, tf.argmax(y_pred,axis = 1), average = "macro") * 100
+    
+    def confusion_matrix(self, y_true, y_pred):
+        y_pred_labels = tf.argmax(y_pred, axis=1)
+        skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = 'Confusion Matrix')
+        plt.show()
     
     def plot_2d(self, x_pca, y_true, y_pred):
         fig, (ax_true, ax_pred) = plt.subplots(2, figsize=(12, 8))
@@ -102,42 +130,30 @@ class Visualisation():
         
         plt.title('First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA')
         plt.show()
-            
-    def metrics_regression(self, y_pred, y_true):
-        mse = skmet.mean_squared_error(y_true, y_pred)
-        rmse = skmet.mean_squared_error(y_true, y_pred, squared=False)
-        mae = skmet.mean_absolute_error(y_true, y_pred)
-        r2 = skmet.r2_score(y_true, y_pred)
-        print("""Performence metrics for Regression:
-              Mean Square Error: {}
-              Root Mean Square Error: {}
-              Mean Absolute Error: {}
-              R^2: {}""".format(mse, rmse, mae, r2))
         
-    def metrics_classification(self, y_pred, y_true):
-        accuracy = skmet.accuracy_score(y_true, tf.argmax(y_pred, axis = 1))
-        recall_score = skmet.recall_score(y_true, tf.argmax(y_pred, axis = 1), average= "macro")
-        precision = skmet.precision_score(y_true, tf.argmax(y_pred, axis = 1), average= "micro")
-        f1 = skmet.f1_score(y_true, tf.argmax(y_pred,axis = 1), average = "macro")
-        print("""Performence metrics for Classification:
-              Accuracy: {}
-              Mean Recall: {}
-              Mean Precision: {}
-              F1-Score: {}""".format(accuracy, recall_score, precision, f1))
-        
-    def uncertainty_regression(self, y_samples) -> tuple:
-        variance = np.var(y_samples, axis=0)
-        return variance
-        
-    def uncertainty_classification(self, y_samples) -> tuple:
+    def uncertainty(self, y_samples, y_pred, y_true, regression=False) -> tuple:
         # For classification, we might use the entropy of the predicted probabilities
         # as a measure of aleatoric uncertainty and variance of multiple stochastic
         # forward passes as epistemic uncertainty.
-
         # Assuming predict returns a distribution over classes for each sample
-        mean = np.mean(y_samples, axis=0)
-        variance = np.var(y_samples, axis=0)
-        print("""Uncertainty for Classificaton: 
+        if regression:
+            variance = np.var(y_samples, axis=0)
+            err = np.mean(np.sqrt(variance), axis = 1)
+            pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
+            # uncertainty
+            plt.figure(figsize=(10, 5))
+            plt.hlines([0], 0, len(err))
+            plt.plot(range(len(err)), pred_dev-err, label='Epistemic Lower', alpha=0.5)
+            plt.scatter(range(len(err)), pred_dev, label='Averaged deviation', alpha=0.5, c="k")
+            plt.plot(range(len(err)), pred_dev+err, label='Epistemic Upper', alpha=0.5)
+            plt.legend()
+            plt.title('Epistemic Uncertainty')
+            plt.ylabel('Pred-True difference')
+            plt.show()
+        else:
+            mean = np.mean(y_samples, axis=0)
+            variance = np.var(y_samples, axis=0)
+            print("""Uncertainty for Classificaton: 
                 Epistemic Uncertainty: {}
                 Aleatoric Uncertainty: {}""".format(variance, mean))
         

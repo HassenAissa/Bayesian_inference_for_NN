@@ -1,0 +1,50 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bayesian NN: settings</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Create two equal columns that floats next to each other */
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      /* height: 300px; Should be removed. Only for demonstration */
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    table, th, td {
+      border: 0.5px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
+    <a href=""><h3>User preferences</h3></a> <a href="/"><< Supervised learning</a> | <a href="/reinforce">Reinforcement learning >></a>
+    <div class="row">
+        <div class="column" style="background-color:lightblue;">
+          <b>--Session history settings--</b>
+            <form action="/settings" method="post">
+                Set maximum number of session to save: <input type="number" name="snum" min="1" max="256"><br>
+                Update session information: <select name="ssel">{% for s in options["sessions"] %}<option value="{{s}}">{{s}}</option>{% endfor %}</select><br>
+                -Rename: <input type="text" name="snew"> | -Delete: <input type="radio" name="sdel"> <br>
+                <input type="submit" name="session" value="Confirm >>">
+            </form>
+          <b>--Base model settings--</b>
+            <form action="/settings" method="post">
+            Update base model: <input type="file" name="msel"><br>
+            -Rename: <input type="text" name="mnew"> | -Delete: <input type="radio" name="mdel"> <br>
+            <input type="submit" name="model" value="Confirm >>">
+            </form>
+        </div>
+    </div>
+</body>

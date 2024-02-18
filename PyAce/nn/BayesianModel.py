@@ -89,7 +89,9 @@ class BayesianModel:
                     w.assign(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
                     take_from += size
 
-
+    def sample_model(self) -> tf.keras.Model:
+        self._sample_weights()
+        return tf.keras.models.clone_model(self._model)
     def predict(self, x: tf.Tensor, nb_samples: int):
         """
         use monte carlo approxiamtion over nb_samples to predict the result for the input
@@ -145,6 +147,7 @@ class BayesianModel:
             )
             bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
         return bayesian_model
+
 
     def _empty_folder(self,path):
         for filename in os.listdir(path):
