@@ -57,6 +57,11 @@
         Batch size: <input type="number" min="1" name="batch" value="{{info.form["batch"]}}">; 
         Optimizer:  <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
         Iterations: <input type="number" name="ite" min="1" step="1" value="{{info.form["ite"]}}"><br>
+        start model: <input type="file" name="nnjson" value="{{info.form["startjson"]}}">
+        prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
+          standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s""]}}" min="-999", max="999" step="0.01">) <br>
+        prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 
+          standard deviation: <input type="number" name="pri2s" value=" value="{{info.form["pri2s"]}}" min="-999", max="999" step="0.01">)
         Hyperparameters: <input type="file" name="hypf" value="{{info.form["hypf"]}}">; or write details here: <textarea name="hyp" cols="70" rows="1">{{info.form["hyp"]}}</textarea><br>
         <input type="submit" name="f2" value="Register model and start training  >>">
       </form>

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from matplotlib import pyplot as plt
 from PyAce.datasets.Dataset import Dataset
+from PyAce.distributions import GaussianPrior
 import PyAce.datasets.utils as dsu
 import PyAce.optimizers as om
 import tensorflow as tf, gymnasium as gym
@@ -296,8 +297,20 @@ def index():
             hyp.from_file("static/hyperparams/"+hypf)
         if optim:
             optim.compile(hyperparams, model_config, info.dataset)
-            optim.compile_extra_components()
-
+            pr1 = [fm.get("pri1m"), fm.get("pri1s")]
+            pr2 = [fm.get("pri2m"), fm.get("pri2s")]
+            start_model = fm.get("startjson")
+            extra = {}
+            if "" not in pr1:
+                extra["prior"] = GaussianPrior(float(pr1[0], float(pr1[1])))
+            if "" not in pr2:
+                extra["prior2"] = GaussianPrior(float(pr2[0], float(pr2[1])))
+            if start_model:
+                f = open("static/models/"+start_model,)
+                config = json.load(f)
+                f.close()
+                extra["starting_model"] = tf.keras.models.model_from_json(config)
+            optim.compile_extra_components(extra)
             optim.train(int(fm.get("ite")))
             
     return render_template('index.html', options=options, info=info)
