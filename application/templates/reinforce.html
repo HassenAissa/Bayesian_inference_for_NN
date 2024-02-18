@@ -1,0 +1,68 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bayesian NN: Reinforcement</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Create two equal columns that floats next to each other */
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      /* height: 300px; Should be removed. Only for demonstration */
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    table, th, td {
+      border: 0.5px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
+    <a href="/"><< Supervised learning</a> | <a href="/reinforce"><b>[Reinforcement learning] </b></a>
+    <a href="/settings"><button># User preferences</button> </a>
+    <div class="row">
+      <div class="column" style="background-color: skyblue;">
+        <h3>Environment and agent creation</h3>
+        <form action="/reinforce" method="post">
+          Environmane name: <input type="text" name="envname">; Render mode: <input type="text" name="rmode"><br>
+          <b>--Learning specifications--</b> <br>
+          Time horizon: <input type="number" name="hor" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" min="1" max="999"><br>
+          Number of particles: <input type="number" name="npar" min="1" max="999">; Discount factor: <input type="number" name="disc" min="0.001" max="1.000" step="0.001"><br>
+          <b>--Policy model--</b> <br>
+          Upload .json model: static/models/ <br><input type="file" name="pnnjson" value="{{info.form["pnnjson"]}}">; Or create model manually:<br>
+          Model name: <input type="text" name="pmname" value="{{info.form["pmname"]}}">; <br>
+          (Convolutional neural networks specific)
+          kernel size: <input type="number" name="pkernel" min="1" max="999" value="{{info.form["pkernel"]}}">; filters list: <br><textarea name="pfilters" cols="70" rows="1">{{info.form["pfilters"]}}</textarea> <br>
+          (All neural networks) <br>
+          dimensions of densely connected layers: <br><textarea name="phidden" cols="70" rows="1">{{info.form["phidden"]}}</textarea> <br>
+          all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br>
+          <b>--Dynamic model--</b> <br>
+          Upload .json model: static/models/ <br><input type="file" name="dnnjson" value="{{info.form["dnnjson"]}}">; Or create model manually:<br>
+          Model name: <input type="text" name="dmname" value="{{info.form["dmname"]}}">; <br>
+          (Convolutional neural networks specific)
+          kernel size: <input type="number" name="dkernel" min="1" max="999" value="{{info.form["dkernel"]}}">; filters list: <br><textarea name="dfilters" cols="70" rows="1">{{info.form["dfilters"]}}</textarea> <br>
+          (All neural networks) <br>
+          dimensions of densely connected layers: <br><textarea name="dhidden" cols="70" rows="1">{{info.form["dhidden"]}}</textarea> <br>
+          all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="dactivations" cols="70" rows="1">{{info.form["dactivations"]}}</textarea><br>
+          <b>--Optimizer for dynamic model--</b> <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select> <br>
+          start model (for SWAG): <input type="file" name="nnjson" value="{{info.form["startjson"]}}"> <br>
+          prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
+            standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s""]}}" min="-999", max="999" step="0.01">) <br>
+          prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 
+            standard deviation: <input type="number" name="pri2s" value=" value="{{info.form["pri2s"]}}" min="-999", max="999" step="0.01">)
+          Hyperparameters: <input type="file" name="hypf" value="{{info.form["hypf"]}}">; or write details here: <textarea name="hyp" cols="70" rows="1">{{info.form["hyp"]}}</textarea><br>
+        </form>
+      </div>
+    </div>
+</body>

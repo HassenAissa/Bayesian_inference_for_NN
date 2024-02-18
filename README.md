@@ -6,6 +6,7 @@ We have currently implemented the following:
 - [x] SWAG
 - [X] Bayes by Backprop (BBB)
 - [X] SGLD
+- [X] HMC 
 
 ## Requirements
 Make a virtualenv:
