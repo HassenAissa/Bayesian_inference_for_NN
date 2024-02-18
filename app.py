@@ -9,10 +9,6 @@ import os, json
 connectors = "-._"
 mandatory = ["lcat", "loss", ("nnjson", ["ipd", "opd", "mname", "hidden", "activations"]), "dfile", "batch", "optim", "ite"]
 opkeys = ["lcat", "loss", "optim"]
-options = {"history": [""]+os.listdir("static/history/"),
-            "lcat": ["", "Classification","Regression"],
-            "loss": ["", "Cross entropy","Mean squared error"],
-            "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"]}   
     
 class ModelInfo:
     def __init__(self, ):
@@ -20,6 +16,10 @@ class ModelInfo:
         self.model_file = ""
         self.model_ready = False
         self.form = None
+        self.options = {"sessions": [""]+read_sessions(),
+            "lcat": ["", "Classification","Regression"],
+            "loss": ["", "Cross entropy","Mean squared error"],
+            "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"]}
 
     def find_shapes(self):
         f = open(self.model_file,)
@@ -65,8 +65,86 @@ def check_mandatory(form, term):
         print("or")
         return check_mandatory(form, term[0]) or check_mandatory(form, term[1:])
 
+def read_sessions():
+    res = []
+    f = open("static/sessions/db.csv", "r")
+    f.readline()
+    while True:
+        l = f.readline()
+        if not l:
+            return res
+        res.append(l[:-1]+".json")
+
+def add_sessions(sname:str):
+    f = open("static/sessions/db.csv", "r")
+    lim = int(f.readline())
+    names = []
+    found = False
+    while True:
+        l = f.readline()
+        if not l:
+            break
+        text = l[:-1]
+        if not found:
+            if text == sname:
+                found = True
+                continue
+        names.append(text)
+    f.close()
+
+    if len(names) == lim:
+        names.pop()
+    if not sname:
+        i = 1
+        while True:
+            sname = str(i)
+            if sname not in names:
+                break
+            i += 1
+    names = [sname] + names
+    f = open("static/sessions/db.csv", "w")
+    f.write(str(lim)+"\n")
+    for n in names:
+        f.write(n+"\n")
+    f.close()
+    return sname
+
 app = Flask(__name__) 
 info = ModelInfo()
+
+@app.route('/settings', methods=['GET', 'POST'])    # main page
+def settings():
+    fm = request.form
+    snum = fm.get("snum")
+    if fm:
+        f = open("static/sessions/db.csv", "r")
+        lines = f.readlines()
+        f.close()
+        if snum:
+            lines[0] = snum+"\n"
+        ssel = fm.get("ssel")
+        if ssel:
+            ssel = ssel[:-5]
+            snew, sdel = fm.get("snew"), fm.get("sdel")
+            if snew or sdel:
+                i = 1
+                while i < len(lines):
+                    if lines[i][:-1] == ssel:
+                        if snew:
+                            lines[i] = snew+"\n"
+                            os.rename("static/sessions/"+ssel+".json",
+                                      "static/sessions/"+snew+".json")
+                        elif sdel:
+                            lines.pop(i)
+                            os.remove("static/sessions/"+ssel+".json")
+                        break
+                    else:
+                        i += 1
+        f = open("static/sessions/db.csv", "w")
+        f.writelines(lines)
+        f.close()
+
+    return render_template('settings.html', options=info.options)
 
 @app.route('/reinforce', methods=['GET', 'POST'])    # main page
 def reinforce():
@@ -76,15 +154,16 @@ def reinforce():
 def index():
     fm = request.form
     print(fm,info.model_ready)
-    if not fm or "history" in fm or not check_mandatory(fm, mandatory):
+    options = info.options
+    if not fm or "sessions" in fm or not check_mandatory(fm, mandatory):
         # Clear previous inputs and load main page 
         info.__init__()
-        history = fm.get("history")
-        if history:
-            info.load("static/history/"+history)
+        sessions = fm.get("sessions")
+        if sessions:
+            info.load("static/sessions/"+sessions)
             for key in opkeys:
                 options[key][0] = info.form[key]
-        return render_template('index.html', options=options, info=info)
+        return render_template('index.html',options=options, info=info)
     print("data suff")
     info.form = fm
     # dataset and model setup
@@ -184,7 +263,8 @@ def index():
 
     # Start training
     print("start training", info.dataset, info.model_ready)
-    info.store("static/history/1.json")
+    fn = add_sessions(fm.get("sname"))
+    info.store("static/sessions/"+fn+".json")
     oname = fm.get("optim")
     if info.dataset and info.model_ready and oname:           
         optim = None

@@ -1,6 +1,6 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bayesian NN</title>
+    <title>Bayesian NN: Supervised</title>
     <style>
     * {
       box-sizing: border-box;
@@ -29,20 +29,22 @@
 
 <body>
     <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
-    <a href="/">[Supervised learning]</a> | <a href="/reinforce">Reinforcement learning >></a>
+    <a href="/"><b>[Supervised learning]</b></a> | <a href="/reinforce">Reinforcement learning >> </a> 
+    <a href="/settings"><button># User preferences</button> </a>
     <div class="row">
     <div class="column" style="background-color: lightgoldenrodyellow;">
       <h3>Bayesian neural network training setup <a href="/"><button>Reset all</button></a> </h3>
       <form action="/" method="post">
-      Autofill from history of training setups: <select name="history">{% for c in  options["history"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
-      <input type="submit" value="Continue>>"></button>
+      Autofill from recent sessions of training: <select name="sessions">{% for c in  options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+      <input type="submit" value="Continue>>">
       </form><form action="/" method="post">
+      Name the current training session (Optional): <input type="text" name="sname"><br>
       <b>--Dateset specifications--</b><br>
           Select dataset: static/datasets/ <input type="file" name="dfile" value="{{info.form["dfile"]}}"><br>
           Learning category: <select name="lcat">{% for l in options["lcat"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
           Loss function: <select name="loss">{% for l in options["loss"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
           Frac train: <input type="number" name="tfrac" value="10" min="1" max="100" step="1">% <br>
-      <b>--Model information--</b> 
+      <b>--Base model information--</b> 
         Upload .json model: static/models/ <br><input type="file" name="nnjson" value="{{info.form["nnjson"]}}">; Or create model manually:<br>
           Model name: <input type="text" name="mname" value="{{info.form["mname"]}}">; 
           Input dimensions: <input type="text" name="ipd" value="{{info.form["ipd"]}}"> Output dimension: <input type="number" name="opd" min="1" step="1" value="{{info.form["opd"]}}"> <br>
