@@ -3,6 +3,11 @@ import tensorflow as tf
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
 import matplotlib.pyplot as plt
+import numpy as np
+import scikitplot as skplt
+from sklearn.decomposition import PCA
+
+
 
 
 class Plotter:
@@ -48,7 +53,7 @@ class Plotter:
             plt.scatter(x[y == i][:, 0], x[y == i][:, 1], marker='o', cmap=colors[i], label="Class " + str(i))
         if predictions.shape[1] == 1:
             # in the very specific case of binary classification with one neuron output convert it to two output
-            predictions = tf.stack([predictions, 1 - predictions], axis=1)
+            predictions = tf.stack([1 - predictions, predictions], axis=1)
         predictions_max = tf.math.reduce_max(predictions, axis=1)
         uncertainty_area = tf.cast(predictions_max < uncertainty_threshold, dtype=tf.float32)
         uncertainty_area = tf.reshape(uncertainty_area, (dim1.shape[0], dim1.shape[1]))
@@ -57,18 +62,19 @@ class Plotter:
         plt.title("Uncertainty area with threshold " + str(uncertainty_threshold))
         plt.show()
 
-    def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type="test") -> (tf.Tensor, tf.Tensor):
+    def _get_x_y(self, n_samples=100, data_type="test"):
         tf_dataset = self._dataset.valid_data
         if data_type == "test":
             tf_dataset = self._dataset.test_data
         elif data_type == "train":
             tf_dataset = self._dataset.train_data
-        if n_samples > tf_dataset.cardinality().numpy().item():
-            n_samples = tf_dataset.cardinality().numpy().item()
-            print("Warning : n_samples is larger than specified dataset. Will plot less samples")
-        x, y = next(iter(tf_dataset.batch(n_samples)))
+        x,y_true = next(iter(tf_dataset.batch(n_samples)))
+        return x,y_true
 
-        if x.shape[1] > dimension:
+    def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type="test") -> (tf.Tensor, tf.Tensor):
+        x, y = self._get_x_y(n_samples, data_type)
+
+        if x.shape[1] > dimension: #TODO: does not take images into account
             print("Dimension ", len(x.shape[1]), " is not right.")
             print("Will apply PCA to reduce to dimension ", dimension)
             base_matrix = tf.pca(x, dimension, dtype=x.dtype)
@@ -111,3 +117,105 @@ class Plotter:
         grid_x = tf.stack([tf.reshape(dim1, (-1)), tf.reshape(dim2, (-1))], axis=1)
         grid_x_augmented = tf.linalg.matmul(grid_x, tf.transpose(base_matrix))
         return dim1, dim2, grid_x_augmented
+
+    def regression_uncertainty(self, data_type="test", n_samples = 100, n_boundaries = 100) -> tuple:
+        # For classification, we might use the entropy of the predicted probabilities
+        # as a measure of aleatoric uncertainty and variance of multiple stochastic
+        # forward passes as epistemic uncertainty.
+        # Assuming predict returns a distribution over classes for each sample
+        if self._dataset.likelihood_model == "Regression":
+            x,y_true = self._get_x_y(n_samples, data_type)
+            y_samples, y_pred = self._model.predict(x, n_boundaries)
+            variance = np.var(y_samples, axis=0)
+            err = np.mean(np.sqrt(variance), axis = 1)
+            pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
+            # uncertainty
+            plt.figure(figsize=(10, 5))
+            plt.hlines([0], 0, len(err))
+            plt.plot(range(len(err)), pred_dev-err, label='Epistemic Lower', alpha=0.5)
+            plt.scatter(range(len(err)), pred_dev, label='Averaged deviation', alpha=0.5, c="k")
+            plt.plot(range(len(err)), pred_dev+err, label='Epistemic Upper', alpha=0.5)
+            plt.legend()
+            plt.title('Epistemic Uncertainty')
+            plt.ylabel('Pred-True difference')
+            plt.show()
+        else:
+            raise Exception("regression uncertainty cannot be computed for classification problems")
+
+
+    def confusion_matrix(self, n_samples=100, data_type="test", n_boundaries = 100):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if y_pred.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+        y_pred_labels = tf.argmax(y_pred, axis=1)
+        skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = 'Confusion Matrix')
+        plt.show()
+
+    def compare_prediction_to_target(self, n_samples=100, data_type="test", n_boundaries = 100):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if self._dataset.likelihood_model == "Regression":
+            y_true = tf.reshape(y_true, y_pred.shape)
+            if y_true.shape[1] == 1:
+                plt.figure(figsize=(10, 5))
+                plt.scatter(range(len(y_true)), y_true, label='True Values', alpha=0.5)
+                plt.scatter(range(len(y_pred)), y_pred, label='Predicted Mean', alpha=0.5)
+                plt.legend()
+                plt.title('True vs Predicted Values')
+                plt.xlabel('Sample Index')
+                plt.ylabel('Output')
+                plt.show()
+        else:
+            if y_pred.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            y_pred_labels = tf.argmax(y_pred, axis=1)
+            x_2d = tf.reshape(x, (x.shape[0], -1))
+            if x_2d.shape[1] == 2:
+                self._plot_2d(x_2d, y_true, y_pred_labels)
+            else:
+                if(x_2d.shape[1]>=3):
+                    x_pca = PCA(n_components=3).fit_transform(x_2d)
+                    self._plot_3d(x_pca, y_true, y_pred_labels)
+                else:
+                    x_pca = PCA(n_components=2).fit_transform(x_2d)
+                    self._plot_2d(x_pca, y_true, y_pred_labels)
+
+
+    def _plot_2d(self, x_pca, y_true, y_pred):
+        fig, (ax_true, ax_pred) = plt.subplots(2, figsize=(12, 8))
+        scatter_true = ax_true.scatter(x_pca[:, -2], x_pca[:, -1], c=y_true, s=5)
+        legend_plt_true = ax_true.legend(*scatter_true.legend_elements(), loc="lower left", title="Digits")
+        ax_true.add_artist(legend_plt_true)
+        scatter_pred = ax_pred.scatter(x_pca[:, -2], x_pca[:, -1], c=y_pred, s=5)
+        legend_plt_pred = ax_pred.legend(*scatter_pred.legend_elements(), loc="lower left", title="Digits")
+        ax_pred.add_artist(legend_plt_pred)
+        ax_true.set_title('First Two Dimensions of Projected True Data After Applying PCA')
+        ax_pred.set_title('First Two Dimensions of Projected Predicted Data After Applying PCA')
+        plt.show()
+        
+    def _plot_3d(self, x_pca, y_true, y_pred):
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax_true = fig.add_subplot(1, 2, 1, projection='3d')
+        plt_3d_true = ax_true.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_true, s=1)
+        fig.colorbar(plt_3d_true, shrink=0.5)
+        
+        ax_pred = fig.add_subplot(1, 2, 2, projection='3d')
+        plt_3d_pred = ax_pred.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_pred, s=1)
+        fig.colorbar(plt_3d_pred, shrink=0.5)
+        
+        plt.title('First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA')
+        plt.show()
+
+
+    def learning_diagnostics(self, loss_file):
+        if loss_file != None:
+            losses = np.loadtxt(loss_file)
+            plt.plot(losses)
+            plt.title("Training Loss")
+            plt.xlabel("Iterations")
+            plt.ylabel("Loss")
+            plt.legend()
+            plt.show()

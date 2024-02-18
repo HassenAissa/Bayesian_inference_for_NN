@@ -66,13 +66,6 @@ class Dataset:
         if (label_normalisation):
             self.label_normalisation()
 
-    # def get_likelihood_type(self):
-    #     if isinstance(self._loss, tf.keras.losses.MeanSquaredError):
-    #         return "Regression"
-    #     elif isinstance(self._loss, tf.keras.losses.SparseCategoricalCrossentropy):
-    #         return "Classification"
-    #     else:
-    #         return None
         
     def _init_from_tf_dataset(self, dataset: tf.data.Dataset):
         dataset = dataset.shuffle(dataset.cardinality())
@@ -113,6 +106,9 @@ class Dataset:
             tf.keras.losses: the loss function
         """
         return self._loss
+    
+    def input_shape(self):
+        return next(iter(self.train_data))[0].shape
 
     def _normalise_feature(self, x,y, mean, std):
         return ((x-mean)/std, y)

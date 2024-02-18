@@ -1,2 +1,2 @@
-from .Visualisation import Visualisation
+from .Metrics import Metrics
 from .Plotter import Plotter
