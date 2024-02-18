@@ -57,7 +57,7 @@
         Batch size: <input type="number" min="1" name="batch" value="{{info.form["batch"]}}">; 
         Optimizer:  <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
         Iterations: <input type="number" name="ite" min="1" step="1" value="{{info.form["ite"]}}"><br>
-        start model: <input type="file" name="nnjson" value="{{info.form["startjson"]}}">
+        start model (for SWAG): <input type="file" name="nnjson" value="{{info.form["startjson"]}}"> <br>
         prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
           standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s""]}}" min="-999", max="999" step="0.01">) <br>
         prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 

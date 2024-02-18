@@ -273,8 +273,6 @@ def index():
 
     # Start training
     print("start training", info.dataset, info.model_ready)
-    fn = add_sessions(fm.get("sname"))
-    info.store("static/sessions/"+fn+".json")
     oname = fm.get("optim")
     if info.dataset and info.model_ready and oname:           
         optim = None
@@ -310,7 +308,10 @@ def index():
                 config = json.load(f)
                 f.close()
                 extra["starting_model"] = tf.keras.models.model_from_json(config)
+                
             optim.compile_extra_components(extra)
+            fn = add_sessions(fm.get("sname"))
+            info.store("static/sessions/"+fn+".json")
             optim.train(int(fm.get("ite")))
             
     return render_template('index.html', options=options, info=info)
