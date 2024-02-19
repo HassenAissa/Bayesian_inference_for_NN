@@ -140,8 +140,9 @@ def hyp_get(hypf, hyp):
         hyperparams.from_file("static/hyperparams/"+hypf)
     return hyperparams
 
-def optim_select(oname, options, fm):
+def optim_select(options, fm):
     optim = None
+    oname = fm.get("optim")
     if oname == options["optim"][1]:
         optim = om.BBB()
     elif oname == options["optim"][2]:
@@ -175,8 +176,8 @@ def optim_mstart(fm, model_config):
         return tf.keras.models.model_from_json(config)
     return None
 
-def optim_dataset(oname, options, fm, hypf, hyp, model_config, dataset):
-    optim, extra = optim_select(oname, options, fm)
+def optim_dataset(options, fm, hypf, hyp, model_config, dataset):
+    optim, extra = optim_select(options, fm)
     hyperparams = hyp_get(hypf, hyp)
     extra["starting_model"] = optim_mstart(fm, model_config)
     if optim:

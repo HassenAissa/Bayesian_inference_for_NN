@@ -1,1 +1,1 @@
-lr 0.01 frequency 5 k 12
+lr 0.01 frequency 10 k 1 scale 1

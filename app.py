@@ -11,7 +11,7 @@ sl_mandatory = [("if", "f1", "", ["lcat", ("if", "lcat", "Classification", "dfil
 rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", "pnnjson", ["pmname", "phidden", "pactivations"]), "poact",
                 ("or", "dnnjson", ["dmname", "dhidden", "dactivations"]), "doact", "optim", "reward"]
 sl_opkeys = ["lcat", "loss", "optim"]
-rl_opkeys = ["rmode","oact","optim", "reward"]
+rl_opkeys = ["poact", "doact","optim", "reward"]
     
 class ModelInfo:
     def __init__(self):
@@ -50,9 +50,11 @@ class RLInfo(ModelInfo):
         super().__init__()
         self.policy = None
         self.dyn_train = None
+        self.agent = None
         self.options = {"sessions": [""]+apu.read_sessions("rl"),
                         "rmode": [""]+["human", "rgb_array"],
-                        "oact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
+                        "poact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
+                        "doact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
                         "reward": [""]+list(all_rewards.keys())}
 
@@ -64,16 +66,19 @@ rl = RLInfo()
 def reinforce():
     fm = request.form
     options = rl.options
-    if not fm or "sessions" in fm or not apu.check_mandatory(fm, rl_mandatory):
-        # Clear previous inputs and load main page 
+    if not fm or "session" in fm or not apu.check_mandatory(fm, rl_mandatory):
+        # Clear previous inputs and load main page
         rl.__init__()
-        sessions = fm.get("sessions")
-        if sessions:
-            rl.load("static/sessions/rl/"+sessions)
+        session = fm.get("session")
+        if session:
+            rl.load("static/sessions/rl/"+session)
             for key in rl_opkeys:
                 options[key][0] = rl.form[key]
         return render_template('reinforce.html',options=options, info=rl)
-    env = gym.make(fm.get("envname", render_mode=fm.get("rmode")))
+    rl.form = fm
+    fn = apu.add_sessions(fm.get("sname"), "rl")
+    rl.store("static/sessions/rl/"+fn+".json")
+    env = gym.make(fm.get("envname"))
     # Policy network
     policy_json = fm.get("pnnjson")
     policy_nn = None
@@ -85,7 +90,7 @@ def reinforce():
         f.close()
         policy_nn = tf.keras.models.model_from_json(policy_config)
     else:
-        model_file = "static/models/policy/"+fm.get("pmname")+".json"
+        model_file = "static/models/dynamic/"+fm.get("pmname")+".json"
         acts,hidden,kernel,filters = fm.get("pactivations"),fm.get("phidden"),fm.get("pkernel"),fm.get("pfilters")
         policy_nn = apu.nn_create(acts,hidden,kernel,filters)
         f = open(model_file, "w")
@@ -115,21 +120,29 @@ def reinforce():
     policy = NNPolicy(policy_nn, poact, policy_hyp)
     dyn_hyp = apu.hyp_get(fm.get("dhypf"), fm.get("dhyp"))
     doact = fm.get("doact")
-    optim, extra = apu.optim_select(fm.get("optim"))
+    optim, extra = apu.optim_select(options, fm)
     dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
         dyn_nn, doact, dyn_hyp)
-    extra["starting_model"] = apu.optim_mstart(fm, dyn_config)
-    dyn_training.compile_more(extra)
-    agent = BayesianDynamics(
+    rl.agent = BayesianDynamics(
         env=env,
         horizon=int(fm.get("hor")),
         dyn_training=dyn_training,
         policy=policy,
-        state_reward=fm.get("reward"),
-        learn_config=(fm.get("dynep"),fm.get("npar"),fm.get("disc")), # dynamic epochs, particle number, discount factor
+        state_reward=all_rewards[fm.get("reward")],
+        learn_config=(int(fm.get("dynep")),int(fm.get("npar")),float(fm.get("disc"))) 
+        # dynamic epochs, particle number, discount factor
     )
-
-    agent.learn(nb_epochs=int(fm.get("lep")))
+    if fm.get("mstart"):
+        extra["starting_model"] = dyn_training.model
+    elif fm.get("start_json"):
+        extra["starting_model"] = apu.optim_mstart(fm, dyn_config)
+    dyn_training.compile_more(extra)
+    env.reset(seed=42)
+    record_file="static/results/learning.txt"
+    rl.agent.learn(nb_epochs=int(fm.get("lep")),record_file=record_file)
+    f = open(record_file, "r")
+    rl.process =f.read() 
+    f.close()
     return render_template('reinforce.html', options=rl.options, info=rl)
 
 @app.route('/', methods=['GET', 'POST'])    # main page
@@ -137,17 +150,19 @@ def index():
     fm = request.form
     print(fm,sl.model_ready)
     options = sl.options
-    if not fm or "sessions" in fm or not apu.check_mandatory(fm, sl_mandatory):
+    if not fm or "session" in fm or not apu.check_mandatory(fm, sl_mandatory):
         # Clear previous inputs and load main page 
         sl.__init__()
-        sessions = fm.get("sessions")
-        if sessions:
-            sl.load("static/sessions/sl/"+sessions)
+        session = fm.get("session")
+        if session:
+            sl.load("static/sessions/sl/"+session)
             for key in sl_opkeys:
                 options[key][0] = sl.form[key]
         return render_template('index.html',options=options, info=sl)
     print("data suff")
     sl.form = fm
+    fn = apu.add_sessions(fm.get("sname"), "sl")
+    sl.store("static/sessions/sl/"+fn+".json")
     # Both f1: create neural network only and f2: train bayesian model
     model_file = fm.get("nnjson")
     if model_file:
@@ -209,15 +224,12 @@ def index():
             f.write(model_config)
             f.close()
 
-    if not fm.get("f2"):
-        fn = apu.add_sessions(fm.get("sname"), "sl")
-        sl.store("static/sessions/sl/"+fn+".json")
-    else:
+    if fm.get("f2"):
         # Create optimizer and start training
         print("start training", sl.dataset, sl.model_ready)
         oname = fm.get("optim")
         if sl.dataset and sl.model_ready and oname:           
-            optim = apu.optim_dataset(oname, options, fm, fm.get("hypf"), fm.get("hyp"),
+            optim = apu.optim_dataset(options, fm, fm.get("hypf"), fm.get("hyp"),
                                        model_config, sl.dataset)
             fn = apu.add_sessions(fm.get("sname"), "sl")
             sl.store("static/sessions/sl/"+fn+".json")

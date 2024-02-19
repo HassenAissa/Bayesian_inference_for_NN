@@ -28,25 +28,26 @@
 </head>
 
 <body>
-    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</h1>
     <a href="/"><< Supervised learning</a> | <a href="/reinforce"><b style="background-color: orange;">[Reinforcement learning]</b></a>
     <a href="/settings"><button># User preferences</button> </a>
     <div class="row">
       <div class="column" style="background-color: skyblue;">
         <h3>Environment and agent creation <a href="/reinforce"><button>Reset all</button></a></h3>
-        <form action="/" method="post">
-          Autofill from saved sessions: <select name="sessions">{% for c in options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+        <form action="/reinforce" method="post">
+          Autofill from saved sessions: <select name="session">{% for c in options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
           <input type="submit" value="Continue>>">
         </form><form action="/reinforce" method="post">
-          Environmane name: <input type="text" name="envname" value="{{info.form["envname"]}}">; Render mode: <select name="reward">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
+          Name the current session (Optional): <textarea name="sname" cols="50" rows="1"></textarea>; 
+          Enter Gym environment: <input type="text" name="envname" value="{{info.form["envname"]}}"><br> 
           <b>--Learning specifications--</b> <br>
           Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="999">
           Number of particles: <input type="number" name="npar" value="{{info.form["npar"]}}" min="1" max="999">; Discount factor: <input type="number" name="disc" value="{{info.form["disc"]}}" min="0.001" max="1.000" step="0.001">;
-          Learn epochs: <input type="number" name="lep" value="{{info.form["lep"]}}" min="1" max="999">; Reward functions: <select name="reward">{% for r in options["reward"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
+          Learn epochs: <input type="number" name="lep" value="{{info.form["lep"]}}" min="1" max="999">; Reward function: <select name="reward">{% for r in options["reward"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
           <b>--Policy model--</b> <br>
-          Output activation function : <select name="poact">{% for a in options["oact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select>; 
-          Hyperparameters: <input type="file" name="phypf" value="{{info.form["hypf"]}}">; or write details here: <textarea name="phyp" cols="70" rows="1">{{info.form["hyp"]}}</textarea><br>
-          Upload .json model: <input type="file" name="pnnjson" value="{{info.form["pnnjson"]}}">; Or create manually: <br>
+          Output activation function : <select name="poact">{% for a in options["poact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select>; 
+          Hyperparameters: <input type="file" name="phypf">; or write details here: <textarea name="phyp" cols="70" rows="1">{{info.form["phyp"]}}</textarea><br>
+          <b>Upload .json model: </b><input type="file" name="pnnjson"> | Or create manually: <br>
           Model name: <input type="text" name="pmname" value="{{info.form["pmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="pkernel" min="1" max="999" value="{{info.form["pkernel"]}}">; 
           filters list: <br><textarea name="pfilters" cols="70" rows="1">{{info.form["pfilters"]}}</textarea>) <br>
@@ -54,7 +55,7 @@
           dimensions of densely connected layers: <br><textarea name="phidden" cols="70" rows="1">{{info.form["phidden"]}}</textarea> <br>
           all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br>
         <b>--Dynamic model--</b> <br>
-          Upload .json model: <input type="file" name="dnnjson" value="{{info.form["dnnjson"]}}">; Or create manually:<br>
+          <b>Upload .json model: </b><input type="file" name="dnnjson" value="{{info.form["dnnjson"]}}">; Or create manually:<br>
           Model name: <input type="text" name="dmname" value="{{info.form["dmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="dkernel" min="1" max="999" value="{{info.form["dkernel"]}}">; 
           filters list: <br><textarea name="dfilters" cols="70" rows="1">{{info.form["dfilters"]}}</textarea>) <br>
@@ -62,18 +63,21 @@
           dimensions of densely connected layers: <br><textarea name="dhidden" cols="70" rows="1">{{info.form["dhidden"]}}</textarea> <br>
           all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="dactivations" cols="70" rows="1">{{info.form["dactivations"]}}</textarea><br>
           <b>--Optimizer for dynamic model--</b> Select optimizer class: <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select> <br>
-          Output activation function : <select name="doact">{% for a in options["oact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select> <br>
+          Output activation function : <select name="doact">{% for a in options["doact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select> <br>
           start model (for SWAG): <input type="radio" name="mstart"> same as dynamic model | or <input type="file" name="startjson"> <br>
           prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
             standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s"]}}" min="-999", max="999" step="0.01">) <br>
           prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 
             standard deviation: <input type="number" name="pri2s" value=" value="{{info.form["pri2s"]}}" min="-999", max="999" step="0.01">)
-          Hyperparameters: <input type="file" name="dhypf" value="{{info.form["hypf"]}}">; or write details here: <textarea name="dhyp" cols="70" rows="1">{{info.form["hyp"]}}</textarea><br>
+          Hyperparameters: <input type="file" name="dhypf">; or write details here: <textarea name="dhyp" cols="70" rows="1">{{info.form["dhyp"]}}</textarea><br>
           <input type="submit" name="f2" value="Start learning >>">
         </form>
       </div>
       <div class="column">
-        <h2>Learning process and result analysis</h2>
+        <h3>Learning process and result analysis</h3>
+        {% if info.agent %}
+        <textarea readonly cols="50" rows="15">{{info.process}}</textarea>
+        {% endif %}
       </div>
     </div>
 </body>

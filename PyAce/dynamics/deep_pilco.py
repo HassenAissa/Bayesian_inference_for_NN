@@ -73,14 +73,14 @@ class DynamicsTraining:
         model = complete_model(self.template, ipd, sfd, self.out_activation) 
         self.model = model   
 
-    def compile_more(self, **kwargs):
-        self.rems = kwargs
+    def compile_more(self, extra):
+        self.rems = extra
 
-    def train(self, features, targets, nb_epochs):
+    def train(self, features, targets, opd, nb_epochs):
         data = tf.data.Dataset.from_tensor_slices((features, targets))
-        dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], self.sfd[0])
+        dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
         train_dataset = Dataset(
-            dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], self.sfd[0])
+            dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
         if not self.start:
             self.optimizer.compile(self.hyperparams, self.model.to_json(), 
                                    train_dataset, **self.rems)
@@ -169,12 +169,12 @@ class BayesianDynamics(Control):
         exp_rew = k_rew / self.kp
         return exp_rew
 
-    def learn(self, nb_epochs):
+    def learn(self, nb_epochs, record_file):
         def step(ep, check_converge=False):
             print(">>Learning epoch", ep)
             # train dynamic model using transition dataset
             xs, ys = self.execute()
-            self.dyn_training.train(xs, ys, self.dyntrain_ep)
+            self.dyn_training.train(xs, ys, self.state_fd[0], self.dyntrain_ep)
             # k sample inputs and k dynamic bnn
             states = self.k_particles()
             # predict trajectory and calculate gradient
@@ -198,7 +198,7 @@ class BayesianDynamics(Control):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
                 discount *= self.gamma
                 states = new_states
-            f = open("learning.txt", "a")
+            f = open(record_file, "a")
             f.write("Learning epoch "+str(ep)+"\n")
             if None in grad:
                 f.write("Invalid gradient!\n")
@@ -210,7 +210,7 @@ class BayesianDynamics(Control):
             f.close()
             return self.policy.optimize_step(tot_grad, check_converge=check_converge)
         
-        f = open("learning.txt", "w")
+        f = open(record_file, "w")
         f.write("")
         f.close()
         if nb_epochs:
