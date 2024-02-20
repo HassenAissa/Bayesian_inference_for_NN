@@ -78,9 +78,9 @@ class DynamicsTraining:
 
     def train(self, features, targets, opd, nb_epochs):
         data = tf.data.Dataset.from_tensor_slices((features, targets))
-        dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
-        train_dataset = Dataset(
-            dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
+        train_dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
+        # train_dataset = Dataset(
+        #     dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
         if not self.start:
             self.optimizer.compile(self.hyperparams, self.model.to_json(), 
                                    train_dataset, **self.rems)
@@ -200,7 +200,7 @@ class BayesianDynamics(Control):
                 states = new_states
             f = open(record_file, "a")
             f.write("Learning epoch "+str(ep)+"\n")
-            if None in grad:
+            if None in tot_grad:
                 f.write("Invalid gradient!\n")
                 f.close()
                 return 

@@ -19,6 +19,16 @@ def find_values(text:str):
         res.append(word)
     return word
 
+def access_file(pref, fs, form, key):
+    res = ""
+    fn = form[key]
+    if fn:
+        return pref+fn
+    if fs:
+        res = pref+fs
+        form[key] = fs
+    return res
+
 def check_mandatory(form, term):
     if not term:
         print("list end")
