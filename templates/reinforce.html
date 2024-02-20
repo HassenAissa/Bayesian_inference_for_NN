@@ -76,8 +76,15 @@
       <div class="column">
         <h3>Learning process and result analysis</h3>
         {% if info.agent %}
-        <textarea readonly cols="50" rows="15">{{info.process}}</textarea>
+        <textarea readonly cols="70" rows="15">{{info.process}}</textarea>
         {% endif %}
+        <form action="/reinforce" method="post">
+          Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
+          Select a policy of session <select name="policy">{% for a in options["sessions"] %}<option value="{{a[:-5]}}">{{a[:-5]}}</option>{% endfor %}</select>
+          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
+          <input type="submit" name="render" value="Start real task >>">
+        </form>
+        <img src="static/results/rewards.png" alt="rewards">
       </div>
     </div>
 </body>

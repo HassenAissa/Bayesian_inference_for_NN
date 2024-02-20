@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request
+from matplotlib import pyplot as plt
 from PyAce.datasets.Dataset import Dataset
 from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics
 from static.rewards import all_rewards
 import PyAce.datasets.utils as dsu, utils as apu
 import tensorflow as tf
-import os, json
+import os, json, pickle, time
 
 sl_mandatory = [("if", "f1", "", ["lcat", ("if", "lcat", "Classification", "dfile"), "ipd", "opd", "mname", "hidden", "activations"]),
     ("if", "f2", "", ["lcat", "loss", ("or", "nnjson", ["ipd", "opd", "mname", "hidden", "activations"]), "dfile", "batch", "optim", "ite"])]
@@ -15,6 +16,7 @@ rl_opkeys = ["poact", "doact","optim", "reward"]
     
 class ModelInfo:
     def __init__(self):
+        self.sname = ""
         self.form = None
         self.options = {}
 
@@ -48,6 +50,7 @@ class SLInfo(ModelInfo):
 class RLInfo(ModelInfo):
     def __init__(self):
         super().__init__()
+        self.envname = ""
         self.policy = None
         self.dyn_train = None
         self.agent = None
@@ -57,6 +60,15 @@ class RLInfo(ModelInfo):
                         "doact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
                         "reward": [""]+list(all_rewards.keys())}
+    def save_policy(self):
+        f = open("static/results/policies/"+self.sname+".pkl", "wb")
+        pickle.dump(self.policy.network, f)
+        f.close()
+    def find_policy(self, policy):
+        f = open("static/results/policies/"+policy+".pkl", "rb")
+        self.policy = NNPolicy(pickle.load(f), "", "") 
+        print("found policy load", self.policy)
+        f.close()
 
 app = Flask(__name__) 
 sl = SLInfo()
@@ -66,6 +78,45 @@ rl = RLInfo()
 def reinforce():
     fm = request.form
     options = rl.options
+    if fm.get("render"):
+        envname = fm.get("envname")
+        rl.envname = envname
+        policy, rmode = fm.get("policy"), fm.get("rmode")
+        if rmode:
+            if policy:
+                rl.find_policy(policy)
+            print(rl.policy)
+            if rl.policy:
+                env = gym.make(rl.envname, render_mode=rmode)
+                env.reset(seed=42)
+                observation, info = env.reset(seed=42)
+
+                total_reward = 0
+                t = 0
+                done = False
+                # Run the game loop
+                print(">>Start real game")
+                plt.title("Accumulative reward over time step")
+                ts = [0]
+                rewards = [0]
+                while not done:
+                    action = tf.reshape(rl.policy.act(tf.convert_to_tensor(observation)), 
+                                        shape=env.action_space.shape)
+                    # action = action.numpy()
+                    state, reward, terminated, truncated, info = env.step(
+                        tf.cast(action, env.action_space.dtype))
+                    total_reward += reward  # Accumulate the reward
+                    t += 1
+                    rewards.append(total_reward)
+                    ts.append(t)
+                    if terminated or truncated:
+                        done = True
+                    # You can add a delay here if the visualization is too fast
+                    time.sleep(0.05)
+                plt.plot(ts, rewards)
+                plt.savefig("static/results/rewards.png")
+        return render_template('reinforce.html', options=options, info=rl)
+
     if not fm or "session" in fm or not apu.check_mandatory(fm, rl_mandatory):
         # Clear previous inputs and load main page
         rl.__init__()
@@ -76,9 +127,11 @@ def reinforce():
                 options[key][0] = rl.form[key]
         return render_template('reinforce.html',options=options, info=rl)
     rl.form = fm
-    fn = apu.add_sessions(fm.get("sname"), "rl")
-    rl.store("static/sessions/rl/"+fn+".json")
-    env = gym.make(fm.get("envname"))
+    rl.sname = apu.add_sessions(fm.get("sname"), "rl")
+    rl.store("static/sessions/rl/"+rl.sname+".json")
+    options["sessions"] = [""]+apu.read_sessions("rl")
+    rl.envname = fm.get("envname")
+    env = gym.make(rl.envname)
     # Policy network
     policy_json = fm.get("pnnjson")
     policy_nn = None
@@ -143,6 +196,8 @@ def reinforce():
     f = open(record_file, "r")
     rl.process =f.read() 
     f.close()
+    rl.policy = policy
+    rl.save_policy()
     return render_template('reinforce.html', options=rl.options, info=rl)
 
 @app.route('/', methods=['GET', 'POST'])    # main page
@@ -240,37 +295,46 @@ def index():
 @app.route('/settings', methods=['GET', 'POST'])    # main page
 def settings():
     fm = request.form
-    snum = fm.get("snum")
-    if fm.get("session"):
-        f = open("static/sessions/"+scat+"/db.csv", "r")
+    print(fm)
+    nums = [0,0]
+    for c in range(2):
+        f = open("static/sessions/"+"sr"[c]+"l/db.csv", "r")
+        nums[c] = int(f.readline())
+        f.close()
+    scat = "s"
+    if fm.get("r"):
+        scat = "r"
+    num = fm.get(scat + "num")
+    sel = fm.get(scat+"sel")
+    lines = []
+    if num or sel:
+        f = open("static/sessions/"+scat+"l/db.csv", "r")
         lines = f.readlines()
         f.close()
-        if snum:
-            lines[0] = snum+"\n"
-        ssel = fm.get("ssel")
-        scat = fm.get("scat")
-        if ssel and scat:
-            ssel = ssel[:-5]
-            snew, sdel = fm.get("snew"), fm.get("sdel")
-            if snew or sdel:
+        if num:
+            lines[0] = num+"\n"
+        if sel:
+            n, d = fm.get(scat+"new"), fm.get(scat+"del")
+            if n or d:
                 i = 1
                 while i < len(lines):
-                    if lines[i][:-1] == ssel:
-                        if snew:
-                            lines[i] = snew+"\n"
-                            os.rename("static/sessions/"+scat+"/"+ssel+".json",
-                                      "static/sessions/"+scat+"/"+snew+".json")
-                        elif sdel:
+                    if lines[i][:-1] == sel[:-5]:
+                        if n:
+                            lines[i] = n+"\n"
+                            os.rename("static/sessions/"+scat+"l/"+sel,
+                                        "static/sessions/"+scat+"l/"+n+".json")
+                        elif d:
                             lines.pop(i)
-                            os.remove("static/sessions/"+scat+"/"+ssel+".json")
+                            os.remove("static/sessions/"+scat+"l/"+sel)
                         break
                     else:
                         i += 1
-        f = open("static/sessions/"+scat+"/db.csv", "w")
+        f = open("static/sessions/"+scat+"l/db.csv", "w")
         f.writelines(lines)
         f.close()
 
-    return render_template('settings.html', options=sl.options)
+    return render_template('settings.html', nums=nums,
+            ssessions=[""]+apu.read_sessions("sl"), rsessions=[""]+apu.read_sessions("rl"))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

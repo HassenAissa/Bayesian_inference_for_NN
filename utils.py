@@ -2,7 +2,7 @@ import PyAce.optimizers as om
 import tensorflow as tf
 from PyAce.distributions import GaussianPrior
 from matplotlib import pyplot as plt
-import json, pickle
+import json, os
 
 connectors = "._-"
 
@@ -50,7 +50,10 @@ def read_sessions(scat):
         res.append(l[:-1]+".json")
 
 def add_sessions(sname:str, scat):
-    f = open("static/sessions/"+scat+"/db.csv", "r")
+    pref = "static/sessions/"+scat
+    if not sname:
+        sname = "default"
+    f = open(pref+"/db.csv", "r")
     lim = int(f.readline())
     names = []
     found = False
@@ -67,16 +70,10 @@ def add_sessions(sname:str, scat):
     f.close()
 
     if len(names) == lim:
-        names.pop()
-    if not sname:
-        i = 1
-        while True:
-            sname = str(i)
-            if sname not in names:
-                break
-            i += 1
+        rem = names.pop()
+        os.remove(pref+"/"+rem+".json")
     names = [sname] + names
-    f = open("static/sessions/"+scat+"/db.csv", "w")
+    f = open(pref+"/db.csv", "w")
     f.write(str(lim)+"\n")
     for n in names:
         f.write(n+"\n")
