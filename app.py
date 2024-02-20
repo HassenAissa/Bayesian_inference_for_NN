@@ -64,9 +64,11 @@ class RLInfo(ModelInfo):
         f = open("static/results/policies/"+self.sname+".pkl", "wb")
         pickle.dump(self.policy.network, f)
         f.close()
-    def find_policy(self, policy):
+    def find_policy(self, policy, env):
         f = open("static/results/policies/"+policy+".pkl", "rb")
-        self.policy = NNPolicy(pickle.load(f), "", "") 
+        p = NNPolicy(pickle.load(f), "", "") 
+        BayesianDynamics(env, 0, None, p, None, None) # No object created, only setting up policy
+        self.policy = p
         print("found policy load", self.policy)
         f.close()
 
@@ -77,20 +79,20 @@ rl = RLInfo()
 @app.route('/reinforce', methods=['GET', 'POST'])    # main page
 def reinforce():
     fm = request.form
+    print(fm)
     options = rl.options
     if fm.get("render"):
         envname = fm.get("envname")
         rl.envname = envname
         policy, rmode = fm.get("policy"), fm.get("rmode")
-        if rmode:
+        if rmode: # Start real task
+            env = gym.make(rl.envname, render_mode=rmode)
+            env.reset(seed=42)
+            observation, info = env.reset(seed=42)
             if policy:
-                rl.find_policy(policy)
+                rl.find_policy(policy, env)
             print(rl.policy)
             if rl.policy:
-                env = gym.make(rl.envname, render_mode=rmode)
-                env.reset(seed=42)
-                observation, info = env.reset(seed=42)
-
                 total_reward = 0
                 t = 0
                 done = False
@@ -103,7 +105,7 @@ def reinforce():
                     action = tf.reshape(rl.policy.act(tf.convert_to_tensor(observation)), 
                                         shape=env.action_space.shape)
                     # action = action.numpy()
-                    state, reward, terminated, truncated, info = env.step(
+                    observation, reward, terminated, truncated, info = env.step(
                         tf.cast(action, env.action_space.dtype))
                     total_reward += reward  # Accumulate the reward
                     t += 1

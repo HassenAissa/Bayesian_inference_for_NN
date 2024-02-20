@@ -17,7 +17,7 @@ def find_values(text:str):
             word = ""
     if word:
         res.append(word)
-    return word
+    return res
 
 def access_file(pref, fs, form, key):
     res = ""
@@ -96,7 +96,7 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
     acts = find_values(acts)
     activations = []
     ai = 1
-    hiddens = [h for h in find_values(hidden)]
+    hiddens = [int(h) for h in find_values(hidden)]
     for a in acts:
         match a:
             case 'r':
@@ -109,19 +109,23 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
                 activations.append('softmax')
             case _:
                 activations.append('linear')
-    
+    print(hiddens, activations, kernel, filters)
     if not kernel or not filters: # fully connected specific
+        u = hiddens.pop(0)
+        print("layer", u, activations[0])
         if ipd:
-            layers.append(tf.keras.layers.Dense(hiddens.pop(0), activation=activations[0], input_shape=ipd))
+            layers.append(tf.keras.layers.Dense(u, activation=activations[0], input_shape=ipd))
         else:
-            layers.append(tf.keras.layers.Dense(hiddens.pop(0), activation=activations[0]))
+            layers.append(tf.keras.layers.Dense(u, activation=activations[0]))
     else: # Convolutional specific
         filters = [int(f) for f in find_values(filters)]
         kernel = int(kernel)
+        u = filters.pop(0)
+        print("conv", u, activations[0])
         if ipd:
-            layers.append(tf.keras.layers.Conv2D(filters[0], kernel, activation=activations[0]))
+            layers.append(tf.keras.layers.Conv2D(u, kernel, activation=activations[0]))
         else:
-            layers.append(tf.keras.layers.Conv2D(filters[0], kernel, activation=activations[0], input_shape=ipd))
+            layers.append(tf.keras.layers.Conv2D(u, kernel, activation=activations[0], input_shape=ipd))
         layers.append(tf.keras.layers.MaxPooling2D(2))
         for f in filters:
             layers += [tf.keras.layers.Conv2D(f, kernel, activation=activations[ai]), tf.keras.layers.MaxPooling2D(2)]
@@ -129,9 +133,11 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
         layers.append(tf.keras.layers.Flatten())
     # Common to both types
     for h in hiddens:  
+        print("layer", h, activations[ai])
         layers.append(tf.keras.layers.Dense(h, activation=activations[ai]))
         ai += 1
     if n_classes:
+        print("layer", n_classes, activations[ai])
         layers.append(tf.keras.layers.Dense(n_classes, activation=activations[ai]))
     if layers:
         # nn layers have been added properly
@@ -225,3 +231,4 @@ def draw_nn(shape):
     plt.annotate("input layer", (0,-ymax/2))
     plt.savefig("static/drawnn.png")
 
+print(find_values("16,32,64,8"))

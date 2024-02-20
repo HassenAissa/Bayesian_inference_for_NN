@@ -47,7 +47,7 @@
           <b>--Policy model--</b> <br>
           Output activation function : <select name="poact">{% for a in options["poact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select>; 
           Hyperparameters: <input type="file" name="phypf">; or write details here: <textarea name="phyp" cols="70" rows="1">{{info.form["phyp"]}}</textarea><br>
-          <b>Upload .json model</b> (current: <b>{{info.form["pnnjson"]}}</b>): <input type="hidden" name="pnnjsons"><input type="file" name="pnnjson"> | Or create manually: <br>
+          <b>Upload .json model</b> (use current <b>{{info.form["pnnjson"]}}</b>) <input type="checkbox" name="pnnjsons" value="{{info.form["pnnjson"]}}">); <input type="file" name="pnnjson"> | Or create manually: <br>
           Model name: <input type="text" name="pmname" value="{{info.form["pmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="pkernel" min="1" max="999" value="{{info.form["pkernel"]}}">; 
           filters list: <br><textarea name="pfilters" cols="70" rows="1">{{info.form["pfilters"]}}</textarea>) <br>
@@ -55,7 +55,7 @@
           dimensions of densely connected layers: <br><textarea name="phidden" cols="70" rows="1">{{info.form["phidden"]}}</textarea> <br>
           all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br>
         <b>--Dynamic model--</b> <br>
-          <b>Upload .json model</b> (current: <b>{{info.form["dnnjson"]}}</b>): </b><input type="hidden" name="dnnjsons"><input type="file" name="dnnjson"> | Or create manually:<br>
+          <b>Upload .json model</b> (use current: <b>{{info.form["dnnjson"]}}</b> </b><input type="checkbox" name="dnnjsons" value="{{info.form["dnnjson"]}}">); <input type="file" name="dnnjson"> | Or create manually:<br>
           Model name: <input type="text" name="dmname" value="{{info.form["dmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="dkernel" min="1" max="999" value="{{info.form["dkernel"]}}">; 
           filters list: <br><textarea name="dfilters" cols="70" rows="1">{{info.form["dfilters"]}}</textarea>) <br>
