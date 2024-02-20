@@ -142,6 +142,7 @@ class Plotter:
         else:
             raise Exception("regression uncertainty cannot be computed for classification problems")
 
+    
 
     def confusion_matrix(self, n_samples=100, data_type="test", n_boundaries = 100):
         x,y_true = self._get_x_y(n_samples, data_type)
@@ -208,6 +209,26 @@ class Plotter:
         
         plt.title('First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA')
         plt.show()
+
+    def entropy(self, n_samples=100, data_type="test", n_boundaries = 100):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if self._dataset.likelihood_model == "Classification":
+            if y_pred.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            entropies = []
+            for probabilities in y_pred:
+                entropies.append(-1*np.sum(probabilities*np.log(probabilities+1e-5)))
+            entropies = np.nan_to_num(entropies)
+            plt.scatter(range(len(y_true)), entropies)
+            plt.title('Entropies for each input')
+            plt.xlabel('Sample Index')
+            plt.ylabel('entropy')
+            plt.show()
+        else:
+            raise Exception("Entropy is only available for classification")
+        
 
 
     def learning_diagnostics(self, loss_file):
