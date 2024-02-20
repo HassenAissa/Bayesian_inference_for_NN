@@ -7,7 +7,7 @@ from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
 from PyAce.optimizers import HyperParameters
 from PyAce.optimizers import SWAG
-from PyAce.visualisations import Metrics
+from PyAce.visualisations import Metrics, Plotter
 from PyAce.visualisations import Robustness
 import tensorflow_datasets as tfds
 
@@ -37,14 +37,18 @@ def runner():
     optimizer = BBB()
     prior = GaussianPrior(.0,-5.0)
     optimizer.compile(hyperparams, base_model.to_json(), dataset, prior = prior)
-    optimizer.train(1000)
+    optimizer.train(10)
 
 
 
     bayesian_model: BayesianModel = optimizer.result()
     analytics_builder = Metrics(bayesian_model, dataset)
-    print("Starting performence analysis")
-    analytics_builder.summary(100)
+    plot_builder = Plotter(bayesian_model, dataset)
+    print("Starting performance analysis")
+    path = "PyAce/tests"
+    analytics_builder.summary(10, save_file=path)
+    plot_builder.confusion_matrix(save_path=path)
+    plot_builder.entropy(save_path=path)
 
 
 

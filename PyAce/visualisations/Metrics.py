@@ -3,6 +3,7 @@ from PyAce.nn import BayesianModel
 from PyAce.datasets import Dataset
 import sklearn.metrics as skmet
 import tensorflow as tf
+import os
 
 
 class Metrics():
@@ -13,7 +14,7 @@ class Metrics():
         self._model = model
         self._dataset = dataset
     
-    def summary(self, nb_boundaries: int, loss_save_file = None):
+    def summary(self, nb_boundaries: int, loss_save_file = None, save_file = None):
         """
         outputs visualisations of performance metrics, learning diagnostic and uncertainty calculated upon the testing sub-dataset of given dataset. 
 
@@ -26,19 +27,31 @@ class Metrics():
         y_samples, y_pred = self._model.predict(x, nb_boundaries)  # pass in the x value
 
         if self._dataset.likelihood_model == "Regression" :
-            print("MSE:", self.mse(y_pred, y_true))
-            print("RMSE:", self.rmse(y_pred, y_true))
-            print("MAE:", self.mae(y_pred, y_true))
-            print("R2:", self.r2(y_pred, y_true))
+            if save_file:
+                self._save(save_file, "mse", self.mse(y_pred, y_true))
+                self._save(save_file, "rmse", self.rmse(y_pred, y_true))
+                self._save(save_file, "mae", self.mae(y_pred, y_true))
+                self._save(save_file, "r2", self.r2(y_pred, y_true))
+            else:
+                print("MSE:", self.mse(y_pred, y_true))
+                print("RMSE:", self.rmse(y_pred, y_true))
+                print("MAE:", self.mae(y_pred, y_true))
+                print("R2:", self.r2(y_pred, y_true))
             
         elif self._dataset.likelihood_model == "Classification":
             if y_pred.shape[1] == 1:
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
-            print("Accuracy: {}%".format(self.accuracy(y_pred, y_true)))
-            print("Recall: {}%".format(self.recall(y_pred, y_true)))
-            print("Precision: {}%".format(self.precision(y_pred, y_true)))
-            print("F1 Score: {}%".format(self.f1_score(y_pred, y_true)))
+            if save_file:
+                self._save(save_file, "accuracy", self.accuracy(y_pred, y_true))
+                self._save(save_file, "recall", self.recall(y_pred, y_true))
+                self._save(save_file, "precision", self.precision(y_pred, y_true))
+                self._save(save_file, "f1_score", self.f1_score(y_pred, y_true))
+            else:
+                print("Accuracy: {}%".format(self.accuracy(y_pred, y_true)))
+                print("Recall: {}%".format(self.recall(y_pred, y_true)))
+                print("Precision: {}%".format(self.precision(y_pred, y_true)))
+                print("F1 Score: {}%".format(self.f1_score(y_pred, y_true)))
             # print("ROC Score: {}".format(self.auroc(y_pred, y_true)))
         else: 
             print("Invalid loss function")
@@ -122,4 +135,12 @@ class Metrics():
             return epistemics + aleatorics, aleatorics, epistemics
         else:
             raise Exception("only for classification")
+        
+    def _save(self, path, name, content):
+        directory = path + "/report"
+        os.makedirs(directory, exist_ok=True)
+        file_path = directory + "/" + name + ".txt"
+        f = open(file_path, "w")
+        f.write(str(content))
+        f.close()
 
