@@ -88,7 +88,7 @@ class Metrics():
         x,y_true = next(iter(tf_dataset.batch(n_samples)))
         return x,y_true
         
-    def uncertainty(self,n_samples = 100, data_type = "test", n_boundaries = 30):
+    def classification_uncertainty(self,n_samples = 100, data_type = "test", n_boundaries = 30):
         if self._dataset.likelihood_model == "Classification":
             x,y_true = self._get_x_y(n_samples, data_type)
             y_samples, y_pred = self._model.predict(x, n_boundaries)
