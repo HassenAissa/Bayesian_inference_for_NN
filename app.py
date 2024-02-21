@@ -8,9 +8,9 @@ import tensorflow as tf
 import os, json, pickle, time
 
 sl_mandatory = [("if", "f1", "", ["lcat", ("if", "lcat", "Classification", "dfile"), "ipd", "opd", "mname", "hidden", "activations"]),
-    ("if", "f2", "", ["lcat", "loss", ("or", "nnjson", ["ipd", "opd", "mname", "hidden", "activations"]), "dfile", "batch", "optim", "ite"])]
-rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", "pnnjson", ["pmname", "phidden", "pactivations"]), "poact",
-                ("or", "dnnjson", ["dmname", "dhidden", "dactivations"]), "doact", "optim", "reward"]
+    ("if", "f2", "", ["lcat", "loss", ("or", ("or", "nnjson", "nnjsons"), ["ipd", "opd", "mname", "hidden", "activations"]), ("or", "dfile", "dfiles"), "batch", "optim", "ite"])]
+rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", ("or", "pnnjson", "pnnjsons"), ["pmname", "phidden", "pactivations"]), "poact",
+                ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "doact", "optim", "reward"]
 sl_opkeys = ["lcat", "loss", "optim"]
 rl_opkeys = ["poact", "doact","optim", "reward"]
     
@@ -64,9 +64,11 @@ class RLInfo(ModelInfo):
         f = open("static/results/policies/"+self.sname+".pkl", "wb")
         pickle.dump(self.policy.network, f)
         f.close()
-    def find_policy(self, policy):
+    def find_policy(self, policy, env):
         f = open("static/results/policies/"+policy+".pkl", "rb")
-        self.policy = NNPolicy(pickle.load(f), "", "") 
+        p = NNPolicy(pickle.load(f), "", "") 
+        BayesianDynamics(env, 0, None, p, None, None) # No object created, only setting up policy
+        self.policy = p
         print("found policy load", self.policy)
         f.close()
 
@@ -77,20 +79,20 @@ rl = RLInfo()
 @app.route('/reinforce', methods=['GET', 'POST'])    # main page
 def reinforce():
     fm = request.form
+    print(fm)
     options = rl.options
     if fm.get("render"):
         envname = fm.get("envname")
         rl.envname = envname
         policy, rmode = fm.get("policy"), fm.get("rmode")
-        if rmode:
+        if rmode: # Start real task
+            env = gym.make(rl.envname, render_mode=rmode)
+            env.reset(seed=42)
+            observation, info = env.reset(seed=42)
             if policy:
-                rl.find_policy(policy)
+                rl.find_policy(policy, env)
             print(rl.policy)
             if rl.policy:
-                env = gym.make(rl.envname, render_mode=rmode)
-                env.reset(seed=42)
-                observation, info = env.reset(seed=42)
-
                 total_reward = 0
                 t = 0
                 done = False
@@ -103,7 +105,7 @@ def reinforce():
                     action = tf.reshape(rl.policy.act(tf.convert_to_tensor(observation)), 
                                         shape=env.action_space.shape)
                     # action = action.numpy()
-                    state, reward, terminated, truncated, info = env.step(
+                    observation, reward, terminated, truncated, info = env.step(
                         tf.cast(action, env.action_space.dtype))
                     total_reward += reward  # Accumulate the reward
                     t += 1
@@ -126,24 +128,23 @@ def reinforce():
             for key in rl_opkeys:
                 options[key][0] = rl.form[key]
         return render_template('reinforce.html',options=options, info=rl)
-    rl.form = fm
+    rl.form = dict(fm)
     rl.sname = apu.add_sessions(fm.get("sname"), "rl")
     rl.store("static/sessions/rl/"+rl.sname+".json")
     options["sessions"] = [""]+apu.read_sessions("rl")
     rl.envname = fm.get("envname")
     env = gym.make(rl.envname)
     # Policy network
-    policy_json = fm.get("pnnjson")
     policy_nn = None
     policy_config = ""
-    if policy_json:
-        pf = "static/models/policy/"+policy_json
+    pf = apu.access_file("static/models/policy/", fm.get("pnnjsons"), rl.form, "pnnjson")
+    if pf:
         f = open(pf,"r")
         policy_config = f.read()
         f.close()
         policy_nn = tf.keras.models.model_from_json(policy_config)
     else:
-        model_file = "static/models/dynamic/"+fm.get("pmname")+".json"
+        model_file = "static/models/policy/"+fm.get("pmname")+".json"
         acts,hidden,kernel,filters = fm.get("pactivations"),fm.get("phidden"),fm.get("pkernel"),fm.get("pfilters")
         policy_nn = apu.nn_create(acts,hidden,kernel,filters)
         f = open(model_file, "w")
@@ -151,17 +152,16 @@ def reinforce():
         f.write(policy_config)
         f.close()
     # Dynamics network
-    dyn_json = fm.get("dnnjson")
+    pf = apu.access_file("static/models/dynamics/", fm.get("dnnjsons"), rl.form, "dnnjson")
     dyn_nn = None
     dyn_config = ""
-    if dyn_json:
-        pf = "static/models/dynamics/"+dyn_json
+    if pf:
         f = open(pf,"r")
         dyn_config = f.read()
         f.close()
         dyn_nn = tf.keras.models.model_from_json(dyn_config)
     else:
-        model_file = "static/models/policy/"+fm.get("dmname")+".json"
+        model_file = "static/models/dynamics/"+fm.get("dmname")+".json"
         acts,hidden,kernel,filters = fm.get("dactivations"),fm.get("dhidden"),fm.get("dkernel"),fm.get("dfilters")
         dyn_nn = apu.nn_create(acts,hidden,kernel,filters)
         f = open(model_file, "w")
@@ -215,13 +215,13 @@ def index():
                 options[key][0] = sl.form[key]
         return render_template('index.html',options=options, info=sl)
     print("data suff")
-    sl.form = fm
+    sl.form = dict(fm)
     fn = apu.add_sessions(fm.get("sname"), "sl")
     sl.store("static/sessions/sl/"+fn+".json")
     # Both f1: create neural network only and f2: train bayesian model
-    model_file = fm.get("nnjson")
+    model_file = apu.access_file("static/models/sl/", fm.get("nnjsons"), sl.form, "nnjson")
     if model_file:
-        sl.model_file = "static/models/sl/"+model_file
+        sl.model_file = +model_file
         sl.model_ready = True
         f = open(sl.model_file, "r")
         model_config = f.read()
@@ -245,7 +245,7 @@ def index():
         elif loss == options["loss"][1]:
             lfunc = tf.keras.losses.SparseCategoricalCrossentropy()
 
-        data_name = fm.get("dfile")
+        data_name = apu.access_file("static/datasets/", fm.get("dfiles"), sl.form, "dfile")
         if "." not in data_name:    # dataset FOLDER
             tfrac = int(fm.get("tfrac"))/100
             x_train, y_train = dsu.imgdata_preprocess("static/datasets/"+data_name, tfrac, sl.ipd)

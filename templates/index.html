@@ -39,12 +39,12 @@
       <input type="submit" value="Continue>>">
       </form><form action="/" method="post">
       Name the current session (Optional): <textarea name="sname" cols="50" rows="1"></textarea><br>
-      <b>--Base model and dataset--</b> 
-      <b>Upload .json model:</b><br><input type="file" name="nnjson">; Or create model manually:<br>
+      <b>--Base model and dataset information--</b><br> 
+      <b>Upload base model</b> (use current: <b>{{info.form["nnjson"]}}</b> <input type="hidden" name="nnjsons" value="{{info.form["nnjson"]}}">); <input type="file" name="nnjson"> | Or create  manually:<br>
         Learning category: <select name="lcat">{% for l in options["lcat"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
         Loss function: <select name="loss">{% for l in options["loss"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
         Frac train: <input type="number" name="tfrac" value="10" min="1" max="100" step="1">% <br>
-        <b>Select dataset: </b>static/datasets/ <input type="file" name="dfile" value="{{info.form["dfile"]}}"><br>
+      <b>Select Dataset </b> (use current: <b>{{info.form["dfile"]}}</b> <input type="checkbox" name="dfiles" value="{{info.form["dfile"]}}">); <input type="file" name="dfile"><br>
         Model name: <input type="text" name="mname" value="{{info.form["mname"]}}">; 
         Input dimensions: <input type="text" name="ipd" value="{{info.form["ipd"]}}"> Output dimension: <input type="number" name="opd" min="1" step="1" value="{{info.form["opd"]}}"> <br>
         --Convolutional neural networks specific-- <br>

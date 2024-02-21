@@ -20,8 +20,9 @@ class NNPolicy(Policy):
         self.out_activation = out_activation
         self.hyperparams = hyperparams
 
-    def setup(self, ipd, opd, aspace:gym.spaces):
-        self.network = complete_model(self.network, ipd, opd, self.out_activation)
+    def setup(self, ipd, opd, aspace:gym.spaces, model_ready=False):
+        if not model_ready:
+            self.network = complete_model(self.network, ipd, opd, self.out_activation)
         if isinstance(aspace, gym.spaces.Discrete):
             self.bounded = True
             self.low = tf.fill(opd, 0.0)
@@ -78,9 +79,9 @@ class DynamicsTraining:
 
     def train(self, features, targets, opd, nb_epochs):
         data = tf.data.Dataset.from_tensor_slices((features, targets))
-        dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
-        train_dataset = Dataset(
-            dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
+        train_dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
+        # train_dataset = Dataset(
+        #     dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
         if not self.start:
             self.optimizer.compile(self.hyperparams, self.model.to_json(), 
                                    train_dataset, **self.rems)
@@ -96,12 +97,14 @@ class BayesianDynamics(Control):
         policy: NNPolicy, state_reward, learn_config:tuple
     ):
         super().__init__(env, horizon, policy)
-        dyn_training.create_model(
-            self.state_fd, self.action_fd)
+        if dyn_training:
+            dyn_training.create_model(
+                self.state_fd, self.action_fd)
         self.dyn_training = dyn_training
-        self.policy.setup(self.state_d, self.action_fd, self.env.action_space)        
+        self.policy.setup(self.state_d, self.action_fd, self.env.action_space, model_ready=(dyn_training is None))        
         self.state_reward = state_reward
-        self.dyntrain_ep, self.kp, self.gamma = learn_config
+        if learn_config:
+            self.dyntrain_ep, self.kp, self.gamma = learn_config
         # self.policy_optimizer = policy_optimizer
 
     def sample_initial(self):
@@ -180,12 +183,13 @@ class BayesianDynamics(Control):
             # predict trajectory and calculate gradient
             discount = 1
             tot_grad = None
+            tot_loss = 0
             prev_tmark = 0
             for t in range(self.horizon):
                 with tf.GradientTape(persistent=True) as tape:
                     ys, actions, new_states = self.forward(states)
-                    loss = -self.t_reward(ys, actions, t)
-                    loss = tf.fill([1], loss)
+                    l = -self.t_reward(ys, actions, t)
+                    loss = tf.fill([1], l)
                 grad = tape.gradient(loss, self.policy.network.trainable_variables)
                 tmark = int(10*t/self.horizon)
                 if tmark > prev_tmark and tmark % 2 == 0:
@@ -193,14 +197,16 @@ class BayesianDynamics(Control):
                 prev_tmark = tmark
                 if not tot_grad:
                     tot_grad = grad
+                    tot_loss = l
                 elif None not in grad: 
                     for g in range(len(grad)):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
+                    tot_loss += l * discount
                 discount *= self.gamma
                 states = new_states
             f = open(record_file, "a")
-            f.write("Learning epoch "+str(ep)+"\n")
-            if None in grad:
+            f.write("Learning epoch "+str(ep)+", total loss: "+str(tot_loss)+"\n")
+            if None in tot_grad:
                 f.write("Invalid gradient!\n")
                 f.close()
                 return 
