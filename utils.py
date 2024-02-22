@@ -1,6 +1,7 @@
 import PyAce.optimizers as om
 import tensorflow as tf
 from PyAce.distributions import GaussianPrior
+from PyAce.tests.gym_example_1 import test_srlz
 from matplotlib import pyplot as plt
 import json, os
 
@@ -231,4 +232,4 @@ def draw_nn(shape):
     plt.annotate("input layer", (0,-ymax/2))
     plt.savefig("static/drawnn.png")
 
-print(find_values("16,32,64,8"))
+# test_srlz()
