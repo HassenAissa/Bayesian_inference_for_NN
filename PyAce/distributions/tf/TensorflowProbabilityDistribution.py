@@ -35,7 +35,7 @@ class TensorflowProbabilityDistribution(Distribution):
     @classmethod
     def __DEFAULT_BASE_SERIALIZER(cls):
         # python logic...
-        from src.distributions.tf.BaseSerializer import BaseSerializer
+        from PyAce.distributions.tf.BaseSerializer import BaseSerializer
         return BaseSerializer()
 
     def store(self, path: str) -> str:

@@ -7,6 +7,8 @@ from PyAce.optimizers import HyperParameters
 import tensorflow as tf
 import os
 import shutil
+import wandb
+from wandb.keras import WandbCallback
 
 
 class Optimizer(ABC):
@@ -76,8 +78,13 @@ class Optimizer(ABC):
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
 
+    def train_with_weights_and_biases(self, nb_iterations, project_name, weights_and_biases_config):
+        wandb.login()
+        run = wandb.init(project= project_name, config=weights_and_biases_config)
+        self.train(nb_iterations, weights_and_biases_log = True)
+
     def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None,
-              model_save_path: str = None):
+              model_save_path: str = None, weights_and_biases_log = False):
         """
         trains the model and saved the training metrics and model status
 
@@ -100,13 +107,17 @@ class Optimizer(ABC):
             os.remove(loss_save_document_path)
 
         if model_save_path != None:
-            self._empty_folder(model_save_path)
+            self._empty_folder(model_save_path)            
+
 
         saved_model_nbr = 0
         for i in range(nb_iterations):
             loss = self.step(loss_save_document_path)
             self._print_progress(i/nb_iterations, loss = loss)
-
+            if weights_and_biases_log == True:
+                wandb.log({
+                    "loss": loss
+                })
             if model_save_frequency != None and i % model_save_frequency == 0:
                 bayesian_model = self.result()
                 if os.path.exists(os.path.join(model_save_path, "model" + str(saved_model_nbr))):
