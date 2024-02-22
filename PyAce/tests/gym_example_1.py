@@ -1,6 +1,6 @@
 """Interactive demo of the Gym environment."""
 
-import gymnasium as gym, time
+import gymnasium as gym, time, pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -80,3 +80,24 @@ def runner():
     plt.plot(ts, rewards)
     plt.show()
     env.close()  # Close the environment when done
+
+def test_srlz():
+    policy_nn = tf.keras.Sequential()
+    policy_nn.add(tf.keras.layers.Dense(32, activation='relu'))
+    policy_nn.add(tf.keras.layers.Dense(8, activation='relu'))
+
+    dyntrain_nn = tf.keras.Sequential()
+    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='relu'))
+    dyntrain_nn.add(tf.keras.layers.Dense(16, activation='relu'))
+    hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
+
+    dyn_training = DynamicsTraining(SWAG(), [
+        tf.keras.losses.MeanSquaredError(),"Regression", True],
+        dyntrain_nn, 'relu', hyperparams)
+
+    f = open("dyn.pkl", "wb")
+    pickle.dump(dyn_training, f)
+    f.close()
+    f = open("dyn.pkl", "rb")
+    dyn_training:DynamicsTraining = pickle.load(f)
+    print(dyn_training.out_activation)

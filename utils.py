@@ -1,8 +1,9 @@
 import PyAce.optimizers as om
 import tensorflow as tf
 from PyAce.distributions import GaussianPrior
+from PyAce.tests.gym_example_1 import test_srlz
 from matplotlib import pyplot as plt
-import json, os
+import json, os, shutil
 
 connectors = "._-"
 
@@ -29,25 +30,29 @@ def access_file(pref, fs, form, key):
         form[key] = fs
     return res
 
-def check_mandatory(form, term):
+def check_mandatory(form, term, missing):
     if not term:
-        print("list end")
-        return True
+        return missing
     if isinstance(term,str):
-        print("single", form.get(term))
-        return form.get(term) != ""
+        if form.get(term) != "":
+            return missing
+        return missing+[term]
     if isinstance(term, list):
-        print("and")
-        return check_mandatory(form, term[0]) and check_mandatory(form, term[1:])
+        m1 = check_mandatory(form, term[0], missing)
+        m2 = check_mandatory(form, term[1:], m1)
+        return m2
     if isinstance(term, tuple):
-        print(term[0])
         if term[0] == "or":
-            return check_mandatory(form, term[1]) or check_mandatory(form, term[2])
+            m1 = check_mandatory(form, term[1], missing)
+            m2 = check_mandatory(form, term[2], missing)
+            if m1 == missing:
+                return m1
+            return m2
         elif term[0] == "if":
             val = form.get(term[1])
             if val and (not term[2] or val == term[2]):
-                return check_mandatory(form, term[3])
-            return True
+                return check_mandatory(form, term[3], missing)
+            return missing
 
 def read_sessions(scat):
     res = []
@@ -57,36 +62,40 @@ def read_sessions(scat):
         l = f.readline()
         if not l:
             return res
-        res.append(l[:-1]+".json")
+        segs = l.split(',')
+        res.append(segs)
 
-def add_sessions(sname:str, scat):
+def add_sessions(sname:str, scat, desc, envname=""):
     pref = "static/sessions/"+scat
     if not sname:
         sname = "default"
     f = open(pref+"/db.csv", "r")
     lim = int(f.readline())
-    names = []
+    entries = []
     found = False
     while True:
         l = f.readline()
         if not l:
             break
-        text = l[:-1]
+
         if not found:
-            if text == sname:
+            if l.split(',')[0] == sname:
                 found = True
                 continue
-        names.append(text)
+        entries.append(l)
     f.close()
 
-    if len(names) == lim:
-        rem = names.pop()
-        os.remove(pref+"/"+rem+".json")
-    names = [sname] + names
+    if len(entries) == lim:
+        rem = entries.pop()[0]
+        if scat == "sl":
+            os.remove(pref+"/"+rem+".json")
+        elif scat == "rl":
+            shutil.rmtree(pref+"/"+rem)
+    entries = [sname+','+envname+','+desc+'\n'] + entries
     f = open(pref+"/db.csv", "w")
     f.write(str(lim)+"\n")
-    for n in names:
-        f.write(n+"\n")
+    for e in entries:
+        f.write(e)
     f.close()
     return sname
 
@@ -231,4 +240,4 @@ def draw_nn(shape):
     plt.annotate("input layer", (0,-ymax/2))
     plt.savefig("static/drawnn.png")
 
-print(find_values("16,32,64,8"))
+# test_srlz()
