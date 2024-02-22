@@ -31,7 +31,7 @@ class Optimizer(ABC):
         """
         pass
 
-    def compile(self, hyperparameters: HyperParameters, model_config: str, dataset, **kwargs):
+    def compile(self, hyperparameters: HyperParameters, model_config: str, dataset, verbose=True,**kwargs):
         """compile the model
 
         Args:
@@ -49,6 +49,7 @@ class Optimizer(ABC):
             self._hyperparameters = hyperparameters
             self._model_config = model_config
             self._dataset = dataset
+            self._verbose = verbose
         self.compile_extra_components(**kwargs)
 
     @abstractmethod
@@ -88,7 +89,7 @@ class Optimizer(ABC):
             model_save_path (str, optional): The path to save the models during training. Defaults to None.
 
         Raises:
-            Exception: if the model saving path is specified and the frequency of saving the model is not, or 
+            Exception: if the model saving path is specified and the frequency of saving the model is not, or
             if the frequency of saving the model is sprecified and the model saving path is not.
         """
         if model_save_frequency == None and model_save_path != None:
@@ -105,7 +106,7 @@ class Optimizer(ABC):
         saved_model_nbr = 0
         for i in range(nb_iterations):
             loss = self.step(loss_save_document_path)
-            self._print_progress(i/nb_iterations, loss = loss)
+            self._print_progress(i / nb_iterations, loss=loss)
 
             if model_save_frequency != None and i % model_save_frequency == 0:
                 bayesian_model = self.result()
@@ -114,7 +115,7 @@ class Optimizer(ABC):
                 os.makedirs(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
                 bayesian_model.store(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
                 saved_model_nbr += 1
-            
+
         print()
 
     @abstractmethod
@@ -128,11 +129,18 @@ class Optimizer(ABC):
         pass
 
     def _print_progress(self, progress: float, bar_length=10, suffix="Training", **kwargs):
+        if not self._verbose:
+            return
         nb_chars = math.ceil(progress * bar_length)
         bar = "[" + nb_chars * "="
         if nb_chars < bar_length:
             bar += ">"
         bar += "]"
         infos = ' '.join("{}: {}".format(k, v) for k, v in kwargs.items())
-        percentage = str(math.ceil(progress*100))
-        print("\r"+suffix + " "+percentage+" % " + bar + " " + infos, end="")
+        percentage = str(math.ceil(progress * 100))
+        print("\r" + suffix + " " + percentage + " % " + bar + " " + infos, end="")
+
+    def _new_progress_line(self):
+        if not self._verbose:
+            return
+        print()
