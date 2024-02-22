@@ -37,7 +37,7 @@ class SLInfo(ModelInfo):
         self.dataset = None
         self.model_file = ""
         self.model_ready = False
-        self.options = {"sessions": [""]+apu.read_sessions("sl"),
+        self.options = {"sessions": [[]]+apu.read_sessions("sl"),
             "lcat": ["", "Classification","Regression"],
             "loss": ["", "Cross entropy","Mean squared error"],
             "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"]}
@@ -55,18 +55,19 @@ class RLInfo(ModelInfo):
         self.policy = None
         self.dyn_train = None
         self.agent = None
-        self.options = {"sessions": [""]+apu.read_sessions("rl"),
+        self.real_task = False
+        self.options = {"sessions": [[]]+apu.read_sessions("rl"),
                         "rmode": [""]+["human", "rgb_array"],
                         "poact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
                         "doact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
                         "reward": [""]+list(all_rewards.keys())}
     def save_policy(self):
-        f = open("static/results/policies/"+self.sname+".pkl", "wb")
+        f = open("static/sessions/rl/"+self.sname+"/policy.pkl", "wb")
         pickle.dump(self.policy.network, f)
         f.close()
     def find_policy(self, policy, env):
-        f = open("static/results/policies/"+policy+".pkl", "rb")
+        f = open("static/sessions/"+policy+"/policy.pkl", "rb")
         p = NNPolicy(pickle.load(f), "", "") 
         BayesianDynamics(env, 0, None, p, None, None) # No object created, only setting up policy
         self.policy = p
@@ -99,6 +100,7 @@ def reinforce():
                 done = False
                 # Run the game loop
                 print(">>Start real game")
+                rl.real_task = True
                 plt.title("Accumulative reward over time step")
                 ts = [0]
                 rewards = [0]
@@ -127,16 +129,17 @@ def reinforce():
         rl.__init__()
         session = fm.get("session")
         if session:
-            rl.load("static/sessions/rl/"+session)
+            rl.load("static/sessions/rl/"+session+"/rl.json")
             for key in rl_opkeys:
                 options[key][0] = rl.form[key]
         rl.notice = missing
         return render_template('reinforce.html',options=options, info=rl)
+    rl.real_task = False
     rl.form = dict(fm)
-    rl.sname = apu.add_sessions(fm.get("sname"), "rl")
-    rl.store("static/sessions/rl/"+rl.sname+".json")
-    options["sessions"] = [""]+apu.read_sessions("rl")
     rl.envname = fm.get("envname")
+    rl.sname = apu.add_sessions(fm.get("sname"), "rl", fm.get("sdesc"), rl.envname)
+    rl.store("static/sessions/rl/"+rl.sname+"/rl.json")
+    options["sessions"] = [""]+apu.read_sessions("rl")
     env = gym.make(rl.envname)
     # Policy network
     policy_nn = None
@@ -217,14 +220,14 @@ def index():
         sl.__init__()
         session = fm.get("session")
         if session:
-            sl.load("static/sessions/sl/"+session)
+            sl.load("static/sessions/sl/"+session+".json")
             for key in sl_opkeys:
                 options[key][0] = sl.form[key]
         sl.notice = missing
         return render_template('index.html',options=options, info=sl)
     print("data suff")
     sl.form = dict(fm)
-    fn = apu.add_sessions(fm.get("sname"), "sl")
+    fn = apu.add_sessions(fm.get("sname"), "sl", fm.get("sdesc"))
     sl.store("static/sessions/sl/"+fn+".json")
     # Both f1: create neural network only and f2: train bayesian model
     model_file = apu.access_file("static/models/sl/", fm.get("nnjsons"), sl.form, "nnjson")
@@ -294,8 +297,6 @@ def index():
         if sl.dataset and sl.model_ready and oname:           
             optim = apu.optim_dataset(options, fm, fm.get("hypf"), fm.get("hyp"),
                                        model_config, sl.dataset)
-            fn = apu.add_sessions(fm.get("sname"), "sl")
-            sl.store("static/sessions/sl/"+fn+".json")
             optim.train(int(fm.get("ite")))
             
     return render_template('index.html', options=options, info=sl)

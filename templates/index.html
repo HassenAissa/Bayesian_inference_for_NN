@@ -35,10 +35,11 @@
     <div class="column" style="background-color: lightgoldenrodyellow;">
       <h3>Train bayesian model or create neural network <a href="/"><button>Reset all</button></a> </h3>
       <form action="/" method="post">
-      Autofill from saved sessions: <select name="session">{% for c in  options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+      Autofill from saved sessions: <select name="session">{% for c in options["sessions"] %}
+      {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> | {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
       <input type="submit" value="Continue>>">
       </form><form action="/" method="post">
-      Name the current session (Optional): <textarea name="sname" cols="50" rows="1"></textarea><br>
+      Name the current session: <input type="text" name="sname">; Descriptions: <textarea name="sdesc" cols="70" rows="1"></textarea><br>
       <b>--Base model and dataset information--</b><br> 
       <b>Upload base model</b> (use current: <b>{{info.form["nnjson"]}}</b> <input type="checkbox" name="nnjsons" value="{{info.form["nnjson"]}}">); <input type="file" name="nnjson"> | Or create  manually:<br>
         Learning category: <select name="lcat">{% for l in options["lcat"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
@@ -69,9 +70,8 @@
     <div class="column">
       {% if info.notice %}
         **Form information not complete -- missing: {{info.notice}} <br>
-        {% endif %}
+      {% endif %}
       <h3>Training process and result analysis</h3>
-      {{inputs}}
     </div>
     </div>
 </body>

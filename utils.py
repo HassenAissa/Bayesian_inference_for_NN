@@ -3,7 +3,7 @@ import tensorflow as tf
 from PyAce.distributions import GaussianPrior
 from PyAce.tests.gym_example_1 import test_srlz
 from matplotlib import pyplot as plt
-import json, os
+import json, os, shutil
 
 connectors = "._-"
 
@@ -62,36 +62,40 @@ def read_sessions(scat):
         l = f.readline()
         if not l:
             return res
-        res.append(l[:-1]+".json")
+        segs = l.split(',')
+        res.append(segs)
 
-def add_sessions(sname:str, scat):
+def add_sessions(sname:str, scat, desc, envname=""):
     pref = "static/sessions/"+scat
     if not sname:
         sname = "default"
     f = open(pref+"/db.csv", "r")
     lim = int(f.readline())
-    names = []
+    entries = []
     found = False
     while True:
         l = f.readline()
         if not l:
             break
-        text = l[:-1]
+
         if not found:
-            if text == sname:
+            if l.split(',')[0] == sname:
                 found = True
                 continue
-        names.append(text)
+        entries.append(l)
     f.close()
 
-    if len(names) == lim:
-        rem = names.pop()
-        os.remove(pref+"/"+rem+".json")
-    names = [sname] + names
+    if len(entries) == lim:
+        rem = entries.pop()[0]
+        if scat == "sl":
+            os.remove(pref+"/"+rem+".json")
+        elif scat == "rl":
+            shutil.rmtree(pref+"/"+rem)
+    entries = [sname+','+envname+','+desc+'\n'] + entries
     f = open(pref+"/db.csv", "w")
     f.write(str(lim)+"\n")
-    for n in names:
-        f.write(n+"\n")
+    for e in entries:
+        f.write(e)
     f.close()
     return sname
 
