@@ -74,6 +74,9 @@
         </form>
       </div>
       <div class="column">
+        {% if info.notice %}
+        **Form information not complete -- missing: {{info.notice}} <br>
+        {% endif %}
         <h3>Continue learning policy and dynamics</h3>
         <h3>Learning process and result analysis</h3>
         {% if info.agent %}

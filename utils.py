@@ -30,25 +30,29 @@ def access_file(pref, fs, form, key):
         form[key] = fs
     return res
 
-def check_mandatory(form, term):
+def check_mandatory(form, term, missing):
     if not term:
-        print("list end")
-        return True
+        return missing
     if isinstance(term,str):
-        print("single", form.get(term))
-        return form.get(term) != ""
+        if form.get(term) != "":
+            return missing
+        return missing+[term]
     if isinstance(term, list):
-        print("and")
-        return check_mandatory(form, term[0]) and check_mandatory(form, term[1:])
+        m1 = check_mandatory(form, term[0], missing)
+        m2 = check_mandatory(form, term[1:], m1)
+        return m2
     if isinstance(term, tuple):
-        print(term[0])
         if term[0] == "or":
-            return check_mandatory(form, term[1]) or check_mandatory(form, term[2])
+            m1 = check_mandatory(form, term[1], missing)
+            m2 = check_mandatory(form, term[2], missing)
+            if m1 == missing:
+                return m1
+            return m2
         elif term[0] == "if":
             val = form.get(term[1])
             if val and (not term[2] or val == term[2]):
-                return check_mandatory(form, term[3])
-            return True
+                return check_mandatory(form, term[3], missing)
+            return missing
 
 def read_sessions(scat):
     res = []

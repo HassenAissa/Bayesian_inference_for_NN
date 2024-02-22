@@ -19,6 +19,7 @@ class ModelInfo:
         self.sname = ""
         self.form = None
         self.options = {}
+        self.notice = []
 
     def store(self, fn):
         f = open(fn,"w")
@@ -118,8 +119,10 @@ def reinforce():
                 plt.plot(ts, rewards)
                 plt.savefig("static/results/rewards.png")
         return render_template('reinforce.html', options=options, info=rl)
-
-    if not fm or "session" in fm or not apu.check_mandatory(fm, rl_mandatory):
+    missing = []
+    if fm and "session" not in fm:
+        missing = apu.check_mandatory(fm, rl_mandatory, [])
+    if not fm or "session" in fm or missing:
         # Clear previous inputs and load main page
         rl.__init__()
         session = fm.get("session")
@@ -127,6 +130,7 @@ def reinforce():
             rl.load("static/sessions/rl/"+session)
             for key in rl_opkeys:
                 options[key][0] = rl.form[key]
+        rl.notice = missing
         return render_template('reinforce.html',options=options, info=rl)
     rl.form = dict(fm)
     rl.sname = apu.add_sessions(fm.get("sname"), "rl")
@@ -205,7 +209,10 @@ def index():
     fm = request.form
     print(fm,sl.model_ready)
     options = sl.options
-    if not fm or "session" in fm or not apu.check_mandatory(fm, sl_mandatory):
+    missing = []
+    if fm and "session" not in fm:
+        missing = apu.check_mandatory(fm, sl_mandatory, [])
+    if not fm or "session" in fm or missing:
         # Clear previous inputs and load main page 
         sl.__init__()
         session = fm.get("session")
@@ -213,6 +220,7 @@ def index():
             sl.load("static/sessions/sl/"+session)
             for key in sl_opkeys:
                 options[key][0] = sl.form[key]
+        sl.notice = missing
         return render_template('index.html',options=options, info=sl)
     print("data suff")
     sl.form = dict(fm)
@@ -221,7 +229,7 @@ def index():
     # Both f1: create neural network only and f2: train bayesian model
     model_file = apu.access_file("static/models/sl/", fm.get("nnjsons"), sl.form, "nnjson")
     if model_file:
-        sl.model_file = +model_file
+        sl.model_file = model_file
         sl.model_ready = True
         f = open(sl.model_file, "r")
         model_config = f.read()
