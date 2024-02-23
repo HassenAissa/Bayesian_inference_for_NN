@@ -35,11 +35,12 @@
       <div class="column" style="background-color: skyblue;">
         <h3>Environment and agent creation <a href="/reinforce"><button>Reset all</button></a></h3>
         <form action="/reinforce" method="post">
-          Autofill from saved sessions: <select name="session">{% for c in options["sessions"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+          Autofill from saved sessions: <select name="session">{% for c in options["sessions"] %}
+            {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
           <input type="submit" value="Continue>>">
         </form><form action="/reinforce" method="post">
-          Name the current session (Optional): <textarea name="sname" cols="50" rows="1"></textarea>; 
-          Enter Gym environment: <input type="text" name="envname" value="{{info.form["envname"]}}"><br> 
+          Name the current session: <input type="text" name="sname">; Gym environment: <input type="text" name="envname" value="{{info.form["envname"]}}">; 
+          Descriptions: <textarea name="sdesc" cols="70" rows="1"></textarea><br> 
           <b>--Learning specifications--</b> <br>
           Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="999">
           Number of particles: <input type="number" name="npar" value="{{info.form["npar"]}}" min="1" max="999">; Discount factor: <input type="number" name="disc" value="{{info.form["disc"]}}" min="0.001" max="1.000" step="0.001">;
@@ -74,17 +75,22 @@
         </form>
       </div>
       <div class="column">
+        {% if info.notice %}
+        **Form information not complete -- missing: {{info.notice}} <br>
+        {% endif %}
+        <h3>Continue learning policy and dynamics</h3>
         <h3>Learning process and result analysis</h3>
         {% if info.agent %}
         <textarea readonly cols="70" rows="15">{{info.process}}</textarea>
         {% endif %}
         <form action="/reinforce" method="post">
           Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
-          Select a policy of session <select name="policy">{% for a in options["sessions"] %}<option value="{{a[:-5]}}">{{a[:-5]}}</option>{% endfor %}</select>
+          Select a policy of session <select name="policy">{% for c in options["sessions"] %}
+            {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
           Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
           <input type="submit" name="render" value="Start real task >>">
         </form>
-        <img src="static/results/rewards.png" alt="rewards">
+        {% if info.real_task %}<img src="static/results/rewards.png" alt="rewards">{% endif %}
       </div>
     </div>
 </body>

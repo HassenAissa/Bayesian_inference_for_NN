@@ -52,7 +52,6 @@ class Metrics():
                 print("Recall: {}%".format(self.recall(y_pred, y_true)))
                 print("Precision: {}%".format(self.precision(y_pred, y_true)))
                 print("F1 Score: {}%".format(self.f1_score(y_pred, y_true)))
-            # print("ROC Score: {}".format(self.auroc(y_pred, y_true)))
         else: 
             print("Invalid loss function")
             
@@ -86,11 +85,6 @@ class Metrics():
     
     def f1_score(self, y_pred, y_true):
         return skmet.f1_score(y_true, tf.argmax(y_pred,axis = 1), average = "macro") * 100
-    
-    # def auroc(self, y_pred, y_true):
-    #     y_pred = tf.argmax(y_pred, axis = 1)
-    #     roc = skmet.roc_auc_score(y_true, y_pred, average='macro', multi_class="ovr")
-    #     return roc
 
     def _get_x_y(self, n_samples=100, data_type="test"):
         tf_dataset = self._dataset.valid_data
@@ -101,7 +95,7 @@ class Metrics():
         x,y_true = next(iter(tf_dataset.batch(n_samples)))
         return x,y_true
         
-    def uncertainty(self,n_samples = 100, data_type = "test", n_boundaries = 30):
+    def classification_uncertainty(self,n_samples = 100, data_type = "test", n_boundaries = 30):
         if self._dataset.likelihood_model == "Classification":
             x,y_true = self._get_x_y(n_samples, data_type)
             y_samples, y_pred = self._model.predict(x, n_boundaries)

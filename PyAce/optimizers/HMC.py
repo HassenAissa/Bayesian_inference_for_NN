@@ -2,7 +2,7 @@ import random
 
 from PyAce.distributions import GaussianPrior
 from PyAce.nn import BayesianModel
-from . import Optimizer
+from PyAce.optimizers import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
 import random
@@ -14,6 +14,9 @@ class HMC(Optimizer):
 
     def __init__(self):
         super().__init__()
+        self._nb_burn_epoch = 10
+        self._X = None
+        self._y = None
         self._training_dataset_cardinality = None
         self._burn_epochs = None
         self._training_dataset = None
@@ -38,8 +41,11 @@ class HMC(Optimizer):
         self._frequency = []
         self._p = []
         self._prior = kwargs["prior"].get_model_priors(self._model)
+        if "nb_burn_epoch" in kwargs:
+            self._nb_burn_epoch = kwargs["nb_burn_epochs"]
         self._training_dataset: tf.data.Dataset = self._dataset.training_dataset()
         self._training_dataset_cardinality = self._training_dataset.cardinality().numpy().item()
+        self._X, self._y = next(iter(self._training_dataset.batch(self._training_dataset.cardinality())))
         for layer in self._model.layers:
             self._p.append([tf.Variable(tf.zeros(w.shape)) for w in layer.trainable_variables])
 
@@ -48,8 +54,7 @@ class HMC(Optimizer):
                 for w, d in zip(layer.trainable_variables, distribs):
                     w.assign(d.mean())
 
-
-    def step(self, save_document_path=None, sampling=True, burning = False):
+    def step(self, save_document_path=None, sampling=True, burning=False):
         if len(self._frequency) == 0 and sampling:
             self._frequency.append(1)
             self._samples.append(self._snapshot_q())
@@ -81,16 +86,17 @@ class HMC(Optimizer):
                 self._frequency[len(self._frequency) - 1] += 1
             return current_loss
 
-
     def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None,
-              model_save_path: str = None, nb_burn_epoch=10):
+              model_save_path: str = None):
         self._accepted_runs = 0
         self._total_runs = 0
+        nb_burn_epoch = self._nb_burn_epoch
         for i in range(nb_burn_epoch):
             loss = self.step(sampling=False, burning=True)
-            accept_rate = self._accepted_runs/self._total_runs
-            self._print_progress((i+1) / nb_burn_epoch, suffix="HMC - Burning", loss=loss.numpy().item(), accept_rate=accept_rate, bar_length=20)
-        print()
+            accept_rate = self._accepted_runs / self._total_runs
+            self._print_progress((i + 1) / nb_burn_epoch, suffix="HMC - Burning", loss=loss.numpy().item(),
+                                 accept_rate=accept_rate, bar_length=20)
+        self._new_progress_line()
         self._accepted_runs = 0
         self._total_runs = 0
         self._frequency = []
@@ -98,10 +104,9 @@ class HMC(Optimizer):
         for i in range(nb_iterations):
             loss = self.step(sampling=True, burning=False)
             accept_rate = self._accepted_runs / self._total_runs
-            self._print_progress((i+1)/nb_iterations, suffix="HMC - Sampling", loss=loss.numpy().item(), accept_rate=accept_rate, bar_length=20)
-        print()
-
-
+            self._print_progress((i + 1) / nb_iterations, suffix="HMC - Sampling", loss=loss.numpy().item(),
+                                 accept_rate=accept_rate, bar_length=20)
+        self._new_progress_line()
 
     def _step_p(self, step_size):
         with tf.GradientTape(persistent=True) as tape:
@@ -111,7 +116,7 @@ class HMC(Optimizer):
             for q, p in zip(layer.trainable_variables, momentum_layer):
                 q_grad = tape.gradient(U, q)
                 p.assign_sub(tf.multiply(q_grad, step_size))
-        del tape # free the gradient resources
+        del tape  # free the gradient resources
 
     def _step_q(self, step_size):
         for layer, momentum_layer in zip(self._model.layers, self._p):
@@ -130,11 +135,10 @@ class HMC(Optimizer):
             if len(layer.trainable_variables) > 0:
                 for w, d in zip(layer.trainable_variables, distribs):
                     potential_energy -= tf.math.reduce_sum(d.log_prob(w))
-        X, y = next(iter(self._training_dataset.batch(self._training_dataset.cardinality())))
-        predictions = self._model(X)
+        predictions = self._model(self._X)
         # the loss is already the log likelihood of the data in this case
-        loss = self._dataset.loss()(y, predictions)
-        potential_energy += loss*self._training_dataset_cardinality
+        loss = self._dataset.loss()(self._y, predictions)
+        potential_energy += loss * self._training_dataset_cardinality
         return potential_energy, loss
 
     def _kinetic_energy(self):
@@ -159,8 +163,8 @@ class HMC(Optimizer):
             for sample_layer in sample:
                 for w in sample_layer:
                     concat_unrolled.append(tf.reshape(w, (-1,)))
-            samples_unrolled.append(tf.concat(concat_unrolled, axis = 0))
+            samples_unrolled.append(tf.concat(concat_unrolled, axis=0))
         distribution = Sampled(samples_unrolled, self._frequency)
         posterior_model = BayesianModel(self._model_config)
-        posterior_model.apply_distribution(distribution, 0, len(self._model.layers)-1)
+        posterior_model.apply_distribution(distribution, 0, len(self._model.layers) - 1)
         return posterior_model

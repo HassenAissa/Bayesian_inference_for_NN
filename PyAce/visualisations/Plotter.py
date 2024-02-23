@@ -225,8 +225,8 @@ class Plotter:
             entropies = []
             for probabilities in y_pred:
                 entropies.append(-1*np.sum(probabilities*np.log(probabilities+1e-5)))
-            entropies = np.nan_to_num(entropies)
-            plt.scatter(range(len(y_true)), entropies)
+            entropies = np.sort(np.nan_to_num(entropies))
+            plt.plot(range(len(y_true)), entropies)
             plt.title('Entropies for each input')
             plt.xlabel('Sample Index')
             plt.ylabel('entropy')
