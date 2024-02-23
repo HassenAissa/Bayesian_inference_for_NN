@@ -5,7 +5,7 @@ from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
 from PyAce.optimizers import HyperParameters
 from PyAce.optimizers import SWAG
-from PyAce.visualisations import Visualisation
+from PyAce.visualisations import Metrics
 from PyAce.visualisations import Robustness
 import tensorflow_datasets as tfds
 
@@ -45,7 +45,7 @@ def runner():
     # bayesian_model.store(store_path)
     # bayesian_model: BayesianModel= BayesianModel.load(store_path)
 
-    analytics_builder = Visualisation(bayesian_model)
+    analytics_builder = Metrics(bayesian_model)
     robustness_builder = Robustness(bayesian_model)
 
     #print("Starting performence analysis")
