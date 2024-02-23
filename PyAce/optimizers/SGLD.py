@@ -84,6 +84,9 @@ class SGLD(Optimizer):
         
         
     def _init_arrays(self):
+        """
+        initialise arrays to keep track of mean, sq_mean, standard deviation
+        """
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]
             size = 0
@@ -99,8 +102,7 @@ class SGLD(Optimizer):
         return super().update_parameters_step()
         
     def compile_extra_components(self, **kwargs):
-        self._k = self._hyperparameters.k
-        self._batch_size = 5
+        self._batch_size = self._hyperparameters.batch_size
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._dataloader = (self._dataset.training_dataset()
