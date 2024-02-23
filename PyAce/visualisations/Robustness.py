@@ -90,6 +90,7 @@ def pixelate(x, severity=1):
 class Robustness():
     """
         a class representing the robustness analysis of a model
+        stores the errors for different corruptions and severities as it computes them to save computations
     """
     def __init__(self, model, dataset):
         self.model = model
@@ -101,36 +102,17 @@ class Robustness():
         self.severities = np.arange(1, 6)
         self.dataset = dataset
         self.x, self.y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
-    
-    # def c_robustness(self, nb_samples=100):
-    #     """
-    #     outputs visualisaitons for the corruption robustness analysis. Applies some corruptions to datasets, and outputs accuracy and error rates on predictions.
-
-    #     Args:
-    #         dataset (Dataset): dataset to perform analysis on
-    #         nb_samples (int): number of samples
-    #     """
-    #     x, y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
-    #     _, y_pred = self.model.predict(x, nb_samples)
-    #     if self.dataset.likelihood_model == "Classification":
-    #         accuracy = met.accuracy_score(y_true, tf.argmax(y_pred, axis = 1))
-    #         e_clean = 1 - accuracy
-    #         e_s_c = np.array([np.array([self._error_rate(x, y_true, s, c, nb_samples) for s in self.severities]) for c in self.corruptions])
-    #         #e_s_c = np.array([np.array([0.8616, 0.876, 0.8796, 0.887, 0.9002]), 
-    #         #                  np.array([0.8418, 0.8418, 0.8422000000000001, 0.8398, 0.835]),
-    #         #                  np.array([0.852, 0.8588, 0.8626, 0.8704000000000001, 0.8646]),
-    #         #                  np.array([0.849, 0.8662, 0.8882, 0.8986, 0.8986])])
-    #         ce = np.array([np.sum(e_s_c[i]) for i in range(self.n)])
-    #         mce = np.mean(ce)
-    #         relative_ce = np.array([np.sum(e_s_c[i] - e_clean) / (self.baseline[i] - self.baseline_clean) * 5 for i in range(self.n)])
-    #         mrce = np.mean(relative_ce)
-    #         print("Mean Corruption Error", mce*100, "%")
-    #         print("Mean Relative Error", mrce*100, "%")
-    #         self.plot_ce_by_corruption(ce)
-    #         for c in self.corruptions:
-    #             self.plot_ce_by_severity(c, e_s_c)
                 
     def mean_corruption_error(self, relative=False, nb_samples=100, save_path=None):
+        """
+        Computes de mean corruption error and realtive corruption error across all corruptions and severities
+        Prints value or saves it if save_path param given
+
+        Args:
+            relative (bool, optional): computes relative error if set to True. Defaults to False.
+            nb_samples (int, optional): Defaults to 100.
+            save_path (_type_, optional): pass in path to save value on file. Defaults to None.
+        """
         ce = np.array([self.corruption_error(c, helper=True, relative=relative) for c in self.corruption_dict.keys()])
         mean = np.mean(ce)
         if save_path:
@@ -138,9 +120,19 @@ class Robustness():
             self._save_data(save_path, name, mean)
         else:
             name = "Mean Relative Error:" if relative else "Mean Corruption Error:"
-            print(name, mean)
+            print(name, mean, "%")
     
     def corruption_error(self, corruption, relative=False, nb_samples=100, save_path=None, helper=False):
+        """
+        Computes the corruption error across all severities for a specific corruption
+
+        Args:
+            corruption (String): corruption 
+            relative (bool, optional): if set to True, computes relative corruption error. Defaults to False.
+            nb_samples (int, optional): _description_. Defaults to 100.
+            save_path (_type_, optional): _description_. Defaults to None.
+            helper (bool, optional): set to True only when used internally as a helper method. Defaults to False.
+        """
         if self.error_dict[corruption] :
             error = self.error_dict[corruption]
         else:
@@ -162,6 +154,9 @@ class Robustness():
             print(print_stat.format(corruption, ce))
        
     def robustness_by_corruption(self, nb_samples=100, save_path=None):
+        """
+        Plots corruption error as a bar graph giving the robustness score for each corruption.
+        """
         ce = np.array([self.corruption_error(c, nb_samples=nb_samples, helper=True) for c in self.corruption_dict.keys()])
         plt.bar(self.corruptions_dict.keys(), ce)
         plt.xlabel("Corruption")
@@ -170,6 +165,9 @@ class Robustness():
         self._save_figure(save_path, "robustness_by_corruption") if save_path else plt.show()
         
     def corruption_robustness_by_severity(self, corruption, nb_samples=100, save_path=None):
+        """
+        Plots corruption error for given corruption as a function of the severity
+        """
         if self.error_dict[corruption] :
             error = self.error_dict[corruption]
         else:
@@ -183,11 +181,13 @@ class Robustness():
     
     def _error_rate(self, severity, corruption, nb_samples):
         images = self.x.numpy()
+        colour_scale = np.shape(images)[-1]
         #_, width, length, _ = np.shape(x_array)
         #resized = [cv2.resize(image, (224, 224)) for image in x_array]
         corrupted_images = [self._corrupt(image, severity, corruption) for image in images]
         #corrupted_images = [cv2.resize(image, (width, length)) for image in corrupted_images_resized]
-
+        if colour_scale == 1:
+            corrupted_images = np.stack([np.mean(image, axis=-1, keepdims=True) for image in corrupted_images])
         corrupted_inputs = tf.convert_to_tensor(corrupted_images)
         corrupted_inputs = tf.concat(corrupted_inputs, axis=1)
         _, c_predicted = self.model.predict(corrupted_inputs, nb_samples)
