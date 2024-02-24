@@ -221,7 +221,7 @@ def load_hyp(fn):
 def store_optim(optim, pref):
     for k in ["_dataset", "_training_dataset", "_data_iterator", "_dataloader"]:
         setattr(optim, k, None)
-    store_hyp(optim._hyperparameters, pref+"dynhyp.pkl")
+    store_hyp(optim._hyperparameters, pref+"dynhyp.json")
     optim._hyperparameters = None
     f = open(pref+"dyn.pkl", "wb")
     pickle.dump(optim, f)
@@ -232,7 +232,7 @@ def load_optim(pref):
     f = open(pref+"dyn.pkl", "rb")
     optim = pickle.load(f)
     f.close()
-    optim._hyperparameters = load_hyp(pref+"dynhyp.pkl")
+    optim._hyperparameters = load_hyp(pref+"dynhyp.json")
     print("load pickle finish")
     print(optim._frequency, optim._k)
     return optim
