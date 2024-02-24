@@ -16,12 +16,6 @@ import sklearn
 import tensorflow_probability as tfp
 
 def BBB_test(dataset, base_model):
-    # hyperparams = HyperParameters(lr=1e-3, alpha = 1/128, pi = 0.4)
-
-    # # instantiate your optimizer
-    # optimizer = BBB()
-    # prior1 = GaussianPrior(0.0,-5.0)  
-    # prior2 = GaussianPrior(0.0,0.01)
     hyperparams = HyperParameters(lr=1e-3, alpha = 1/128, pi = 0.4, batch_size = 128)
 
     # instantiate your optimizer
@@ -67,19 +61,16 @@ def SGLD_test(dataset, base_model):
     bayesian_model: BayesianModel = optimizer.result()
     return bayesian_model
 
-# x = tf.random.uniform(shape=(600,1), minval=1, maxval=20, dtype=tf.float32)
-# y = 2*x+2
-# dataset = tf.data.Dataset.from_tensor_slices((x, y))
-# dataset = Dataset(dataset, tf.keras.losses.MeanSquaredError(), "Regression", normalise= True)
-dataset = Dataset(r"C:\Users\hasse\Documents\Hassen\SEGP\Datasets\Boston.csv",
-                  tf.keras.losses.MeanSquaredError(), 
-                  "Regression", feature_normalisation=True,
-                  )
+x = tf.random.uniform(shape=(600,1), minval=1, maxval=20, dtype=tf.float32)
+y = 2*x+2
+dataset = tf.data.Dataset.from_tensor_slices((x, y))
+dataset = Dataset(dataset, tf.keras.losses.MeanSquaredError(), "Regression", feature_normalisation= True)
+
 
 def runner():
     base_model = tf.keras.models.Sequential()
     # base_model.add(layers.Dense(10, activation='relu', input_shape=(13,))) 
-    base_model.add(layers.Dense(10, activation='relu', input_shape=(13,))) 
+    base_model.add(layers.Dense(10, activation='relu', input_shape=(1,))) 
     # base_model.add(layers.Dense(30, activation='relu', input_shape=(13,))) 
 
     base_model.add(layers.Dense(1, activation='linear'))
@@ -92,7 +83,7 @@ def runner():
         # bayesian_model.store(store_path)
         # bayesian_model: BayesianModel= BayesianModel.load(store_path)
         analytics_builder = Metrics(bayesian_model, dataset)
-        analytics_builder.summary(dataset, 2)
+        analytics_builder.summary(30)
         plotter = Plotter(bayesian_model, dataset)
         plotter.regression_uncertainty()
 

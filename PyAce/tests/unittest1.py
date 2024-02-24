@@ -15,7 +15,7 @@ import sklearn
 import tensorflow_probability as tfp
 
 def BBB_test(dataset, base_model):
-    hyperparams = HyperParameters(lr=5*1e-1, alpha = 0.0001, pi = 1)
+    hyperparams = HyperParameters(lr=5*1e-1, alpha = 1/32, pi = 1, batch_size = 32)
     # instantiate your optimizer
     optimizer = BBB()
     prior = GaussianPrior(.0,-2.0)
@@ -72,16 +72,16 @@ def runner():
 
     base_model.add(layers.Dense(50, activation='relu', input_shape=(2,)))
     base_model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax))
-    tests = [HMC_test, BBB_test, SWAG_test, SGLD_test]
-    names = ["Testing HMC","Testing BBB", "Testing SWAG", "Testing SGLD"]
+    tests = [BBB_test, SWAG_test, SGLD_test]
+    names = ["Testing BBB", "Testing SWAG", "Testing SGLD"]
     for test, name in zip(tests, names):
         print(name)
         bayesian_model = test(dataset, base_model)
         # store_path = r"..."
         # bayesian_model.store(store_path)
         # bayesian_model: BayesianModel= BayesianModel.load(store_path)
-        analytics_builder = Metrics(bayesian_model)
-        analytics_builder.visualise(dataset, 2)
+        analytics_builder = Metrics(bayesian_model, dataset)
+        analytics_builder.summary(30)
 
 
 # runner()
