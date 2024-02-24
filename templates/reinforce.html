@@ -71,23 +71,25 @@
           prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 
             standard deviation: <input type="number" name="pri2s" value=" value="{{info.form["pri2s"]}}" min="-999", max="999" step="0.01">)
           Hyperparameters: <input type="file" name="dhypf">; or write details here: <textarea name="dhyp" cols="70" rows="1">{{info.form["dhyp"]}}</textarea><br>
-          <input type="submit" name="f2" value="Start learning >>">
+          <input type="submit" name="f1" value="Start learning >>">
         </form>
       </div>
       <div class="column">
         {% if info.notice %}
         **Form information not complete -- missing: {{info.notice}} <br>
         {% endif %}
-        <h3>Continue learning policy and dynamics</h3>
-        <h3>Learning process and result analysis</h3>
+      <form action="/reinforce" method="post">
+        <h3>Learning results</h3>
         {% if info.agent %}
         <textarea readonly cols="70" rows="15">{{info.process}}</textarea>
         {% endif %}
-        <form action="/reinforce" method="post">
-          Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
-          Select a policy of session <select name="policy">{% for c in options["sessions"] %}
-            {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
-          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
+        <h3>Continue learning or start real task</h3>
+        Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
+        Select a session to resume learning <select name="session">{% for c in options["sessions"] %}
+          {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
+        epochs of learning: <input type="number" name="lep">
+        <input type="submit" name="resume" value="Continue learning >>"><br><br><b>--Real task rendering and analysis--</b>
+          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select>
           <input type="submit" name="render" value="Start real task >>">
         </form>
         {% if info.real_task %}<img src="static/results/rewards.png" alt="rewards">{% endif %}

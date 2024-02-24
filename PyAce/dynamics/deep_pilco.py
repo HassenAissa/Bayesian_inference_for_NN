@@ -1,9 +1,10 @@
 from .control import gym, Policy, Control,np
 from PyAce.datasets import Dataset
 from PyAce.optimizers import Optimizer
+from static.rewards import all_rewards
 import tensorflow as tf
 import tensorflow_probability as tfp
-import copy
+import copy, json, pickle
 
 def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
     network = tf.keras.Sequential()
@@ -19,19 +20,21 @@ class NNPolicy(Policy):
         self.network = network # template network consisting of inner layers
         self.out_activation = out_activation
         self.hyperparams = hyperparams
+        self.model_ready = False
 
-    def setup(self, ipd, opd, aspace:gym.spaces, model_ready=False):
-        if not model_ready:
+    def setup(self, ipd, opd, aspace:gym.spaces):
+        if not self.model_ready:
             self.network = complete_model(self.network, ipd, opd, self.out_activation)
-        if isinstance(aspace, gym.spaces.Discrete):
-            self.bounded = True
-            self.low = tf.fill(opd, 0.0)
-            self.high = tf.fill(opd, float(aspace.n-1))
-        else:
-            self.bounded = aspace.is_bounded()
-            if self.bounded:
-                self.low = tf.convert_to_tensor(aspace.low)
-                self.high = tf.convert_to_tensor(aspace.high)
+            if isinstance(aspace, gym.spaces.Discrete):
+                self.bounded = True
+                self.low = tf.fill(opd, 0.0)
+                self.high = tf.fill(opd, float(aspace.n-1))
+            else:
+                self.bounded = aspace.is_bounded()
+                if self.bounded:
+                    self.low = tf.convert_to_tensor(aspace.low)
+                    self.high = tf.convert_to_tensor(aspace.high)
+            self.model_ready = True
         
     def optimize_step(self, grad, check_converge=False):
         print("Updating policy Valid gradient; length", len(grad))
@@ -63,13 +66,16 @@ class NNPolicy(Policy):
 class DynamicsTraining:
     # learn dynamic model f for state action transitions
     def __init__(self, optimizer:Optimizer, data_specs:dict, 
-                 template, out_activation, hyperparams):
+                 template=None, out_activation=None, hyperparams=None):
         self.optimizer, self.template, self.out_activation = optimizer, template, out_activation
         self.hyperparams = hyperparams
         self.data_specs = data_specs
         self.start = False   
+        self.model_ready = (template is None)
 
     def create_model(self, sfd, afd):
+        if self.model_ready:
+            return
         ipd = (sfd[0]+afd[0],)
         model = complete_model(self.template, ipd, sfd, self.out_activation) 
         self.model = model   
@@ -83,26 +89,28 @@ class DynamicsTraining:
         # train_dataset = Dataset(
         #     dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
         if not self.start:
-            self.optimizer.compile(self.hyperparams, self.model.to_json(), 
-                                   train_dataset, **self.rems)
+            try:
+                self.optimizer.compile(self.hyperparams, self.model.to_json(), 
+                                    train_dataset, **self.rems)
+            except:
+                self.optimizer._dataset = train_dataset
+                self.optimizer.dataset_setup()
             self.start = True
         else:
             self.optimizer._dataset = train_dataset
         self.optimizer.train(nb_epochs)
 
-
 class BayesianDynamics(Control):
     def __init__(
         self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
-        policy: NNPolicy, state_reward, learn_config:tuple
+        policy: NNPolicy, rew_name, learn_config:tuple
     ):
         super().__init__(env, horizon, policy)
-        if dyn_training:
-            dyn_training.create_model(
-                self.state_fd, self.action_fd)
+        dyn_training.create_model(self.state_fd, self.action_fd)
         self.dyn_training = dyn_training
-        self.policy.setup(self.state_d, self.action_fd, self.env.action_space, model_ready=(dyn_training is None))        
-        self.state_reward = state_reward
+        self.policy.setup(self.state_d, self.action_fd, self.env.action_space)    
+        self.rew_name = rew_name    
+        self.state_reward = all_rewards[rew_name]
         if learn_config:
             self.dyntrain_ep, self.kp, self.gamma = learn_config
         # self.policy_optimizer = policy_optimizer
@@ -230,3 +238,17 @@ class BayesianDynamics(Control):
                 ep += 1
                 continue
         print("--Learning completed--")
+
+    def store(self, pref, tot_epochs):
+        f = open(pref+"loss.pkl", "wb")
+        pickle.dump(self.dyn_training.data_specs["loss"], f)
+        f.close()
+        info = dict()
+        info["learn_config"] = (self.dyntrain_ep, self.kp, self.gamma)
+        info["rew_name"] = self.rew_name
+        info["horizon"] = self.horizon
+        info["likelihood"] = self.dyn_training.data_specs["likelihood"]
+        info["tot_epochs"] = tot_epochs
+        f = open(pref+"agent.json", "w")
+        json.dump(info, f)
+        f.close()
