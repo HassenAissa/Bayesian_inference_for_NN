@@ -1,0 +1,1 @@
+{"dfile": "sample.csv", "lcat": "Classification", "loss": "Cross entropy", "tfrac": "10", "nnjson": "try.json", "mname": "", "ipd": "", "opd": "", "kernel": "", "filters": "", "hidden": "", "activations": "", "batch": "12", "optim": "BBB", "ite": "12", "hypf": "", "hyp": "", "f2": "Register model and start training  >>"}

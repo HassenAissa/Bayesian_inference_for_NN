@@ -1,0 +1,77 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bayesian NN: Supervised</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Create two equal columns that floats next to each other */
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      /* height: 300px; Should be removed. Only for demonstration */
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    table, th, td {
+      border: 0.5px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</h1>
+    <a href="/"><b style="background-color: aqua;">[Supervised learning]</b></a> | <a href="/reinforce">Reinforcement learning >> </a> 
+    <a href="/settings"><button># User preferences</button> </a>
+    <div class="row">
+    <div class="column" style="background-color: lightgoldenrodyellow;">
+      <h3>Train bayesian model or create neural network <a href="/"><button>Reset all</button></a> </h3>
+      <form action="/" method="post">
+      Autofill from saved sessions: <select name="session">{% for c in options["sessions"] %}
+      {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> | {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
+      <input type="submit" value="Continue>>">
+      </form><form action="/" method="post">
+      Name the current session: <input type="text" name="sname">; Descriptions: <textarea name="sdesc" cols="70" rows="1"></textarea><br>
+      <b>--Base model and dataset information--</b><br> 
+      <b>Upload base model</b> (use current: <b>{{info.form["nnjson"]}}</b> <input type="checkbox" name="nnjsons" value="{{info.form["nnjson"]}}">); <input type="file" name="nnjson"> | Or create  manually:<br>
+        Learning category: <select name="lcat">{% for l in options["lcat"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
+        Loss function: <select name="loss">{% for l in options["loss"] %}<option value="{{l}}">{{l}}</option>{% endfor %}</select>
+        Frac train: <input type="number" name="tfrac" value="10" min="1" max="100" step="1">% <br>
+      <b>Select Dataset </b> (use current: <b>{{info.form["dfile"]}}</b> <input type="checkbox" name="dfiles" value="{{info.form["dfile"]}}">); <input type="file" name="dfile"><br>
+        Model name: <input type="text" name="mname" value="{{info.form["mname"]}}">; 
+        Input dimensions: <input type="text" name="ipd" value="{{info.form["ipd"]}}"> Output dimension: <input type="number" name="opd" min="1" step="1" value="{{info.form["opd"]}}"> <br>
+        --Convolutional neural networks specific-- <br>
+        kernel size: <input type="number" name="kernel" min="1" max="999" value="{{info.form["kernel"]}}">; filters list: <br><textarea name="filters" cols="70" rows="1">{{info.form["filters"]}}</textarea> <br>
+        --All neural networks-- <br>
+        dimensions of densely connected layers: <br><textarea name="hidden" cols="70" rows="1">{{info.form["hidden"]}}</textarea> <br>
+        all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="activations" cols="70" rows="1">{{info.form["activations"]}}</textarea><br>
+        <input type="submit" name="f1" value="Register neural network only >>"> <br>
+      <b>--Training specifications--</b><br>
+        Batch size: <input type="number" min="1" name="batch" value="{{info.form["batch"]}}">; 
+        Optimizer:  <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select>
+        Iterations: <input type="number" name="ite" min="1" step="1" value="{{info.form["ite"]}}"><br>
+        start model (for SWAG): <input type="radio" name="mstart"> same as base model | or <input type="file" name="startjson"> <br>
+        prior 1: Gaussian (mean: <input type="number" name="pri1m" value="{{info.form["pri1m"]}}" min="-999" max="999" step="0.01">, 
+          standard deviation: <input type="number" name="pri1s" value="{{info.form["pri1s"]}}" min="-999" max="999" step="0.01">) <br>
+        prior 2: Gaussian (mean: <input type="number" name="pri2m" value="{{info.form["pri2m"]}}" min="-999" max="999" step="0.01">, 
+          standard deviation: <input type="number" name="pri2s" value="{{info.form["pri2s"]}}" min="-999" max="999" step="0.01">)
+        Hyperparameters: <input type="file" name="hypf" value="{{info.form["hypf"]}}">; or write details here: <textarea name="hyp" cols="70" rows="1">{{info.form["hyp"]}}</textarea><br>
+        <input type="submit" name="f2" value="Start training  >>">
+      </form>
+    </div>
+    <div class="column">
+      {% if info.notice %}
+        **Form information not complete -- missing: {{info.notice}} <br>
+      {% endif %}
+      <h3>Training process and result analysis</h3>
+    </div>
+    </div>
+</body>

@@ -1,0 +1,48 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bayesian NN: settings</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    /* Create two equal columns that floats next to each other */
+    .column {
+      float: left;
+      width: 50%;
+      padding: 10px;
+      /* height: 300px; Should be removed. Only for demonstration */
+    }
+    
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    table, th, td {
+      border: 0.5px solid black;
+    }
+    </style>
+</head>
+
+<body>
+    <h1 style="background-color: lightcyan;">Y6AEN-Bayesian machine learning platform</a></h1>
+    <a href=""><h3>User preferences</h3></a> <a href="/"><< Supervised learning</a> | <a href="/reinforce">Reinforcement learning >></a>
+    <div class="row">
+        <div class="column">
+          <b>--Session history settings--</b>
+            <form action="/settings" method="post">
+              <table><tr style="background-color: lightblue;"><th></th><th>Supervised learning</th><th>Reinforcement learning</th></tr>
+                <tr><th style="background-color: lightblue;">Max session number to save</th>
+                  <td>{{nums[0]}} => <input type="number" name="snum" min="1" max="256"></td><td>{{nums[1]}} => <input type="number" name="rnum" min="1" max="256"></td></tr>
+                <tr><th style="background-color: lightblue;">Select session</th>
+                  <td><select name="ssel">{% for s in ssessions %}<option value="{{s}}">{{s}}</option>{% endfor %}</select></td>
+                  <td><select name="rsel">{% for s in rsessions %}<option value="{{s}}">{{s}}</option>{% endfor %}</select></td></tr>
+                  <tr><th style="background-color: lightblue;">Action</th><td>-<input type="radio" name="sdel">Delete; -Rename: <input type="text" name="snew">; <input type="submit" name="s" value="Confirm"></td>
+                    <td>-<input type="radio" name="rdel">Delete; -Rename: <input type="text" name="rnew">; <input type="submit" name="r" value="Confirm"></td></tr>
+            </table></form>
+        </div>
+    </div>
+</body>
