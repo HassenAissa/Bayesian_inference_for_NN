@@ -6,9 +6,9 @@ from tensorflow.keras import models, layers
 
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
-from PyAce.optimizers import HyperParameters
+from PyAce.optimizers.hyperparameters import HyperParameters
 from PyAce.optimizers import SWAG
-from PyAce.visualisations import Visualisation
+from PyAce.visualisations import Metrics
 
 def runner():
     x = tf.random.uniform(shape=(600,1), minval=1, maxval=20, dtype=tf.float32)
@@ -43,7 +43,7 @@ def runner():
     # bayesian_model.store(store_path)
     # bayesian_model: BayesianModel= BayesianModel.load(store_path)
 
-    analytics_builder = Visualisation(bayesian_model)
+    analytics_builder = Metrics(bayesian_model)
 
     analytics_builder.visualise(dataset, 2000)
 

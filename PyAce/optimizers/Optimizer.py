@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
-from PyAce.optimizers import HyperParameters
+from .hyperparameters import HyperParameters
 import tensorflow as tf
 import os
 import shutil
