@@ -6,8 +6,7 @@ import numpy as np
 import tensorflow as tf
 from PyAce.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining
 from PyAce.optimizers import SWAG
-from PyAce.optimizers import HyperParameters
-from PyAce.datasets import Dataset
+from PyAce.optimizers.hyperparameters import HyperParameters
 
 def runner():
     # Set up the environment

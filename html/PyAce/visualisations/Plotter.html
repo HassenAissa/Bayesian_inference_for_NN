@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>PyAce.visualisations.Plotter API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>PyAce.visualisations.Plotter</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import tensorflow as tf
+
+from PyAce.datasets import Dataset
+from PyAce.nn import BayesianModel
+import matplotlib.pyplot as plt
+import numpy as np
+import scikitplot as skplt
+from sklearn.decomposition import PCA
+import os
+
+
+
+
+class Plotter:
+    def __init__(self, model: BayesianModel, dataset: Dataset):
+        self._dataset = dataset
+        self._model: BayesianModel = model
+
+    def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
+                                 data_type=&#34;test&#34;, un_zoom_level=0.2, save_path=None):
+        if self._dataset.likelihood_model != &#34;Classification&#34;:
+            raise ValueError(&#34;Decision boundary can only be plotted for Classification&#34;)
+        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                           data_type=data_type)
+        if dimension == 2:
+            self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity=1e-2, n_boundaries=10, un_zoom_level=un_zoom_level, save_path=save_path)
+
+    def plot_uncertainty_area(self,
+                              dimension=2,
+                              granularity: float = 1e-2,
+                              n_samples=100, data_type=&#34;test&#34;, uncertainty_threshold=0.8,
+                              un_zoom_level=0.2,
+                              save_path=None):
+        if self._dataset.likelihood_model != &#34;Classification&#34;:
+            raise ValueError(&#34;Uncertainty area can only be plotted for Classification&#34;)
+        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                           data_type=data_type)
+        if dimension == 2:
+            self._plot_2d_uncertainty_area(x, y, base_matrix, granularity, n_samples, uncertainty_threshold,
+                                           un_zoom_level, save_path=save_path)
+
+    def _plot_2d_uncertainty_area(self,
+                                  x: tf.Tensor,
+                                  y: tf.Tensor,
+                                  base_matrix: tf.Tensor,
+                                  granularity: float,
+                                  n_samples: int,
+                                  uncertainty_threshold: float,
+                                  un_zoom_level: float,
+                                  save_path=None):
+        dim1, dim2, grid_x_augmented = self._extract_grid_x(x, base_matrix, granularity, un_zoom_level)
+        _, predictions = self._model.predict(grid_x_augmented, n_samples)
+        n_classes = tf.unique(y)[0].shape[0]
+        colors = [(i / n_classes + 0.5 / n_classes) for i in range(n_classes)]
+        for i in range(n_classes):
+            plt.scatter(x[y == i][:, 0], x[y == i][:, 1], marker=&#39;o&#39;, cmap=colors[i], label=&#34;Class &#34; + str(i))
+        if predictions.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            predictions = tf.stack([1 - predictions, predictions], axis=1)
+        predictions_max = tf.math.reduce_max(predictions, axis=1)
+        uncertainty_area = tf.cast(predictions_max &lt; uncertainty_threshold, dtype=tf.float32)
+        uncertainty_area = tf.reshape(uncertainty_area, (dim1.shape[0], dim1.shape[1]))
+        plt.contourf(dim1, dim2, uncertainty_area, [0.9, 1.1], colors=[&#34;orange&#34;], alpha=0.5)
+        plt.legend()
+        plt.title(&#34;Uncertainty area with threshold &#34; + str(uncertainty_threshold))
+        self._save(save_path, &#34;uncertainty_area&#34;) if save_path else plt.show()
+
+    def _get_x_y(self, n_samples=100, data_type=&#34;test&#34;):
+        tf_dataset = self._dataset.valid_data
+        if data_type == &#34;test&#34;:
+            tf_dataset = self._dataset.test_data
+        elif data_type == &#34;train&#34;:
+            tf_dataset = self._dataset.train_data
+        x,y_true = next(iter(tf_dataset.batch(n_samples)))
+        return x,y_true
+
+    def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type=&#34;test&#34;) -&gt; (tf.Tensor, tf.Tensor):
+        x, y = self._get_x_y(n_samples, data_type)
+
+        if x.shape[1] &gt; dimension: #TODO: does not take images into account
+            print(&#34;Dimension &#34;, len(x.shape[1]), &#34; is not right.&#34;)
+            print(&#34;Will apply PCA to reduce to dimension &#34;, dimension)
+            base_matrix = tf.pca(x, dimension, dtype=x.dtype)
+            return tf.linalg.matmul(x, base_matrix), y, base_matrix
+        elif x.shape[1] &lt; dimension:
+            raise ValueError(&#34;Dimension &#34;, x.shape[1], &#34; is inferior to given dimension&#34;)
+        return x, y, tf.eye(dimension, dtype=x.dtype)
+
+    def _plot_2d_decision_boundary(self,
+                                   x: tf.Tensor,
+                                   y: tf.Tensor,
+                                   base_matrix: tf.Tensor,
+                                   dimension=2,
+                                   granularity=1e-2,
+                                   n_boundaries=10,
+                                   un_zoom_level=0.2,
+                                   save_path=None):
+        dim1, dim2, grid_x_augmented = self._extract_grid_x(x, base_matrix, granularity, un_zoom_level)
+        prediction_samples, _ = self._model.predict(grid_x_augmented, n_boundaries)
+        plt.scatter(x[y == 0][:, 0], x[y == 0][:, 1], marker=&#39;o&#39;, c=&#34;blue&#34;, label=&#34;Class 0&#34;)
+        plt.scatter(x[y == 1][:, 0], x[y == 1][:, 1], marker=&#39;x&#39;, c=&#34;red&#34;, label=&#34;Class 1&#34;)
+        for pred in prediction_samples:
+            pred = tf.reshape(pred, dim1.shape)
+            plt.contour(dim1, dim2, pred, [0.5], colors=[&#34;red&#34;])
+        plt.legend()
+        plt.title(&#34;Multiple Decision Boundaries N=&#34; + str(n_boundaries))
+        self._save(save_path, &#34;decision_boundaries&#34;) if save_path else plt.show()
+
+    def _extract_grid_x(self, x, base_matrix, granularity, un_zoom_level: float):
+        max_features = tf.math.reduce_max(x, axis=0)
+        min_features = tf.math.reduce_min(x, axis=0)
+        size1 = (max_features[0] - min_features[0])
+        size2 = (max_features[1] - min_features[1])
+        dim1 = tf.range(min_features[0] - (un_zoom_level/2) * size1,
+                        max_features[0] + (un_zoom_level/2) * size1,
+                        granularity * (max_features[0] - min_features[0] + un_zoom_level * size1))
+        dim2 = tf.range(min_features[1] - (un_zoom_level/2) * size2,
+                        max_features[1] + (un_zoom_level/2) * size2,
+                        granularity * (max_features[1] - min_features[1] + un_zoom_level * size2))
+        dim1, dim2 = tf.meshgrid(dim1, dim2, indexing=&#39;ij&#39;)
+        grid_x = tf.stack([tf.reshape(dim1, (-1)), tf.reshape(dim2, (-1))], axis=1)
+        grid_x_augmented = tf.linalg.matmul(grid_x, tf.transpose(base_matrix))
+        return dim1, dim2, grid_x_augmented
+
+    def regression_uncertainty(self, data_type=&#34;test&#34;, n_samples = 100, n_boundaries = 100, save_path=None) -&gt; tuple:
+        # For classification, we might use the entropy of the predicted probabilities
+        # as a measure of aleatoric uncertainty and variance of multiple stochastic
+        # forward passes as epistemic uncertainty.
+        # Assuming predict returns a distribution over classes for each sample
+        if self._dataset.likelihood_model == &#34;Regression&#34;:
+            x,y_true = self._get_x_y(n_samples, data_type)
+            y_samples, y_pred = self._model.predict(x, n_boundaries)
+            variance = np.var(y_samples, axis=0)
+            err = np.mean(np.sqrt(variance), axis = 1)
+            pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
+            # uncertainty
+            plt.figure(figsize=(10, 5))
+            plt.hlines([0], 0, len(err))
+            plt.plot(range(len(err)), pred_dev-err, label=&#39;Epistemic Lower&#39;, alpha=0.5)
+            plt.scatter(range(len(err)), pred_dev, label=&#39;Averaged deviation&#39;, alpha=0.5, c=&#34;k&#34;)
+            plt.plot(range(len(err)), pred_dev+err, label=&#39;Epistemic Upper&#39;, alpha=0.5)
+            plt.legend()
+            plt.title(&#39;Epistemic Uncertainty&#39;)
+            plt.ylabel(&#39;Pred-True difference&#39;)
+            self._save(save_path, &#34;epistemic_uncertainty&#34;) if save_path else plt.show()
+        else:
+            raise Exception(&#34;regression uncertainty cannot be computed for classification problems&#34;)
+
+    
+
+    def confusion_matrix(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if y_pred.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+        y_pred_labels = tf.argmax(y_pred, axis=1)
+        skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = &#39;Confusion Matrix&#39;)
+        self._save(save_path, &#34;confusion_matrix&#34;) if save_path else plt.show()
+            
+
+    def compare_prediction_to_target(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if self._dataset.likelihood_model == &#34;Regression&#34;:
+            y_true = tf.reshape(y_true, y_pred.shape)
+            if y_true.shape[1] == 1:
+                plt.figure(figsize=(10, 5))
+                plt.scatter(range(len(y_true)), y_true, label=&#39;True Values&#39;, alpha=0.5)
+                plt.scatter(range(len(y_pred)), y_pred, label=&#39;Predicted Mean&#39;, alpha=0.5)
+                plt.legend()
+                plt.title(&#39;True vs Predicted Values&#39;)
+                plt.xlabel(&#39;Sample Index&#39;)
+                plt.ylabel(&#39;Output&#39;)
+                self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+        else:
+            if y_pred.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            y_pred_labels = tf.argmax(y_pred, axis=1)
+            x_2d = tf.reshape(x, (x.shape[0], -1))
+            if x_2d.shape[1] == 2:
+                self._plot_2d(x_2d, y_true, y_pred_labels)
+            else:
+                if(x_2d.shape[1]&gt;=3):
+                    x_pca = PCA(n_components=3).fit_transform(x_2d)
+                    self._plot_3d(x_pca, y_true, y_pred_labels, save_path=save_path)
+                else:
+                    x_pca = PCA(n_components=2).fit_transform(x_2d)
+                    self._plot_2d(x_pca, y_true, y_pred_labels, save_path=save_path)
+
+
+    def _plot_2d(self, x_pca, y_true, y_pred, save_path=None):
+        fig, (ax_true, ax_pred) = plt.subplots(2, figsize=(12, 8))
+        scatter_true = ax_true.scatter(x_pca[:, -2], x_pca[:, -1], c=y_true, s=5)
+        legend_plt_true = ax_true.legend(*scatter_true.legend_elements(), loc=&#34;lower left&#34;, title=&#34;Digits&#34;)
+        ax_true.add_artist(legend_plt_true)
+        scatter_pred = ax_pred.scatter(x_pca[:, -2], x_pca[:, -1], c=y_pred, s=5)
+        legend_plt_pred = ax_pred.legend(*scatter_pred.legend_elements(), loc=&#34;lower left&#34;, title=&#34;Digits&#34;)
+        ax_pred.add_artist(legend_plt_pred)
+        ax_true.set_title(&#39;First Two Dimensions of Projected True Data After Applying PCA&#39;)
+        ax_pred.set_title(&#39;First Two Dimensions of Projected Predicted Data After Applying PCA&#39;)
+        self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+        
+    def _plot_3d(self, x_pca, y_true, y_pred, save_path=None):
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax_true = fig.add_subplot(1, 2, 1, projection=&#39;3d&#39;)
+        plt_3d_true = ax_true.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_true, s=1)
+        fig.colorbar(plt_3d_true, shrink=0.5)
+        
+        ax_pred = fig.add_subplot(1, 2, 2, projection=&#39;3d&#39;)
+        plt_3d_pred = ax_pred.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_pred, s=1)
+        fig.colorbar(plt_3d_pred, shrink=0.5)
+        
+        plt.title(&#39;First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA&#39;)
+        self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+
+    def entropy(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if self._dataset.likelihood_model == &#34;Classification&#34;:
+            if y_pred.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            entropies = []
+            for probabilities in y_pred:
+                entropies.append(-1*np.sum(probabilities*np.log(probabilities+1e-5)))
+            entropies = np.sort(np.nan_to_num(entropies))
+            plt.plot(range(len(y_true)), entropies)
+            plt.title(&#39;Entropies for each input&#39;)
+            plt.xlabel(&#39;Sample Index&#39;)
+            plt.ylabel(&#39;entropy&#39;)
+            self._save(save_path, &#34;entropy&#34;) if save_path else plt.show()
+        else:
+            raise Exception(&#34;Entropy is only available for classification&#34;)
+        
+
+
+    def learning_diagnostics(self, loss_file, save_path=None):
+        if loss_file != None:
+            losses = np.loadtxt(loss_file)
+            plt.plot(losses)
+            plt.title(&#34;Training Loss&#34;)
+            plt.xlabel(&#34;Iterations&#34;)
+            plt.ylabel(&#34;Loss&#34;)
+            plt.legend()
+            self._save(save_path, &#34;learning_diagnostics&#34;) if save_path else plt.show()
+            
+    def _save(self, path, name):
+        directory = path + &#34;/report&#34;
+        figures = directory + &#34;/figures&#34;
+        os.makedirs(directory, exist_ok=True)
+        os.makedirs(figures, exist_ok=True)
+        plt.savefig(figures + &#34;/&#34; + name + &#34;.png&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="PyAce.visualisations.Plotter.Plotter"><code class="flex name class">
+<span>class <span class="ident">Plotter</span></span>
+<span>(</span><span>model: PyAce.nn.BayesianModel.BayesianModel, dataset: PyAce.datasets.Dataset.Dataset)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Plotter:
+    def __init__(self, model: BayesianModel, dataset: Dataset):
+        self._dataset = dataset
+        self._model: BayesianModel = model
+
+    def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
+                                 data_type=&#34;test&#34;, un_zoom_level=0.2, save_path=None):
+        if self._dataset.likelihood_model != &#34;Classification&#34;:
+            raise ValueError(&#34;Decision boundary can only be plotted for Classification&#34;)
+        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                           data_type=data_type)
+        if dimension == 2:
+            self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity=1e-2, n_boundaries=10, un_zoom_level=un_zoom_level, save_path=save_path)
+
+    def plot_uncertainty_area(self,
+                              dimension=2,
+                              granularity: float = 1e-2,
+                              n_samples=100, data_type=&#34;test&#34;, uncertainty_threshold=0.8,
+                              un_zoom_level=0.2,
+                              save_path=None):
+        if self._dataset.likelihood_model != &#34;Classification&#34;:
+            raise ValueError(&#34;Uncertainty area can only be plotted for Classification&#34;)
+        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                           data_type=data_type)
+        if dimension == 2:
+            self._plot_2d_uncertainty_area(x, y, base_matrix, granularity, n_samples, uncertainty_threshold,
+                                           un_zoom_level, save_path=save_path)
+
+    def _plot_2d_uncertainty_area(self,
+                                  x: tf.Tensor,
+                                  y: tf.Tensor,
+                                  base_matrix: tf.Tensor,
+                                  granularity: float,
+                                  n_samples: int,
+                                  uncertainty_threshold: float,
+                                  un_zoom_level: float,
+                                  save_path=None):
+        dim1, dim2, grid_x_augmented = self._extract_grid_x(x, base_matrix, granularity, un_zoom_level)
+        _, predictions = self._model.predict(grid_x_augmented, n_samples)
+        n_classes = tf.unique(y)[0].shape[0]
+        colors = [(i / n_classes + 0.5 / n_classes) for i in range(n_classes)]
+        for i in range(n_classes):
+            plt.scatter(x[y == i][:, 0], x[y == i][:, 1], marker=&#39;o&#39;, cmap=colors[i], label=&#34;Class &#34; + str(i))
+        if predictions.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            predictions = tf.stack([1 - predictions, predictions], axis=1)
+        predictions_max = tf.math.reduce_max(predictions, axis=1)
+        uncertainty_area = tf.cast(predictions_max &lt; uncertainty_threshold, dtype=tf.float32)
+        uncertainty_area = tf.reshape(uncertainty_area, (dim1.shape[0], dim1.shape[1]))
+        plt.contourf(dim1, dim2, uncertainty_area, [0.9, 1.1], colors=[&#34;orange&#34;], alpha=0.5)
+        plt.legend()
+        plt.title(&#34;Uncertainty area with threshold &#34; + str(uncertainty_threshold))
+        self._save(save_path, &#34;uncertainty_area&#34;) if save_path else plt.show()
+
+    def _get_x_y(self, n_samples=100, data_type=&#34;test&#34;):
+        tf_dataset = self._dataset.valid_data
+        if data_type == &#34;test&#34;:
+            tf_dataset = self._dataset.test_data
+        elif data_type == &#34;train&#34;:
+            tf_dataset = self._dataset.train_data
+        x,y_true = next(iter(tf_dataset.batch(n_samples)))
+        return x,y_true
+
+    def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type=&#34;test&#34;) -&gt; (tf.Tensor, tf.Tensor):
+        x, y = self._get_x_y(n_samples, data_type)
+
+        if x.shape[1] &gt; dimension: #TODO: does not take images into account
+            print(&#34;Dimension &#34;, len(x.shape[1]), &#34; is not right.&#34;)
+            print(&#34;Will apply PCA to reduce to dimension &#34;, dimension)
+            base_matrix = tf.pca(x, dimension, dtype=x.dtype)
+            return tf.linalg.matmul(x, base_matrix), y, base_matrix
+        elif x.shape[1] &lt; dimension:
+            raise ValueError(&#34;Dimension &#34;, x.shape[1], &#34; is inferior to given dimension&#34;)
+        return x, y, tf.eye(dimension, dtype=x.dtype)
+
+    def _plot_2d_decision_boundary(self,
+                                   x: tf.Tensor,
+                                   y: tf.Tensor,
+                                   base_matrix: tf.Tensor,
+                                   dimension=2,
+                                   granularity=1e-2,
+                                   n_boundaries=10,
+                                   un_zoom_level=0.2,
+                                   save_path=None):
+        dim1, dim2, grid_x_augmented = self._extract_grid_x(x, base_matrix, granularity, un_zoom_level)
+        prediction_samples, _ = self._model.predict(grid_x_augmented, n_boundaries)
+        plt.scatter(x[y == 0][:, 0], x[y == 0][:, 1], marker=&#39;o&#39;, c=&#34;blue&#34;, label=&#34;Class 0&#34;)
+        plt.scatter(x[y == 1][:, 0], x[y == 1][:, 1], marker=&#39;x&#39;, c=&#34;red&#34;, label=&#34;Class 1&#34;)
+        for pred in prediction_samples:
+            pred = tf.reshape(pred, dim1.shape)
+            plt.contour(dim1, dim2, pred, [0.5], colors=[&#34;red&#34;])
+        plt.legend()
+        plt.title(&#34;Multiple Decision Boundaries N=&#34; + str(n_boundaries))
+        self._save(save_path, &#34;decision_boundaries&#34;) if save_path else plt.show()
+
+    def _extract_grid_x(self, x, base_matrix, granularity, un_zoom_level: float):
+        max_features = tf.math.reduce_max(x, axis=0)
+        min_features = tf.math.reduce_min(x, axis=0)
+        size1 = (max_features[0] - min_features[0])
+        size2 = (max_features[1] - min_features[1])
+        dim1 = tf.range(min_features[0] - (un_zoom_level/2) * size1,
+                        max_features[0] + (un_zoom_level/2) * size1,
+                        granularity * (max_features[0] - min_features[0] + un_zoom_level * size1))
+        dim2 = tf.range(min_features[1] - (un_zoom_level/2) * size2,
+                        max_features[1] + (un_zoom_level/2) * size2,
+                        granularity * (max_features[1] - min_features[1] + un_zoom_level * size2))
+        dim1, dim2 = tf.meshgrid(dim1, dim2, indexing=&#39;ij&#39;)
+        grid_x = tf.stack([tf.reshape(dim1, (-1)), tf.reshape(dim2, (-1))], axis=1)
+        grid_x_augmented = tf.linalg.matmul(grid_x, tf.transpose(base_matrix))
+        return dim1, dim2, grid_x_augmented
+
+    def regression_uncertainty(self, data_type=&#34;test&#34;, n_samples = 100, n_boundaries = 100, save_path=None) -&gt; tuple:
+        # For classification, we might use the entropy of the predicted probabilities
+        # as a measure of aleatoric uncertainty and variance of multiple stochastic
+        # forward passes as epistemic uncertainty.
+        # Assuming predict returns a distribution over classes for each sample
+        if self._dataset.likelihood_model == &#34;Regression&#34;:
+            x,y_true = self._get_x_y(n_samples, data_type)
+            y_samples, y_pred = self._model.predict(x, n_boundaries)
+            variance = np.var(y_samples, axis=0)
+            err = np.mean(np.sqrt(variance), axis = 1)
+            pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
+            # uncertainty
+            plt.figure(figsize=(10, 5))
+            plt.hlines([0], 0, len(err))
+            plt.plot(range(len(err)), pred_dev-err, label=&#39;Epistemic Lower&#39;, alpha=0.5)
+            plt.scatter(range(len(err)), pred_dev, label=&#39;Averaged deviation&#39;, alpha=0.5, c=&#34;k&#34;)
+            plt.plot(range(len(err)), pred_dev+err, label=&#39;Epistemic Upper&#39;, alpha=0.5)
+            plt.legend()
+            plt.title(&#39;Epistemic Uncertainty&#39;)
+            plt.ylabel(&#39;Pred-True difference&#39;)
+            self._save(save_path, &#34;epistemic_uncertainty&#34;) if save_path else plt.show()
+        else:
+            raise Exception(&#34;regression uncertainty cannot be computed for classification problems&#34;)
+
+    
+
+    def confusion_matrix(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if y_pred.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+        y_pred_labels = tf.argmax(y_pred, axis=1)
+        skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = &#39;Confusion Matrix&#39;)
+        self._save(save_path, &#34;confusion_matrix&#34;) if save_path else plt.show()
+            
+
+    def compare_prediction_to_target(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if self._dataset.likelihood_model == &#34;Regression&#34;:
+            y_true = tf.reshape(y_true, y_pred.shape)
+            if y_true.shape[1] == 1:
+                plt.figure(figsize=(10, 5))
+                plt.scatter(range(len(y_true)), y_true, label=&#39;True Values&#39;, alpha=0.5)
+                plt.scatter(range(len(y_pred)), y_pred, label=&#39;Predicted Mean&#39;, alpha=0.5)
+                plt.legend()
+                plt.title(&#39;True vs Predicted Values&#39;)
+                plt.xlabel(&#39;Sample Index&#39;)
+                plt.ylabel(&#39;Output&#39;)
+                self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+        else:
+            if y_pred.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            y_pred_labels = tf.argmax(y_pred, axis=1)
+            x_2d = tf.reshape(x, (x.shape[0], -1))
+            if x_2d.shape[1] == 2:
+                self._plot_2d(x_2d, y_true, y_pred_labels)
+            else:
+                if(x_2d.shape[1]&gt;=3):
+                    x_pca = PCA(n_components=3).fit_transform(x_2d)
+                    self._plot_3d(x_pca, y_true, y_pred_labels, save_path=save_path)
+                else:
+                    x_pca = PCA(n_components=2).fit_transform(x_2d)
+                    self._plot_2d(x_pca, y_true, y_pred_labels, save_path=save_path)
+
+
+    def _plot_2d(self, x_pca, y_true, y_pred, save_path=None):
+        fig, (ax_true, ax_pred) = plt.subplots(2, figsize=(12, 8))
+        scatter_true = ax_true.scatter(x_pca[:, -2], x_pca[:, -1], c=y_true, s=5)
+        legend_plt_true = ax_true.legend(*scatter_true.legend_elements(), loc=&#34;lower left&#34;, title=&#34;Digits&#34;)
+        ax_true.add_artist(legend_plt_true)
+        scatter_pred = ax_pred.scatter(x_pca[:, -2], x_pca[:, -1], c=y_pred, s=5)
+        legend_plt_pred = ax_pred.legend(*scatter_pred.legend_elements(), loc=&#34;lower left&#34;, title=&#34;Digits&#34;)
+        ax_pred.add_artist(legend_plt_pred)
+        ax_true.set_title(&#39;First Two Dimensions of Projected True Data After Applying PCA&#39;)
+        ax_pred.set_title(&#39;First Two Dimensions of Projected Predicted Data After Applying PCA&#39;)
+        self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+        
+    def _plot_3d(self, x_pca, y_true, y_pred, save_path=None):
+        fig = plt.figure(figsize=plt.figaspect(0.5))
+        ax_true = fig.add_subplot(1, 2, 1, projection=&#39;3d&#39;)
+        plt_3d_true = ax_true.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_true, s=1)
+        fig.colorbar(plt_3d_true, shrink=0.5)
+        
+        ax_pred = fig.add_subplot(1, 2, 2, projection=&#39;3d&#39;)
+        plt_3d_pred = ax_pred.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_pred, s=1)
+        fig.colorbar(plt_3d_pred, shrink=0.5)
+        
+        plt.title(&#39;First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA&#39;)
+        self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+
+    def entropy(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        if self._dataset.likelihood_model == &#34;Classification&#34;:
+            if y_pred.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            entropies = []
+            for probabilities in y_pred:
+                entropies.append(-1*np.sum(probabilities*np.log(probabilities+1e-5)))
+            entropies = np.sort(np.nan_to_num(entropies))
+            plt.plot(range(len(y_true)), entropies)
+            plt.title(&#39;Entropies for each input&#39;)
+            plt.xlabel(&#39;Sample Index&#39;)
+            plt.ylabel(&#39;entropy&#39;)
+            self._save(save_path, &#34;entropy&#34;) if save_path else plt.show()
+        else:
+            raise Exception(&#34;Entropy is only available for classification&#34;)
+        
+
+
+    def learning_diagnostics(self, loss_file, save_path=None):
+        if loss_file != None:
+            losses = np.loadtxt(loss_file)
+            plt.plot(losses)
+            plt.title(&#34;Training Loss&#34;)
+            plt.xlabel(&#34;Iterations&#34;)
+            plt.ylabel(&#34;Loss&#34;)
+            plt.legend()
+            self._save(save_path, &#34;learning_diagnostics&#34;) if save_path else plt.show()
+            
+    def _save(self, path, name):
+        directory = path + &#34;/report&#34;
+        figures = directory + &#34;/figures&#34;
+        os.makedirs(directory, exist_ok=True)
+        os.makedirs(figures, exist_ok=True)
+        plt.savefig(figures + &#34;/&#34; + name + &#34;.png&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="PyAce.visualisations.Plotter.Plotter.compare_prediction_to_target"><code class="name flex">
+<span>def <span class="ident">compare_prediction_to_target</span></span>(<span>self, n_samples=100, data_type='test', n_boundaries=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compare_prediction_to_target(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+    x,y_true = self._get_x_y(n_samples, data_type)
+    y_samples, y_pred = self._model.predict(x, n_boundaries)
+    if self._dataset.likelihood_model == &#34;Regression&#34;:
+        y_true = tf.reshape(y_true, y_pred.shape)
+        if y_true.shape[1] == 1:
+            plt.figure(figsize=(10, 5))
+            plt.scatter(range(len(y_true)), y_true, label=&#39;True Values&#39;, alpha=0.5)
+            plt.scatter(range(len(y_pred)), y_pred, label=&#39;Predicted Mean&#39;, alpha=0.5)
+            plt.legend()
+            plt.title(&#39;True vs Predicted Values&#39;)
+            plt.xlabel(&#39;Sample Index&#39;)
+            plt.ylabel(&#39;Output&#39;)
+            self._save(save_path, &#34;comparison_pred_true&#34;) if save_path else plt.show()
+    else:
+        if y_pred.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+        y_pred_labels = tf.argmax(y_pred, axis=1)
+        x_2d = tf.reshape(x, (x.shape[0], -1))
+        if x_2d.shape[1] == 2:
+            self._plot_2d(x_2d, y_true, y_pred_labels)
+        else:
+            if(x_2d.shape[1]&gt;=3):
+                x_pca = PCA(n_components=3).fit_transform(x_2d)
+                self._plot_3d(x_pca, y_true, y_pred_labels, save_path=save_path)
+            else:
+                x_pca = PCA(n_components=2).fit_transform(x_2d)
+                self._plot_2d(x_pca, y_true, y_pred_labels, save_path=save_path)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.visualisations.Plotter.Plotter.confusion_matrix"><code class="name flex">
+<span>def <span class="ident">confusion_matrix</span></span>(<span>self, n_samples=100, data_type='test', n_boundaries=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def confusion_matrix(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+    x,y_true = self._get_x_y(n_samples, data_type)
+    y_samples, y_pred = self._model.predict(x, n_boundaries)
+    if y_pred.shape[1] == 1:
+        # in the very specific case of binary classification with one neuron output convert it to two output
+        y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+    y_pred_labels = tf.argmax(y_pred, axis=1)
+    skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = &#39;Confusion Matrix&#39;)
+    self._save(save_path, &#34;confusion_matrix&#34;) if save_path else plt.show()</code></pre>
+</details>
+</dd>
+<dt id="PyAce.visualisations.Plotter.Plotter.entropy"><code class="name flex">
+<span>def <span class="ident">entropy</span></span>(<span>self, n_samples=100, data_type='test', n_boundaries=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def entropy(self, n_samples=100, data_type=&#34;test&#34;, n_boundaries = 100, save_path=None):
+    x,y_true = self._get_x_y(n_samples, data_type)
+    y_samples, y_pred = self._model.predict(x, n_boundaries)
+    if self._dataset.likelihood_model == &#34;Classification&#34;:
+        if y_pred.shape[1] == 1:
+            # in the very specific case of binary classification with one neuron output convert it to two output
+            y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+        entropies = []
+        for probabilities in y_pred:
+            entropies.append(-1*np.sum(probabilities*np.log(probabilities+1e-5)))
+        entropies = np.sort(np.nan_to_num(entropies))
+        plt.plot(range(len(y_true)), entropies)
+        plt.title(&#39;Entropies for each input&#39;)
+        plt.xlabel(&#39;Sample Index&#39;)
+        plt.ylabel(&#39;entropy&#39;)
+        self._save(save_path, &#34;entropy&#34;) if save_path else plt.show()
+    else:
+        raise Exception(&#34;Entropy is only available for classification&#34;)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.visualisations.Plotter.Plotter.learning_diagnostics"><code class="name flex">
+<span>def <span class="ident">learning_diagnostics</span></span>(<span>self, loss_file, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def learning_diagnostics(self, loss_file, save_path=None):
+    if loss_file != None:
+        losses = np.loadtxt(loss_file)
+        plt.plot(losses)
+        plt.title(&#34;Training Loss&#34;)
+        plt.xlabel(&#34;Iterations&#34;)
+        plt.ylabel(&#34;Loss&#34;)
+        plt.legend()
+        self._save(save_path, &#34;learning_diagnostics&#34;) if save_path else plt.show()</code></pre>
+</details>
+</dd>
+<dt id="PyAce.visualisations.Plotter.Plotter.plot_decision_boundaries"><code class="name flex">
+<span>def <span class="ident">plot_decision_boundaries</span></span>(<span>self, dimension=2, granularity=0.01, n_boundaries=10, n_samples=100, data_type='test', un_zoom_level=0.2, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
+                             data_type=&#34;test&#34;, un_zoom_level=0.2, save_path=None):
+    if self._dataset.likelihood_model != &#34;Classification&#34;:
+        raise ValueError(&#34;Decision boundary can only be plotted for Classification&#34;)
+    x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                       data_type=data_type)
+    if dimension == 2:
+        self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity=1e-2, n_boundaries=10, un_zoom_level=un_zoom_level, save_path=save_path)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.visualisations.Plotter.Plotter.plot_uncertainty_area"><code class="name flex">
+<span>def <span class="ident">plot_uncertainty_area</span></span>(<span>self, dimension=2, granularity: float = 0.01, n_samples=100, data_type='test', uncertainty_threshold=0.8, un_zoom_level=0.2, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_uncertainty_area(self,
+                          dimension=2,
+                          granularity: float = 1e-2,
+                          n_samples=100, data_type=&#34;test&#34;, uncertainty_threshold=0.8,
+                          un_zoom_level=0.2,
+                          save_path=None):
+    if self._dataset.likelihood_model != &#34;Classification&#34;:
+        raise ValueError(&#34;Uncertainty area can only be plotted for Classification&#34;)
+    x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                       data_type=data_type)
+    if dimension == 2:
+        self._plot_2d_uncertainty_area(x, y, base_matrix, granularity, n_samples, uncertainty_threshold,
+                                       un_zoom_level, save_path=save_path)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.visualisations.Plotter.Plotter.regression_uncertainty"><code class="name flex">
+<span>def <span class="ident">regression_uncertainty</span></span>(<span>self, data_type='test', n_samples=100, n_boundaries=100, save_path=None) ‑> tuple</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def regression_uncertainty(self, data_type=&#34;test&#34;, n_samples = 100, n_boundaries = 100, save_path=None) -&gt; tuple:
+    # For classification, we might use the entropy of the predicted probabilities
+    # as a measure of aleatoric uncertainty and variance of multiple stochastic
+    # forward passes as epistemic uncertainty.
+    # Assuming predict returns a distribution over classes for each sample
+    if self._dataset.likelihood_model == &#34;Regression&#34;:
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        variance = np.var(y_samples, axis=0)
+        err = np.mean(np.sqrt(variance), axis = 1)
+        pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
+        # uncertainty
+        plt.figure(figsize=(10, 5))
+        plt.hlines([0], 0, len(err))
+        plt.plot(range(len(err)), pred_dev-err, label=&#39;Epistemic Lower&#39;, alpha=0.5)
+        plt.scatter(range(len(err)), pred_dev, label=&#39;Averaged deviation&#39;, alpha=0.5, c=&#34;k&#34;)
+        plt.plot(range(len(err)), pred_dev+err, label=&#39;Epistemic Upper&#39;, alpha=0.5)
+        plt.legend()
+        plt.title(&#39;Epistemic Uncertainty&#39;)
+        plt.ylabel(&#39;Pred-True difference&#39;)
+        self._save(save_path, &#34;epistemic_uncertainty&#34;) if save_path else plt.show()
+    else:
+        raise Exception(&#34;regression uncertainty cannot be computed for classification problems&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="PyAce.visualisations" href="index.html">PyAce.visualisations</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PyAce.visualisations.Plotter.Plotter" href="#PyAce.visualisations.Plotter.Plotter">Plotter</a></code></h4>
+<ul class="">
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.compare_prediction_to_target" href="#PyAce.visualisations.Plotter.Plotter.compare_prediction_to_target">compare_prediction_to_target</a></code></li>
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.confusion_matrix" href="#PyAce.visualisations.Plotter.Plotter.confusion_matrix">confusion_matrix</a></code></li>
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.entropy" href="#PyAce.visualisations.Plotter.Plotter.entropy">entropy</a></code></li>
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.learning_diagnostics" href="#PyAce.visualisations.Plotter.Plotter.learning_diagnostics">learning_diagnostics</a></code></li>
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.plot_decision_boundaries" href="#PyAce.visualisations.Plotter.Plotter.plot_decision_boundaries">plot_decision_boundaries</a></code></li>
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.plot_uncertainty_area" href="#PyAce.visualisations.Plotter.Plotter.plot_uncertainty_area">plot_uncertainty_area</a></code></li>
+<li><code><a title="PyAce.visualisations.Plotter.Plotter.regression_uncertainty" href="#PyAce.visualisations.Plotter.Plotter.regression_uncertainty">regression_uncertainty</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

@@ -3,7 +3,7 @@ from tensorflow.keras import models, layers
 
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
-from PyAce.optimizers import HyperParameters
+from PyAce.optimizers.hyperparameters import HyperParameters
 from PyAce.optimizers import BBB
 from PyAce.distributions import GaussianPrior
 from PyAce.visualisations import Robustness
@@ -50,4 +50,4 @@ def runner():
     robustness_builder.mean_corruption_error()
     robustness_builder.mean_corruption_error(relative=True, save_path=path)
         
-runner()
+# runner()

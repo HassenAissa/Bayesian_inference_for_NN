@@ -2,8 +2,6 @@ from .Optimizer import Optimizer
 from .BBB import BBB
 from .FSVI import FSVI
 from .HMC import HMC
-from .HyperParameters import HyperParameters
-from .HyperparametersSelector import HyperParametersSelector
 from .SGLD import SGLD
 from .SWAG import SWAG
 
