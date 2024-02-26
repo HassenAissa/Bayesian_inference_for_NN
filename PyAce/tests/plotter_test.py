@@ -64,4 +64,4 @@ def runner():
     metrics.summary(100)
     # play and compate with one NN.
 
-# runner()
+runner()

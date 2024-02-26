@@ -15,29 +15,29 @@ class Plotter:
     def __init__(self, model: BayesianModel, dataset: Dataset):
         self._dataset = dataset
         self._model: BayesianModel = model
+        self._nb_predictions: int = 0
+        self._cached_samples : list = None
+        self._cached_prediction: tf.Tensor = None
+        self._cached_true_values: tf.Tensor = None
 
-    def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
-                                 data_type="test", un_zoom_level=0.2, save_path=None):
-        if self._dataset.likelihood_model != "Classification":
-            raise ValueError("Decision boundary can only be plotted for Classification")
-        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
-                                                           data_type=data_type)
-        if dimension == 2:
-            self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity=1e-2, n_boundaries=10, un_zoom_level=un_zoom_level, save_path=save_path)
-
-    def plot_uncertainty_area(self,
-                              dimension=2,
-                              granularity: float = 1e-2,
-                              n_samples=100, data_type="test", uncertainty_threshold=0.8,
-                              un_zoom_level=0.2,
-                              save_path=None):
-        if self._dataset.likelihood_model != "Classification":
-            raise ValueError("Uncertainty area can only be plotted for Classification")
-        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
-                                                           data_type=data_type)
-        if dimension == 2:
-            self._plot_2d_uncertainty_area(x, y, base_matrix, granularity, n_samples, uncertainty_threshold,
-                                           un_zoom_level, save_path=save_path)
+    
+    def _get_predictions(self, input, nb_boundaries, y_true):
+        if self._nb_predictions == nb_boundaries:
+            y_pred = self._cached_prediction
+            if self._cached_prediction.shape[1] == 1:
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - self._cached_prediction, self._cached_prediction], axis=1)
+            return self._cached_samples, y_pred, self._cached_true_values
+        else:
+            y_samples, y_pred = self._model.predict(input, nb_boundaries)  # pass in the x value
+            self._nb_predictions = nb_boundaries
+            self._cached_samples = y_samples
+            self._cached_prediction = y_pred
+            self._cached_true_values = y_true
+            if y_pred.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
+                # in the very specific case of binary classification with one neuron output convert it to two output
+                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+            return y_samples, y_pred, y_true
 
     def _plot_2d_uncertainty_area(self,
                                   x: tf.Tensor,
@@ -46,8 +46,7 @@ class Plotter:
                                   granularity: float,
                                   n_samples: int,
                                   uncertainty_threshold: float,
-                                  un_zoom_level: float,
-                                  save_path=None):
+                                  un_zoom_level: float):
         dim1, dim2, grid_x_augmented = self._extract_grid_x(x, base_matrix, granularity, un_zoom_level)
         _, predictions = self._model.predict(grid_x_augmented, n_samples)
         n_classes = tf.unique(y)[0].shape[0]
@@ -63,7 +62,6 @@ class Plotter:
         plt.contourf(dim1, dim2, uncertainty_area, [0.9, 1.1], colors=["orange"], alpha=0.5)
         plt.legend()
         plt.title("Uncertainty area with threshold " + str(uncertainty_threshold))
-        self._save(save_path, "uncertainty_area") if save_path else plt.show()
 
     def _get_x_y(self, n_samples=100, data_type="test"):
         tf_dataset = self._dataset.valid_data
@@ -93,8 +91,7 @@ class Plotter:
                                    dimension=2,
                                    granularity=1e-2,
                                    n_boundaries=10,
-                                   un_zoom_level=0.2,
-                                   save_path=None):
+                                   un_zoom_level=0.2):
         dim1, dim2, grid_x_augmented = self._extract_grid_x(x, base_matrix, granularity, un_zoom_level)
         prediction_samples, _ = self._model.predict(grid_x_augmented, n_boundaries)
         plt.scatter(x[y == 0][:, 0], x[y == 0][:, 1], marker='o', c="blue", label="Class 0")
@@ -104,7 +101,6 @@ class Plotter:
             plt.contour(dim1, dim2, pred, [0.5], colors=["red"])
         plt.legend()
         plt.title("Multiple Decision Boundaries N=" + str(n_boundaries))
-        self._save(save_path, "decision_boundaries") if save_path else plt.show()
 
     def _extract_grid_x(self, x, base_matrix, granularity, un_zoom_level: float):
         max_features = tf.math.reduce_max(x, axis=0)
@@ -121,6 +117,34 @@ class Plotter:
         grid_x = tf.stack([tf.reshape(dim1, (-1)), tf.reshape(dim2, (-1))], axis=1)
         grid_x_augmented = tf.linalg.matmul(grid_x, tf.transpose(base_matrix))
         return dim1, dim2, grid_x_augmented
+    
+    def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
+                                 data_type="test", un_zoom_level=0.2, save_path=None):
+        if self._dataset.likelihood_model != "Classification":
+            raise ValueError("Decision boundary can only be plotted for Classification")
+        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                           data_type=data_type)
+        if dimension == 2:
+            self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity=1e-2, 
+                                            n_boundaries=10, un_zoom_level=un_zoom_level)
+            self._save(save_path, "decision_boundaries") if save_path else plt.show()
+
+
+    def plot_uncertainty_area(self,
+                              dimension=2,
+                              granularity: float = 1e-2,
+                              n_samples=100, data_type="test", uncertainty_threshold=0.8,
+                              un_zoom_level=0.2,
+                              save_path=None):
+        if self._dataset.likelihood_model != "Classification":
+            raise ValueError("Uncertainty area can only be plotted for Classification")
+        x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
+                                                           data_type=data_type)
+        if dimension == 2:
+            self._plot_2d_uncertainty_area(x, y, base_matrix, granularity, n_samples, uncertainty_threshold,
+                                           un_zoom_level)
+            self._save(save_path, "uncertainty_area") if save_path else plt.show()
+
 
     def regression_uncertainty(self, data_type="test", n_samples = 100, n_boundaries = 100, save_path=None) -> tuple:
         # For classification, we might use the entropy of the predicted probabilities
@@ -129,7 +153,7 @@ class Plotter:
         # Assuming predict returns a distribution over classes for each sample
         if self._dataset.likelihood_model == "Regression":
             x,y_true = self._get_x_y(n_samples, data_type)
-            y_samples, y_pred = self._model.predict(x, n_boundaries)
+            y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
             variance = np.var(y_samples, axis=0)
             err = np.mean(np.sqrt(variance), axis = 1)
             pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
@@ -150,18 +174,16 @@ class Plotter:
 
     def confusion_matrix(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred = self._model.predict(x, n_boundaries)
-        if y_pred.shape[1] == 1:
-            # in the very specific case of binary classification with one neuron output convert it to two output
-            y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
         y_pred_labels = tf.argmax(y_pred, axis=1)
+        y_true = tf.reshape(y_true, y_pred_labels.shape)
         skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = 'Confusion Matrix')
         self._save(save_path, "confusion_matrix") if save_path else plt.show()
             
 
     def compare_prediction_to_target(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
         if self._dataset.likelihood_model == "Regression":
             y_true = tf.reshape(y_true, y_pred.shape)
             if y_true.shape[1] == 1:
@@ -180,17 +202,17 @@ class Plotter:
             y_pred_labels = tf.argmax(y_pred, axis=1)
             x_2d = tf.reshape(x, (x.shape[0], -1))
             if x_2d.shape[1] == 2:
-                self._plot_2d(x_2d, y_true, y_pred_labels)
+                self._compare_prediction_to_target_2d(x_2d, y_true, y_pred_labels)
             else:
                 if(x_2d.shape[1]>=3):
                     x_pca = PCA(n_components=3).fit_transform(x_2d)
-                    self._plot_3d(x_pca, y_true, y_pred_labels, save_path=save_path)
+                    self._compare_prediction_to_target_3d(x_pca, y_true, y_pred_labels, save_path=save_path)
                 else:
                     x_pca = PCA(n_components=2).fit_transform(x_2d)
-                    self._plot_2d(x_pca, y_true, y_pred_labels, save_path=save_path)
+                    self._compare_prediction_to_target_2d(x_pca, y_true, y_pred_labels, save_path=save_path)
 
 
-    def _plot_2d(self, x_pca, y_true, y_pred, save_path=None):
+    def _compare_prediction_to_target_2d(self, x_pca, y_true, y_pred, save_path=None):
         fig, (ax_true, ax_pred) = plt.subplots(2, figsize=(12, 8))
         scatter_true = ax_true.scatter(x_pca[:, -2], x_pca[:, -1], c=y_true, s=5)
         legend_plt_true = ax_true.legend(*scatter_true.legend_elements(), loc="lower left", title="Digits")
@@ -202,7 +224,7 @@ class Plotter:
         ax_pred.set_title('First Two Dimensions of Projected Predicted Data After Applying PCA')
         self._save(save_path, "comparison_pred_true") if save_path else plt.show()
         
-    def _plot_3d(self, x_pca, y_true, y_pred, save_path=None):
+    def _compare_prediction_to_target_3d(self, x_pca, y_true, y_pred, save_path=None):
         fig = plt.figure(figsize=plt.figaspect(0.5))
         ax_true = fig.add_subplot(1, 2, 1, projection='3d')
         plt_3d_true = ax_true.scatter3D(x_pca[:, -3], x_pca[:, -2], x_pca[:, -1], c=y_true, s=1)
@@ -217,7 +239,7 @@ class Plotter:
 
     def entropy(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred = self._model.predict(x, n_boundaries)
+        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
         if self._dataset.likelihood_model == "Classification":
             if y_pred.shape[1] == 1:
                 # in the very specific case of binary classification with one neuron output convert it to two output
@@ -245,10 +267,11 @@ class Plotter:
             plt.ylabel("Loss")
             plt.legend()
             self._save(save_path, "learning_diagnostics") if save_path else plt.show()
-            
-    def _save(self, path, name):
-        directory = path + "/report"
-        figures = directory + "/figures"
+
+
+    def _save(self, save_path, name):
+        directory = os.path.join(save_path,"report")
+        plots = os.path.join(directory, "plots")
         os.makedirs(directory, exist_ok=True)
-        os.makedirs(figures, exist_ok=True)
-        plt.savefig(figures + "/" + name + ".png")
+        os.makedirs(plots, exist_ok=True)
+        plt.savefig(os.path.join(plots, name + ".png"))
