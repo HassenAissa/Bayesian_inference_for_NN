@@ -43,7 +43,7 @@ class HMC(Optimizer):
         self._prior = kwargs["prior"].get_model_priors(self._model)
         if "nb_burn_epoch" in kwargs:
             self._nb_burn_epoch = kwargs["nb_burn_epochs"]
-        self.dataset_setup()
+        self.dataset_setup(self._dataset.training_dataset.cardinality())
         self._X, self._y = next(iter(self._training_dataset.batch(self._training_dataset.cardinality())))
         for layer in self._model.layers:
             self._p.append([tf.Variable(tf.zeros(w.shape)) for w in layer.trainable_variables])

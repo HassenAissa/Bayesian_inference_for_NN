@@ -105,7 +105,7 @@ class SGLD(Optimizer):
         self._batch_size = self._hyperparameters.batch_size
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.model_from_json(self._model_config)
-        self.dataset_setup()
+        self.dataset_setup(self._batch_size)
         self._init_arrays()
         self._n = 0
 

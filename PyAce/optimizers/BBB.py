@@ -219,15 +219,15 @@ class BBB(Optimizer):
         self._lr = self._hyperparameters.lr
         self._pi = self._hyperparameters.pi
         self._batch_size = self._hyperparameters.batch_size
-        sign = self._prior._std_dev/abs(self._prior._std_dev)
         if isinstance(self._prior._mean, int) or isinstance(self._prior._mean, float):
+            sign = self._prior._std_dev/abs(self._prior._std_dev)
             self._prior = GaussianPrior(
                 self._prior._mean * self._pi + self._prior2._mean * (1 - self._pi),
                 sign * math.sqrt((self._prior._std_dev * self._pi)**2 + (self._prior2._std_dev * (1 - self._pi))**2),
             )
 
         self._alpha = self._hyperparameters.alpha
-        self.dataset_setup()
+        self.dataset_setup(self._batch_size)
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()
 

@@ -33,12 +33,12 @@ class Optimizer(ABC):
         """
         pass
 
-    def dataset_setup(self):
+    def dataset_setup(self, batch_size):
         self._training_dataset: tf.data.Dataset = self._dataset.training_dataset()
         self._training_dataset_cardinality = self._training_dataset.cardinality().numpy().item()
         self._dataloader = (self._training_dataset
                             .shuffle(self._training_dataset_cardinality)
-                            .batch(1))
+                            .batch(batch_size))
         self._data_iterator = iter(self._dataloader)
         
 
