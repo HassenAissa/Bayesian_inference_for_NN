@@ -17,25 +17,28 @@ class Metrics():
         self._cached_samples : list = None
         self._cached_prediction: tf.Tensor = None
         self._cached_true_values: tf.Tensor = None
+        self._cached_input: tf.tensor = None
 
-
+    
     def _get_predictions(self, input, nb_boundaries, y_true):
-        if self._nb_predictions == nb_boundaries:
+        if (self._nb_predictions == nb_boundaries 
+            and y_true.shape == self._cached_true_values.shape):
             y_pred = self._cached_prediction
             if self._cached_prediction.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - self._cached_prediction, self._cached_prediction], axis=1)
-            return self._cached_samples, y_pred, self._cached_true_values
+            return self._cached_samples, y_pred, self._cached_true_values, self._cached_input
         else:
             y_samples, y_pred = self._model.predict(input, nb_boundaries)  # pass in the x value
             self._nb_predictions = nb_boundaries
+            self._cached_input = input
             self._cached_samples = y_samples
             self._cached_prediction = y_pred
             self._cached_true_values = y_true
             if y_pred.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
-            return y_samples, y_pred, y_true
+            return y_samples, y_pred, y_true, input
     
     def summary(self, nb_boundaries: int, save_path = None):
         """
@@ -69,7 +72,7 @@ class Metrics():
     
     def mse(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         res = skmet.mean_squared_error(y_true, y_pred)
         self._save(save_path, "MSE", res)
         print("MSE: {}".format(res))
@@ -77,7 +80,7 @@ class Metrics():
     
     def rmse(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         res = skmet.root_mean_squared_error(y_true, y_pred)
         self._save(save_path, "RMSE", res)
         print("RMSE: {}".format(res))
@@ -85,7 +88,7 @@ class Metrics():
     
     def mae(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         res = skmet.mean_absolute_error(y_true, y_pred)
         self._save(save_path, "MAE", res)
         print("MAE: {}".format(res))
@@ -93,7 +96,7 @@ class Metrics():
     
     def r2(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         res = skmet.r2_score(y_true, y_pred)
         self._save(save_path, "R2", res)
         print("R2 score: {}".format(res))
@@ -104,7 +107,7 @@ class Metrics():
     
     def accuracy(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         if y_pred.shape[1] == 1:
             # in the very specific case of binary classification with one neuron output convert it to two output
             y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
@@ -115,7 +118,7 @@ class Metrics():
     
     def precision(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         if y_pred.shape[1] == 1:
             # in the very specific case of binary classification with one neuron output convert it to two output
             y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
@@ -126,7 +129,7 @@ class Metrics():
     
     def recall(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
         if y_pred.shape[1] == 1:
             # in the very specific case of binary classification with one neuron output convert it to two output
             y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
@@ -137,7 +140,7 @@ class Metrics():
     
     def f1_score(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-        y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
 
         res = skmet.f1_score(y_true, tf.argmax(y_pred,axis = 1), average = "macro")
         self._save(save_path, "F1_score", res)
@@ -156,7 +159,7 @@ class Metrics():
     def classification_uncertainty(self,n_samples = 100, data_type = "test", n_boundaries = 30):
         if self._dataset.likelihood_model == "Classification":
             input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-            y_samples, y_pred, y_true = self._get_predictions(input, n_boundaries, y_true)
+            y_samples, y_pred, y_true, input = self._get_predictions(input, n_boundaries, y_true)
             aleatorics = 0
             epistemics = 0
             for sample in y_samples:

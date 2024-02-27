@@ -19,25 +19,31 @@ class Plotter:
         self._cached_samples : list = None
         self._cached_prediction: tf.Tensor = None
         self._cached_true_values: tf.Tensor = None
+        self._cached_input: tf.tensor = None
+        self._cached_data_type = None
 
     
-    def _get_predictions(self, input, nb_boundaries, y_true):
-        if self._nb_predictions == nb_boundaries:
+    def _get_predictions(self, input, nb_boundaries, y_true, data_type):
+        if (self._nb_predictions == nb_boundaries 
+            and y_true.shape == self._cached_true_values.shape
+            and data_type == self._cached_data_type):
             y_pred = self._cached_prediction
             if self._cached_prediction.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - self._cached_prediction, self._cached_prediction], axis=1)
-            return self._cached_samples, y_pred, self._cached_true_values
+            return self._cached_samples, y_pred, self._cached_true_values, self._cached_input
         else:
             y_samples, y_pred = self._model.predict(input, nb_boundaries)  # pass in the x value
             self._nb_predictions = nb_boundaries
-            self._cached_samples = y_samples
-            self._cached_prediction = y_pred
-            self._cached_true_values = y_true
+            self._cached_data_type = data_type
+            self._cached_input = input
+            self._cached_samples = tf.identity(y_samples)
+            self._cached_prediction = tf.identity(y_pred)
+            self._cached_true_values = tf.identity(y_true)
             if y_pred.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
-            return y_samples, y_pred, y_true
+            return y_samples, y_pred, y_true, input
 
     def _plot_2d_uncertainty_area(self,
                                   x: tf.Tensor,
@@ -122,7 +128,7 @@ class Plotter:
         if self._dataset.likelihood_model != "Classification":
             raise ValueError("ROC can only be plotted for Classification")  
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+        y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true, data_type)
         one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)
         display = sk.metrics.RocCurveDisplay.from_predictions(
             one_hot_y_true[:, label_of_interest],
@@ -138,24 +144,24 @@ class Plotter:
         )
         plt.show()
 
-    def calibration_curve(self, nb_bins = 5, n_samples = 100, label_of_interest: int = 0, n_boundaries = 10, data_type = "test"):
-        if self._dataset.likelihood_model != "Classification":
-            raise ValueError("ROC can only be plotted for Classification")  
-        x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
-        one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)   
-        _, mean_pred = sk.calibration.calibration_curve(
-                    one_hot_y_true[:, label_of_interest],
-                    y_pred[:, label_of_interest],
-                    n_bins = nb_bins)  
-        step = 1/nb_bins
-        x_ticks = [str((round(step*n,2), round(step*(1+n),2))) for n in range(nb_bins)]
-        plt.bar(x_ticks, mean_pred, color = "green", width = 0.5)
-        plt.xlabel("Calibration curve")
-        plt.ylabel("mean predicted probability in each bin")
-        plt.title("probability bins")
-        # plt.axline((0,0), slope = 1)
-        plt.show()
+    # def calibration_curve(self, nb_bins = 5, n_samples = 100, label_of_interest: int = 0, n_boundaries = 10, data_type = "test"):
+    #     if self._dataset.likelihood_model != "Classification":
+    #         raise ValueError("ROC can only be plotted for Classification")  
+    #     x,y_true = self._get_x_y(n_samples, data_type)
+    #     y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+    #     one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)   
+    #     _, mean_pred = sk.calibration.calibration_curve(
+    #                 one_hot_y_true[:, label_of_interest],
+    #                 y_pred[:, label_of_interest],
+    #                 n_bins = nb_bins)  
+    #     step = 1/nb_bins
+    #     x_ticks = [str((round(step*n,2), round(step*(1+n),2))) for n in range(nb_bins)]
+    #     plt.bar(x_ticks, mean_pred, color = "green", width = 0.5)
+    #     plt.xlabel("Calibration curve")
+    #     plt.ylabel("mean predicted probability in each bin")
+    #     plt.title("probability bins")
+    #     # plt.axline((0,0), slope = 1)
+    #     plt.show()
     
     def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
                                  data_type="test", un_zoom_level=0.2, save_path=None):
@@ -192,7 +198,7 @@ class Plotter:
         # Assuming predict returns a distribution over classes for each sample
         if self._dataset.likelihood_model == "Regression":
             x,y_true = self._get_x_y(n_samples, data_type)
-            y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+            y_samples, y_pred, y_true,x = self._get_predictions(x, n_boundaries, y_true, data_type)
             variance = np.var(y_samples, axis=0)
             err = np.mean(np.sqrt(variance), axis = 1)
             pred_dev = np.mean((y_pred.numpy()-y_true.numpy()), axis = 1)
@@ -213,7 +219,7 @@ class Plotter:
 
     def confusion_matrix(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+        y_samples, y_pred, y_true,x = self._get_predictions(x, n_boundaries, y_true, data_type)
         y_pred_labels = tf.argmax(y_pred, axis=1)
         y_true = tf.reshape(y_true, y_pred_labels.shape)
         skplt.metrics.plot_confusion_matrix(y_true, y_pred_labels, normalize=True, title = 'Confusion Matrix')
@@ -222,7 +228,7 @@ class Plotter:
 
     def compare_prediction_to_target(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+        y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true, data_type)
         if self._dataset.likelihood_model == "Regression":
             y_true = tf.reshape(y_true, y_pred.shape)
             if y_true.shape[1] == 1:
@@ -235,9 +241,6 @@ class Plotter:
                 plt.ylabel('Output')
                 self._save(save_path, "comparison_pred_true") if save_path else plt.show()
         else:
-            if y_pred.shape[1] == 1:
-                # in the very specific case of binary classification with one neuron output convert it to two output
-                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
             y_pred_labels = tf.argmax(y_pred, axis=1)
             x_2d = tf.reshape(x, (x.shape[0], -1))
             if x_2d.shape[1] == 2:
@@ -278,11 +281,8 @@ class Plotter:
 
     def entropy(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
         x,y_true = self._get_x_y(n_samples, data_type)
-        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+        y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true, data_type)
         if self._dataset.likelihood_model == "Classification":
-            if y_pred.shape[1] == 1:
-                # in the very specific case of binary classification with one neuron output convert it to two output
-                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
             entropies = []
             for probabilities in y_pred:
                 entropies.append(-1*np.sum(probabilities*np.log(probabilities+1e-5)))
