@@ -78,7 +78,7 @@ class Metrics():
     def rmse(self, nb_boundaries: int, save_path = None):
         input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
         y_samples, y_pred, y_true = self._get_predictions(input, nb_boundaries, y_true)
-        res = skmet.mean_squared_error(y_true, y_pred, squared=False)
+        res = skmet.root_mean_squared_error(y_true, y_pred)
         self._save(save_path, "RMSE", res)
         print("RMSE: {}".format(res))
         return res

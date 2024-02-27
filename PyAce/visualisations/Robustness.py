@@ -13,6 +13,11 @@ def gaussian_noise(x, severity=1):
     x = np.array(x) / 255.
     return np.clip(x + np.random.normal(size=x.shape, scale=c), 0, 1) * 255
 
+def gaussian_noise_regression(x_col, severity=1):
+    c = [.08, .12, 0.18, 0.26, 0.38][severity - 1]
+    
+    return np.array(x_col) + np.random.normal(loc=0, scale=c, size=x_col.shape)
+
 def shot_noise(x, severity=1):
     c = [60, 25, 12, 5, 3][severity - 1]
 
@@ -94,6 +99,7 @@ class Robustness():
     """
     def __init__(self, model, dataset):
         self.model = model
+        self.regression = dataset.likelihood_model == "Regression"
         self.corruptions = (gaussian_noise, shot_noise, impulse_noise, speckle_noise,
                             gaussian_blur, contrast, brightness, saturate, pixelate)
         self.corruption_dict = {corr_func.__name__: corr_func for corr_func in self.corruptions}
@@ -113,16 +119,20 @@ class Robustness():
             nb_samples (int, optional): Defaults to 100.
             save_path (_type_, optional): pass in path to save value on file. Defaults to None.
         """
-        ce = np.array([self.corruption_error(c, helper=True, relative=relative) for c in self.corruption_dict.keys()])
+        if self.regression:
+            ce = np.array([self.corruption_error(helper=True, relative=relative)])
+        else:
+            ce = np.array([self.corruption_error(c, helper=True, relative=relative) for c in self.corruption_dict.keys()])
         mean = np.mean(ce)
         if save_path:
             name = "mean_relative_error" if relative else "mean_corruption_error"
             self._save_data(save_path, name, mean)
         else:
-            name = "Mean Relative Error:" if relative else "Mean Corruption Error:"
-            print(name, mean, "%")
+            name = "Mean Relative Error: " if relative else "Mean Corruption Error: "
+            stat = name + str(mean) if self.regression else name + mean + " %"
+            print(stat)
     
-    def corruption_error(self, corruption, relative=False, nb_samples=100, save_path=None, helper=False):
+    def corruption_error(self, corruption=None, relative=False, nb_samples=100, save_path=None, helper=False):
         """
         Computes the corruption error across all severities for a specific corruption
 
@@ -133,17 +143,20 @@ class Robustness():
             save_path (_type_, optional): _description_. Defaults to None.
             helper (bool, optional): set to True only when used internally as a helper method. Defaults to False.
         """
-        if self.error_dict[corruption] :
-            error = self.error_dict[corruption]
-        else:
-            error = [np.array([self._error_rate(s, corruption, nb_samples) for s in self.severities])]
-            self.error_dict[corruption] = error
+        if self.regression:
+            error = [np.array([self._error_rate(s, nb_samples) for s in self.severities])]
+        else:    
+            if self.error_dict[corruption] :
+                error = self.error_dict[corruption]
+            else:
+                error = [np.array([self._error_rate(s, corruption, nb_samples)*100 for s in self.severities])]
+                self.error_dict[corruption] = error
         if relative:
             _, y_pred = self.model.predict(self.x, nb_samples)
-            clean_error = 1 - met.accuracy_score(self.y_true, tf.argmax(y_pred, axis = 1))
-            ce = np.sum([x-clean_error for x in error]) / len(self.severities) * 100
+            clean_error = met.root_mean_squared_error(self.y_true, y_pred) if self.regression else 1 - met.accuracy_score(self.y_true, tf.argmax(y_pred, axis = 1))
+            ce = np.sum([x-clean_error for x in error]) / len(self.severities)
         else:
-            ce = np.sum(error) / len(self.severities) * 100
+            ce = np.sum(error) / len(self.severities)
         if helper:
             return ce
         if save_path:
@@ -160,39 +173,50 @@ class Robustness():
         ce = np.array([self.corruption_error(c, nb_samples=nb_samples, helper=True) for c in self.corruption_dict.keys()])
         plt.bar(self.corruptions_dict.keys(), ce)
         plt.xlabel("Corruption")
-        plt.ylabel("Corruption Error (%)")
+        label = "Corruption Error" if self.regression else "Corruption Error (%)"
+        plt.ylabel(label)
         plt.title("Corruption Error by Corruption")
         self._save_figure(save_path, "robustness_by_corruption") if save_path else plt.show()
         
-    def corruption_robustness_by_severity(self, corruption, nb_samples=100, save_path=None):
+    def corruption_robustness_by_severity(self, corruption=None, nb_samples=100, save_path=None):
         """
         Plots corruption error for given corruption as a function of the severity
         """
-        if self.error_dict[corruption] :
-            error = self.error_dict[corruption]
+        if self.regression:
+            error = [self._error_rate(s, nb_samples) for s in self.severities]
         else:
-            error = [np.array([self._error_rate(s, corruption, nb_samples) for s in self.severities])]
-            self.error_dict[corruption] = error
-        plt.plot(self.severities, error*100)
+            if self.error_dict[corruption] :
+                error = self.error_dict[corruption]
+            else:
+                error = [self._error_rate(s, corruption, nb_samples) for s in self.severities]
+                self.error_dict[corruption] = error
+        plt.bar(self.severities, error)
         plt.xlabel("Severity")
-        plt.ylabel("Error Rate (%)")
-        plt.title("Error Rate by Severity for {}".format(corruption))
+        label = "Error Rate" if self.regression else "Error Rate (%)"
+        plt.ylabel(label)
+        plt.title("Error Rate by Severity for {}".format("noise" if self.regression else corruption))
         self._save_figure(save_path, "corruption_robustness_by_severity") if save_path else plt.show()
     
-    def _error_rate(self, severity, corruption, nb_samples):
-        images = self.x.numpy()
-        colour_scale = np.shape(images)[-1]
-        #_, width, length, _ = np.shape(x_array)
-        #resized = [cv2.resize(image, (224, 224)) for image in x_array]
-        corrupted_images = [self._corrupt(image, severity, corruption) for image in images]
-        #corrupted_images = [cv2.resize(image, (width, length)) for image in corrupted_images_resized]
-        if colour_scale == 1:
-            corrupted_images = np.stack([np.mean(image, axis=-1, keepdims=True) for image in corrupted_images])
-        corrupted_inputs = tf.convert_to_tensor(corrupted_images)
+    def _error_rate(self, severity, nb_samples, corruption=None):
+        input = self.x.numpy()
+        if self.regression:
+            corrupted_inputs = [self._corrupt_regression(x, severity) for x in input]
+        else:
+            colour_scale = np.shape(input)[-1]
+            #_, width, length, _ = np.shape(x_array)
+            #resized = [cv2.resize(image, (224, 224)) for image in x_array]
+            corrupted_inputs = [self._corrupt(image, severity, corruption) for image in input]
+            #corrupted_images = [cv2.resize(image, (width, length)) for image in corrupted_images_resized]
+            if colour_scale == 1:
+                corrupted_inputs = np.stack([np.mean(image, axis=-1, keepdims=True) for image in corrupted_inputs])
+        corrupted_inputs = tf.convert_to_tensor(corrupted_inputs)
         corrupted_inputs = tf.concat(corrupted_inputs, axis=1)
         _, c_predicted = self.model.predict(corrupted_inputs, nb_samples)
-        accuracy = met.accuracy_score(self.y_true, tf.argmax(c_predicted, axis = 1))
-        error = 1 - accuracy
+        if self.regression:
+            error = met.root_mean_squared_error(self.y_true, c_predicted)
+        else:
+            accuracy = met.accuracy_score(self.y_true, tf.argmax(c_predicted, axis = 1))
+            error = 1 - accuracy
         #print("Error rate for", corruption, ", with severity", severity, ":", error)
         return error
     
@@ -210,6 +234,9 @@ class Robustness():
         image_corrupted = self.corruption_dict[corruption](Image.fromarray(image), severity)
         
         return np.uint8(image_corrupted)
+    
+    def _corrupt_regression(self, x, severity):
+        return np.array([gaussian_noise_regression(col, severity) for col in x])
     
     def _save_figure(self, path, name):
         directory = path + "/report/robustness"
