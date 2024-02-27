@@ -218,7 +218,7 @@ class BBB(Optimizer):
             self._prior2 = GaussianPrior(0.0,0.0)
         self._lr = self._hyperparameters.lr
         self._pi = self._hyperparameters.pi
-        self._batch_size = self._hyperparameters.batch_size
+        self._batch_size = int(self._hyperparameters.batch_size)
         if isinstance(self._prior._mean, int) or isinstance(self._prior._mean, float):
             sign = self._prior._std_dev/abs(self._prior._std_dev)
             self._prior = GaussianPrior(
@@ -227,7 +227,7 @@ class BBB(Optimizer):
             )
 
         self._alpha = self._hyperparameters.alpha
-        self.dataset_setup(self._batch_size)
+        self.dataset_setup()
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()
 

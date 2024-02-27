@@ -73,6 +73,7 @@ class FSVI(Optimizer):
         self._prior = kwargs["prior"]
         self._lr = self._hyperparameters.lr
         self._alpha = self._hyperparameters.alpha
-        self.dataset_setup(128)
+        self._batch_size = 128
+        self.dataset_setup()
         self._priors_list = self._prior.get_model_priors(self._base_model)
 
