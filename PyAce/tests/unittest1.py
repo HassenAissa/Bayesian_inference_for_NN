@@ -29,7 +29,7 @@ def SWAG_test(dataset, base_model):
     hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
     # instantiate your optimizer
     optimizer = SWAG()
-    optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model = base_model)
+    optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model = base_model, batch_size = 128)
     optimizer.train(100)
     bayesian_model: BayesianModel = optimizer.result()
     return bayesian_model
