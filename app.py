@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request
-from matplotlib import pyplot as plt
 from static.rewards import all_rewards
 from PyAce.datasets.Dataset import Dataset
 from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics
@@ -125,25 +124,27 @@ def reinforce():
             policy = pickle.load(f)
             f.close()
             rl.real_task = True
-            plt.title("Accumulative reward over time step")
-            ts = [0]
-            rewards = [0]
+            t = 0
+            rewards = []
+            states = []
+            actions = []
             while not done:
+                states.append(observation)
                 action = tf.reshape(policy.act(tf.convert_to_tensor(observation)), 
                                     shape=env.action_space.shape)
+                actions.append(action)
                 # action = action.numpy()
                 observation, reward, terminated, truncated, info = env.step(
                     tf.cast(action, env.action_space.dtype))
                 total_reward += reward  # Accumulate the reward
-                t += 1
                 rewards.append(total_reward)
-                ts.append(t)
+                t += 1
                 if terminated or truncated:
                     done = True
                 # You can add a delay here if the visualization is too fast
-                time.sleep(0.05)
-            plt.plot(ts, rewards)
-            plt.savefig("static/results/rewards.png")
+                time.sleep(0.02)
+            apu.plot_task(rewards, states, actions)
+            
         return render_template('reinforce.html', options=options, info=rl)
     missing = []
     if fm and "session" not in fm:

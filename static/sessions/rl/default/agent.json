@@ -1,0 +1,1 @@
+{"learn_config": [750, 50, 0.97], "rew_name": "Acb 3 factors", "horizon": 22, "likelihood": "Regression", "tot_epochs": 5}

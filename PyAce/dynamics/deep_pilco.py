@@ -37,7 +37,6 @@ class NNPolicy(Policy):
             self.model_ready = True
         
     def optimize_step(self, grad, check_converge=False):
-        print("Updating policy Valid gradient; length", len(grad))
         weights = self.network.get_weights()
         new_weights = []
         for i in range(len(grad)):
@@ -193,11 +192,14 @@ class BayesianDynamics(Control):
             tot_grad = None
             tot_loss = 0
             prev_tmark = 0
+            f = open(record_file, "a")
+            f.write("Learning epoch "+str(ep)+"; actions hor*kp: ")
             for t in range(self.horizon):
                 with tf.GradientTape(persistent=True) as tape:
                     ys, actions, new_states = self.forward(states)
                     l = -self.t_reward(ys, actions, t)
                     loss = tf.fill([1], l)
+                    f.write(str([a.numpy()[0] for a in actions])+";")
                 grad = tape.gradient(loss, self.policy.network.trainable_variables)
                 tmark = int(10*t/self.horizon)
                 if tmark > prev_tmark and tmark % 2 == 0:
@@ -212,15 +214,12 @@ class BayesianDynamics(Control):
                     tot_loss += l * discount
                 discount *= self.gamma
                 states = new_states
-            f = open(record_file, "a")
-            f.write("Learning epoch "+str(ep)+", total loss: "+str(tot_loss)+"\n")
+            f.write("\nTotal loss: "+str(tot_loss)+"\n")
             if None in tot_grad:
                 f.write("Invalid gradient!\n")
                 f.close()
                 return 
-            for g in range(len(tot_grad)):
-                f.write("gradient "+str(g)+"\n")
-                f.write(str(tot_grad[g])+"\n")
+            f.write("Gradient sample: "+str(tot_grad[-1])+"\n")
             f.close()
             return self.policy.optimize_step(tot_grad, check_converge=check_converge)
         

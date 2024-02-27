@@ -42,7 +42,7 @@
           Name the current session: <input type="text" name="sname">; Gym environment: <input type="text" name="envname" value="{{info.form["envname"]}}">; 
           Descriptions: <textarea name="sdesc" cols="70" rows="1"></textarea><br> 
           <b>--Learning specifications--</b> <br>
-          Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="999">
+          Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="9999">
           Number of particles: <input type="number" name="npar" value="{{info.form["npar"]}}" min="1" max="999">; Discount factor: <input type="number" name="disc" value="{{info.form["disc"]}}" min="0.001" max="1.000" step="0.001">;
           Learn epochs: <input type="number" name="lep" value="{{info.form["lep"]}}" min="1" max="999">; Reward function: <select name="reward">{% for r in options["reward"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
           <b>--Policy model--</b> <br>
@@ -92,7 +92,10 @@
           Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select>
           <input type="submit" name="render" value="Start real task >>">
         </form>
-        {% if info.real_task %}<img src="static/results/rewards.png" alt="rewards">{% endif %}
+        {% if info.real_task %}
+        <img src="static/results/reward.png" alt="rewards">
+        <img src="static/results/record.png" alt="rewards">
+        {% endif %}
       </div>
     </div>
 </body>

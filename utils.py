@@ -1,7 +1,7 @@
 import PyAce.optimizers as om
 import tensorflow as tf, numpy as np
 from PyAce.distributions import GaussianPrior
-from PyAce.optimizers import HyperParameters
+from PyAce.optimizers.hyperparameters import HyperParameters
 from matplotlib import pyplot as plt
 import json, os, shutil, pickle
 
@@ -155,7 +155,7 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
     return None
 
 def hyp_get(hypf, hyp):
-    hyperparams = om.HyperParameters()
+    hyperparams = HyperParameters()
     if hyp:
         hyperparams.parse(hyp)
     elif hypf:
@@ -237,6 +237,28 @@ def load_optim(pref):
     print(optim._frequency, optim._k)
     return optim
 
+def plot_task(rewards, states, actions):
+    pref = "static/results/"
+    ts = range(len(rewards))
+    plt.title("Rewards over time")
+
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('time step')
+    ax1.set_ylabel('height/displacement')
+    ax1.scatter(ts, [state[1] for state in states], color='b')
+    ax1.scatter(ts, [state[0] for state in states], color='r')
+    ax1.plot(ts, actions)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    ax2.set_ylabel('speeds')
+    ax2.scatter(ts, [state[4] for state in states], color='c')
+    plt.savefig(pref+"record.png")
+
+    plt.clf()
+    plt.title("Reward over time")
+    plt.plot(ts, rewards)
+    plt.savefig(pref+"reward.png")
+
 # def store_optim(optim, pref):
 #     arrays = []
 #     def check_arrtype(a):
@@ -299,3 +321,5 @@ def load_optim(pref):
 
 # from PyAce.tests.gym_example_1 import test_srlz
 # test_srlz()
+print("Num GPUs Available: ", tf.config.list_physical_devices('GPU'))
+# print(tf.version.VERSION)
