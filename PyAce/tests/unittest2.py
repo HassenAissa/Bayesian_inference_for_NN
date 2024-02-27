@@ -30,12 +30,12 @@ def BBB_test(dataset, base_model):
     prior2 = GaussianPrior(0.0,-1.0)
     optimizer.compile(hyperparams, base_model.to_json(), dataset, prior = prior1, prior2 = prior2)
 
-    optimizer.train(100)
+    optimizer.train(5)
     bayesian_model: BayesianModel = optimizer.result()
     return bayesian_model
 
 def SWAG_test(dataset, base_model):
-    hyperparams = HyperParameters(lr=1e-3, k=10, frequency=1, scale=1,, batch_size = 128)
+    hyperparams = HyperParameters(lr=1e-3, k=10, frequency=1, scale=1, batch_size = 128)
     # instantiate your optimizer
     optimizer = SWAG()
     optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model = base_model)
@@ -92,9 +92,9 @@ def runner():
         # bayesian_model.store(store_path)
         # bayesian_model: BayesianModel= BayesianModel.load(store_path)
         analytics_builder = Metrics(bayesian_model, dataset)
-        analytics_builder.summary(dataset, 2)
+        analytics_builder.summary(2)
         plotter = Plotter(bayesian_model, dataset)
         plotter.regression_uncertainty()
 
-# runner()
+runner()
 

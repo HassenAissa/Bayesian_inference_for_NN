@@ -21,7 +21,8 @@ class Metrics():
 
     def _get_predictions(self, input, nb_boundaries, y_true):
         if self._nb_predictions == nb_boundaries:
-            if self._cached_prediction.shape[1] == 1:
+            y_pred = self._cached_prediction
+            if self._cached_prediction.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - self._cached_prediction, self._cached_prediction], axis=1)
             return self._cached_samples, y_pred, self._cached_true_values
@@ -31,7 +32,7 @@ class Metrics():
             self._cached_samples = y_samples
             self._cached_prediction = y_pred
             self._cached_true_values = y_true
-            if y_pred.shape[1] == 1:
+            if y_pred.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
             return y_samples, y_pred, y_true

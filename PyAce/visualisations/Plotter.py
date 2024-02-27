@@ -7,7 +7,7 @@ import numpy as np
 import scikitplot as skplt
 from sklearn.decomposition import PCA
 import os
-
+import sklearn as sk
 
 
 
@@ -24,7 +24,7 @@ class Plotter:
     def _get_predictions(self, input, nb_boundaries, y_true):
         if self._nb_predictions == nb_boundaries:
             y_pred = self._cached_prediction
-            if self._cached_prediction.shape[1] == 1:
+            if self._cached_prediction.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
                 y_pred = tf.stack([1 - self._cached_prediction, self._cached_prediction], axis=1)
             return self._cached_samples, y_pred, self._cached_true_values
@@ -117,6 +117,45 @@ class Plotter:
         grid_x = tf.stack([tf.reshape(dim1, (-1)), tf.reshape(dim2, (-1))], axis=1)
         grid_x_augmented = tf.linalg.matmul(grid_x, tf.transpose(base_matrix))
         return dim1, dim2, grid_x_augmented
+    
+    def roc_one_vs_rest(self, n_samples = 100, label_of_interest: int = 0, n_boundaries = 10, data_type = "test"):
+        if self._dataset.likelihood_model != "Classification":
+            raise ValueError("ROC can only be plotted for Classification")  
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+        one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)
+        display = sk.metrics.RocCurveDisplay.from_predictions(
+            one_hot_y_true[:, label_of_interest],
+            y_pred[:, label_of_interest],
+            name=f"class {label_of_interest} vs the rest",
+            color="blue",
+            plot_chance_level=True,
+        )
+        _ = display.ax_.set(
+            xlabel="False Positive Rate",
+            ylabel="True Positive Rate",
+            title="ROC curve One-vs-Rest",
+        )
+        plt.show()
+
+    def calibration_curve(self, nb_bins = 5, n_samples = 100, label_of_interest: int = 0, n_boundaries = 10, data_type = "test"):
+        if self._dataset.likelihood_model != "Classification":
+            raise ValueError("ROC can only be plotted for Classification")  
+        x,y_true = self._get_x_y(n_samples, data_type)
+        y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
+        one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)   
+        _, mean_pred = sk.calibration.calibration_curve(
+                    one_hot_y_true[:, label_of_interest],
+                    y_pred[:, label_of_interest],
+                    n_bins = nb_bins)  
+        step = 1/nb_bins
+        x_ticks = [str((round(step*n,2), round(step*(1+n),2))) for n in range(nb_bins)]
+        plt.bar(x_ticks, mean_pred, color = "green", width = 0.5)
+        plt.xlabel("Calibration curve")
+        plt.ylabel("mean predicted probability in each bin")
+        plt.title("probability bins")
+        # plt.axline((0,0), slope = 1)
+        plt.show()
     
     def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
                                  data_type="test", un_zoom_level=0.2, save_path=None):
