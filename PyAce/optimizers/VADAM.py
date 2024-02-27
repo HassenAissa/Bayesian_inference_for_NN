@@ -105,7 +105,7 @@ class VADAM(Optimizer):
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
                             .batch(
-                                self._hyperparameters.batch_size
+                                int(self._hyperparameters.batch_size)
                             ))
         self._init_adam_arrays()
         self._data_iterator = iter(self._dataloader)
