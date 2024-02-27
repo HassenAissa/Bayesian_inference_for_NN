@@ -109,6 +109,7 @@ class BayesianModel:
         for i in range(nb_samples):
             self._sample_weights()
             prediction = self._model(x)
+            prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
             result += prediction
             samples_results.append(prediction)
         result /= nb_samples

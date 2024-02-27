@@ -113,9 +113,9 @@ class SGLD(Optimizer):
         model = BayesianModel(self._model_config)
         for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev,
                                            range(len(self._weight_layers_indices))):
-            tf.debugging.check_numerics(dev, "dev")
-            tf.debugging.check_numerics(mean, "mean")
-            tf.debugging.check_numerics(sq_mean, "sq_meqn")
+            # tf.debugging.check_numerics(dev, "dev")
+            # tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(sq_mean, "sq_meqn")
 
             tf_dist = tfp.distributions.Normal(
                 tf.reshape(mean, (-1,)),

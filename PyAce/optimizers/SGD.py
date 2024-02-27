@@ -130,7 +130,7 @@ class SGD(Optimizer):
         model = BayesianModel(self._model_config)
         for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev,
                                            range(len(self._weight_layers_indices))):
-            tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(mean, "mean")
             #TODO add scale
             tf_dist =tfp.distributions.Deterministic(tf.reshape(mean, (-1,)))
             start_idx = self._weight_layers_indices[idx]
