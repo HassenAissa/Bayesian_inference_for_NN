@@ -7,6 +7,10 @@ We have currently implemented the following:
 - [X] Bayes by Backprop (BBB)
 - [X] SGLD
 - [X] HMC 
+- [X] VADAM
+- [X] Adam
+- [X] SGD
+- [X] BSAM
 
 ## Requirements
 Make a virtualenv:
@@ -18,6 +22,10 @@ source venv/bin/activate
 Install the requirements:
 ```bash
 pip install -r requirements.txt
+```
+Install PyAce
+```
+pip install -e .
 ```
 
 ## Usage
