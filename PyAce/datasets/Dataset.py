@@ -5,6 +5,9 @@ from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import pandas as pd
+import numpy as np
+import os
+from PIL import Image
 
 
 class Dataset:
@@ -22,6 +25,7 @@ class Dataset:
 
     def __init__(self, 
                  dataset, loss, likelihoodModel="Classification", 
+                 load_images = False,
                  target_dim=1,
                  feature_normalisation=False, label_normalisation = False,
                  train_proportion=0.8,
@@ -55,9 +59,13 @@ class Dataset:
         elif (isinstance(dataset, tf.data.Dataset)):
             self._init_from_tf_dataset(dataset)
         elif(isinstance(dataset, pd.DataFrame)):
-            self.target_values = self._init_from_dataframe(dataset) 
-        elif(isinstance(dataset, str)):
-            self.target_values = self._init_from_csv(dataset)
+            self._init_from_dataframe(dataset) 
+        elif(isinstance(dataset, str) and load_images == False):
+            self._init_from_csv(dataset)
+        elif(isinstance(dataset, str) and load_images == True):
+            input, label = self._load_images_and_csv(dataset)
+            dataset = tf.data.Dataset.from_tensor_slices((input, label))
+            self._init_from_tf_dataset(dataset)
         else:
             raise Exception("Unsupported dataset format")
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
@@ -66,6 +74,28 @@ class Dataset:
         if (label_normalisation):
             self.label_normalisation()
 
+    def _load_images_from_directory(self, dir):
+        images = []
+        for imagestr in sorted(os.listdir(dir)):
+            if imagestr.endswith('.png'):
+                image = Image.open(os.path.join(dir, imagestr)).convert('L')
+                images.append(np.asarray(image) / 255.)
+        return np.array(images)
+
+
+    def _load_images_and_csv(self, directory):
+        """
+        Return the dataset as numpy arrays.
+
+        Arguments:
+            directory (str): path to the dataset directory
+        Returns:
+            images (array): images of the datasets, of shape (N,H,W)
+            labels (array): labels corresponding to images, of shape (N',)
+        """
+        images = self._load_images_from_directory(os.path.join(directory, 'images'))
+        labels = np.loadtxt(os.path.join(directory, 'labels.csv'), dtype=int)
+        return images, labels
         
     def _init_from_tf_dataset(self, dataset: tf.data.Dataset):
         dataset = dataset.shuffle(dataset.cardinality())

@@ -89,7 +89,7 @@ class SWAG(Optimizer):
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._batch_size = int(self._hyperparameters.batch_size)
-        self.dataset_setup()
+        self._dataset_setup()
         self._init_swag_arrays()
         self._n = 0
 
@@ -112,9 +112,9 @@ class SWAG(Optimizer):
         model = BayesianModel(self._model_config)
         for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev,
                                            range(len(self._weight_layers_indices))):
-            tf.debugging.check_numerics(dev, "dev")
-            tf.debugging.check_numerics(mean, "mean")
-            tf.debugging.check_numerics(sq_mean, "sq_meqn")
+            # tf.debugging.check_numerics(dev, "dev")
+            # tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(sq_mean, "sq_meqn")
             #TODO add scale
             tf_dist = MultivariateNormalDiagPlusLowRank(
                 tf.reshape(mean, (-1,)),

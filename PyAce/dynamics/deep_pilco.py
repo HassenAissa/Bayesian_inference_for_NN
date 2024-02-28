@@ -85,7 +85,7 @@ class DynamicsTraining:
                                     train_dataset, **self.rems)
             except:
                 self.optimizer._dataset = train_dataset
-                self.optimizer.dataset_setup()
+                self.optimizer._dataset_setup()
             self.start = True
         else:
             self.optimizer._dataset = train_dataset

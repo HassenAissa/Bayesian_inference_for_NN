@@ -72,12 +72,8 @@ class SGLD(Optimizer):
 
                 # update the deviation matrix
                 deviation_matrix = self._dev[bayesian_layer_index]
-                if deviation_matrix.shape[0] == self._hyperparameters.k:
-                    self._dev[bayesian_layer_index] = tf.concat(
-                        (deviation_matrix[:, :self._hyperparameters.k - 1], theta - mean), axis=1)
-                else:
-                    self._dev[bayesian_layer_index] = tf.concat(
-                        (deviation_matrix, theta - mean), axis=1)
+                self._dev[bayesian_layer_index] = tf.concat(
+                    (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
         return loss
@@ -105,7 +101,7 @@ class SGLD(Optimizer):
         self._batch_size = int(self._hyperparameters.batch_size)
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.model_from_json(self._model_config)
-        self.dataset_setup()
+        self._dataset_setup()
         self._init_arrays()
         self._n = 0
 
@@ -113,9 +109,9 @@ class SGLD(Optimizer):
         model = BayesianModel(self._model_config)
         for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev,
                                            range(len(self._weight_layers_indices))):
-            tf.debugging.check_numerics(dev, "dev")
-            tf.debugging.check_numerics(mean, "mean")
-            tf.debugging.check_numerics(sq_mean, "sq_meqn")
+            # tf.debugging.check_numerics(dev, "dev")
+            # tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(sq_mean, "sq_meqn")
 
             tf_dist = tfp.distributions.Normal(
                 tf.reshape(mean, (-1,)),

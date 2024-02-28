@@ -14,8 +14,9 @@ class HyperParameters:
     THIS CLASS IS IMMUTABLE !!!! TRUST ME!
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self,batch_size = 64, **kwargs):      
         self._params = copy.deepcopy(kwargs)
+        self._params["batch_size"] = batch_size
         self.connectors = "._-"
 
     def __getattr__(self, item):

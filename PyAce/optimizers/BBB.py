@@ -227,7 +227,7 @@ class BBB(Optimizer):
             )
 
         self._alpha = self._hyperparameters.alpha
-        self.dataset_setup()
+        self._dataset_setup()
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()
 
@@ -262,8 +262,8 @@ class BBB(Optimizer):
                 layer_std_dev_list[i]= tf.reshape(layer_std_dev_list[i], (-1,))
             mean = tf.concat(layer_mean_list, 0)
             std_dev = tf.concat(layer_std_dev_list,0)
-            tf.debugging.check_numerics(mean, "mean")
-            tf.debugging.check_numerics(std_dev, "standard deviation")
+            # tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(std_dev, "standard deviation")
             tf_dist = tfp.distributions.Normal(
                 tf.reshape(mean, (-1,)),
                 tf.math.softplus(tf.reshape(std_dev, (-1,)))
