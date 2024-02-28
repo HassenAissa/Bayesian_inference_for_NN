@@ -1,0 +1,15 @@
+Learning epoch 1; actions hor avg: 0.41454053,0.4349455,0.43527368,0.4351232,0.43514985,0.43525946,0.43481198,0.43509713,0.43528503,0.4348413,0.43510705,0.4353159,0.434948,0.43536776,0.43542182,0.43505108,0.43517286,0.43515527,0.4348658,0.4346542,0.43507,0.43504402,
+Total loss: tf.Tensor(32.66344, shape=(), dtype=float32)
+Gradient sample: tf.Tensor([-217.63777], shape=(1,), dtype=float32)
+Learning epoch 2; actions hor avg: 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
+Total loss: tf.Tensor(32.80448, shape=(), dtype=float32)
+Gradient sample: tf.Tensor([-0.], shape=(1,), dtype=float32)
+Learning epoch 3; actions hor avg: 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
+Total loss: tf.Tensor(101.38289, shape=(), dtype=float32)
+Gradient sample: tf.Tensor([-0.], shape=(1,), dtype=float32)
+Learning epoch 4; actions hor avg: 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
+Total loss: tf.Tensor(142.5292, shape=(), dtype=float32)
+Gradient sample: tf.Tensor([-0.], shape=(1,), dtype=float32)
+Learning epoch 5; actions hor avg: 1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,
+Total loss: tf.Tensor(189.8248, shape=(), dtype=float32)
+Gradient sample: tf.Tensor([-0.], shape=(1,), dtype=float32)

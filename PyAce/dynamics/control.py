@@ -5,11 +5,47 @@ from abc import ABC, abstractmethod
 
 class Policy(ABC):  # Policy optimizer
     def __init__(self):
-        pass
+        self.dtype, self.start, self.range = [],[],[]
 
-    @abstractmethod
-    def setup(self, **kwargs):
-        pass
+    def setup(self, env: gym.Env):
+        self.act_dim = env.action_space.shape
+        for space in [env.observation_space, env.action_space]:
+            # Use original shapes not flatten
+            self.dtype.append(space.dtype)
+            if isinstance(space, gym.spaces.Discrete):
+                self.start.append(tf.convert_to_tensor(space.start, float))
+                self.range.append(tf.convert_to_tensor(space.n-1, float))
+            elif isinstance(space, gym.spaces.Box):
+                low, high = None, None
+                if isinstance(space.low, np.ndarray):
+                    low = tf.convert_to_tensor(space.low, float)
+                else:
+                    low = tf.fill(space.shape, float(space.low))
+                if isinstance(space.high, np.ndarray):
+                    high = tf.convert_to_tensor(space.high, float)
+                else:
+                    high = tf.fill(space.shape, float(space.high))
+                self.start.append(low)
+                self.range.append(tf.subtract(high, low))
+
+    def vec_normalize(self, mode, vec:tf.Tensor):
+        m = 0   # mode == "obs"
+        if mode == "act":
+            m = 1
+        diff = tf.math.subtract(tf.cast(vec, float), self.start[m])
+        res = tf.divide(diff, self.range[m]) * 2 - 1    # from -1 to 1, match tanh
+        return res
+
+    def norm_restore(self, mode, norm:tf.Tensor):
+        m = 0   # mode == "obs"
+        if mode == "act":
+            m = 1
+        diff = tf.multiply((norm + 1) / 2, self.range[m])
+        orig = tf.math.add(diff, self.start[m])
+        dtype = self.dtype[m]
+        if tf.cast(1.2, dtype) == 1:
+            orig = tf.cast(tf.round(orig), dtype) 
+        return orig
 
     @abstractmethod
     def optimize_step(self, **kwargs):
@@ -78,11 +114,11 @@ class Control(ABC):
         all_atates = [state]
         all_actions = []
         for t in range(self.horizon):
-            action = tf.reshape(self.policy.act(state), shape=self.action_d)
+            action, action_take = self.policy.act(state)
             # action = action.numpy()
-            state, reward, terminated, truncated, info = self.env.step(
-                tf.cast(action, self.env.action_space.dtype))
-            all_atates.append(tf.convert_to_tensor(state))
+            state, reward, terminated, truncated, info = self.env.step(action_take)
+            state = self.policy.vec_normalize("obs", tf.convert_to_tensor(state))
+            all_atates.append(state)
             all_actions.append(action)
         return all_atates, all_actions
     

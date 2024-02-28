@@ -8,11 +8,11 @@ import os, json, pickle, time
 
 sl_mandatory = [("if", "f1", "", ["lcat", ("if", "lcat", "Classification", "dfile"), "ipd", "opd", "mname", "hidden", "activations"]),
     ("if", "f2", "", ["lcat", "loss", ("or", ("or", "nnjson", "nnjsons"), ["ipd", "opd", "mname", "hidden", "activations"]), ("or", "dfile", "dfiles"), "batch", "optim", "ite"])]
-rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", ("or", "pnnjson", "pnnjsons"), ["pmname", "phidden", "pactivations"]), "poact",
-                ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "doact", "optim", "reward"]
+rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", ("or", "pnnjson", "pnnjsons"), ["pmname", "phidden", "pactivations"]),
+                ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "optim", "reward"]
 rl_f2mand = ["envname", "session", ("if", "resume", "", ["envname", "lep"])]
 sl_opkeys = ["lcat", "loss", "optim"]
-rl_opkeys = ["poact", "doact","optim", "reward"]
+rl_opkeys = ["optim", "reward"]
     
 class ModelInfo:
     def __init__(self):
@@ -56,8 +56,6 @@ class RLInfo(ModelInfo):
         self.real_task = False
         self.options = {"sessions": [[]]+apu.read_sessions("rl"),
                         "rmode": [""]+["human", "rgb_array"],
-                        "poact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
-                        "doact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
                         "reward": [""]+list(all_rewards.keys())}
         
@@ -127,15 +125,14 @@ def reinforce():
             t = 0
             rewards = []
             states = []
-            actions = []
+            actions = ([],[])
             while not done:
                 states.append(observation)
-                action = tf.reshape(policy.act(tf.convert_to_tensor(observation)), 
-                                    shape=env.action_space.shape)
-                actions.append(action)
+                action, action_take = policy.act(policy.vec_normalize("obs", observation))
+                actions[0].append(action)
+                actions[1].append(action_take)
                 # action = action.numpy()
-                observation, reward, terminated, truncated, info = env.step(
-                    tf.cast(action, env.action_space.dtype))
+                observation, reward, terminated, truncated, info = env.step(action_take)
                 total_reward += reward  # Accumulate the reward
                 rewards.append(total_reward)
                 t += 1
@@ -202,14 +199,12 @@ def reinforce():
         dyn_config = dyn_nn.to_json()
         f.write(dyn_config)
         f.close()
-    policy_hyp = apu.hyp_get(fm.get("phypf"), fm.get("phyp"))
-    poact = fm.get("poact")
-    policy = NNPolicy(policy_nn, poact, policy_hyp)
-    dyn_hyp = apu.hyp_get(fm.get("dhypf"), fm.get("dhyp"))
-    doact = fm.get("doact")
+    policy_hyp = apu.hyp_get(fm.get("phyp"))
+    policy = NNPolicy(policy_nn, policy_hyp)
+    dyn_hyp = apu.hyp_get(fm.get("dhyp"))
     optim, extra = apu.optim_select(options, fm)
     dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
-        dyn_nn, doact, dyn_hyp)
+        dyn_nn, dyn_hyp)
     rl.agent = BayesianDynamics(
         env=env,
         horizon=int(fm.get("hor")),
@@ -321,7 +316,7 @@ def index():
         print("start training", sl.dataset, sl.model_ready)
         oname = fm.get("optim")
         if sl.dataset and sl.model_ready and oname:           
-            optim = apu.optim_dataset(options, fm, fm.get("hypf"), fm.get("hyp"),
+            optim = apu.optim_dataset(options, fm, fm.get("hyp"),
                                        model_config, sl.dataset)
             optim.train(int(fm.get("ite")))
             

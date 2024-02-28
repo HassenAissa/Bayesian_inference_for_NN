@@ -154,12 +154,10 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
         return model
     return None
 
-def hyp_get(hypf, hyp):
+def hyp_get(hyp):
     hyperparams = HyperParameters()
     if hyp:
         hyperparams.parse(hyp)
-    elif hypf:
-        hyperparams.from_file("static/hyperparams/"+hypf)
     return hyperparams
 
 def optim_select(options, fm):
@@ -198,9 +196,9 @@ def optim_mstart(fm, model_config):
         return tf.keras.models.model_from_json(config)
     return None
 
-def optim_dataset(options, fm, hypf, hyp, model_config, dataset):
+def optim_dataset(options, fm, hyp, model_config, dataset):
     optim, extra = optim_select(options, fm)
-    hyperparams = hyp_get(hypf, hyp)
+    hyperparams = hyp_get(hyp)
     extra["starting_model"] = optim_mstart(fm, model_config)
     if optim:
         optim.compile(hyperparams, model_config, dataset)
@@ -244,14 +242,14 @@ def plot_task(rewards, states, actions):
 
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('time step')
-    ax1.set_ylabel('height/displacement')
-    ax1.scatter(ts, [state[1] for state in states], color='b')
-    ax1.scatter(ts, [state[0] for state in states], color='r')
-    ax1.plot(ts, actions)
-
+    ax1.set_ylabel('state/action norm')
+    for (c, s) in [('b', 0), ('r', 2), ('g', 4), ('c', 5)]:
+        ax1.plot(ts, [state[s] for state in states], color=c)
+    ax1.scatter(ts, actions[0], color='k')
+    
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    ax2.set_ylabel('speeds')
-    ax2.scatter(ts, [state[4] for state in states], color='c')
+    ax2.set_ylabel('actions taken')
+    ax1.scatter(ts, actions[1], color='b')
     plt.savefig(pref+"record.png")
 
     plt.clf()
@@ -316,10 +314,9 @@ def plot_task(rewards, states, actions):
 #     f.close()
             
     # value = {"a0": {"a1":np.array([1,2])}, "a2":np.array([3,4])}
-    # print(array_collector(value), value, arrays)
+    # print(array_collector(value), value, array
 
-
-# from PyAce.tests.gym_example_1 import test_srlz
-# test_srlz()
-print("Num GPUs Available: ", tf.config.list_physical_devices('GPU'))
-# print(tf.version.VERSION)
+# from gymnasium import spaces
+# # obs = spaces.Box(np.array([1,2]), np.array([5,6]), (2,), int)
+# obs = spaces.Discrete(3)
+# print(obs.dtype(1.2))
