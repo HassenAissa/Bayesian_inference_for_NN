@@ -4,6 +4,7 @@ from PyAce.datasets import Dataset
 import sklearn.metrics as skmet
 import tensorflow as tf
 import os
+import sklearn as sk
 
 
 class Metrics():
@@ -26,7 +27,7 @@ class Metrics():
             y_pred = self._cached_prediction
             if self._cached_prediction.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
-                y_pred = tf.stack([1 - self._cached_prediction, self._cached_prediction], axis=1)
+                y_pred = tf.stack([1-self._cached_prediction, self._cached_prediction], axis=1)
             return self._cached_samples, y_pred, self._cached_true_values, self._cached_input
         else:
             y_samples, y_pred = self._model.predict(input, nb_boundaries)  # pass in the x value
@@ -37,7 +38,7 @@ class Metrics():
             self._cached_true_values = y_true
             if y_pred.shape[1] == 1 and self._dataset.likelihood_model == "Classification":
                 # in the very specific case of binary classification with one neuron output convert it to two output
-                y_pred = tf.stack([1 - y_pred, y_pred], axis=1)
+                y_pred = tf.stack([1-y_pred, y_pred], axis=1)
             return y_samples, y_pred, y_true, input
     
     def summary(self, nb_boundaries: int, save_path = None):
@@ -62,6 +63,7 @@ class Metrics():
             self.recall(nb_boundaries, save_path)
             self.precision(nb_boundaries, save_path)
             self.f1_score(nb_boundaries, save_path)
+            self.auroc()
 
         else: 
             print("Invalid loss function")
@@ -101,6 +103,13 @@ class Metrics():
         self._save(save_path, "R2", res)
         print("R2 score: {}".format(res))
         return res
+
+    # def log_likeliood(self, nb_boundaries: int, save_path = None):
+    #     input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
+    #     y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
+    #     self._save(save_path, "log_likelihood", res)
+    #     print("log likelihood: {}".format(res))
+    #     return res   
             
         
     # Classification performance metrics
@@ -187,6 +196,18 @@ class Metrics():
             return epistemics + aleatorics, aleatorics, epistemics
         else:
             raise Exception("only for classification")
+        
+    def auroc(self, n_boundaries = 10, save_path = None, multi_class = "ovr"):
+        if self._dataset.likelihood_model != "Classification":
+            raise ValueError("ROC can only be plotted for Classification")  
+        x, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
+        y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true)
+        y_pred = tf.reshape(y_pred, y_pred.shape[:2])
+        one_hot_y_true = tf.one_hot(y_true, y_pred.shape[1])
+        res = sk.metrics.roc_auc_score(one_hot_y_true, y_pred, average = "micro", multi_class = multi_class)
+        self._save(save_path, "AUROC", res)
+        print("AUROC: {}".format(res))
+        return res
         
     def _save(self, save_path, name, content):
         if save_path != None:
