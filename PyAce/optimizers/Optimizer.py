@@ -33,7 +33,7 @@ class Optimizer(ABC):
         """
         pass
 
-    def dataset_setup(self):
+    def _dataset_setup(self):
         self._training_dataset: tf.data.Dataset = self._dataset.training_dataset()
         self._training_dataset_cardinality = self._training_dataset.cardinality().numpy().item()
         self._dataloader = (self._training_dataset

@@ -89,7 +89,7 @@ class SWAG(Optimizer):
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._batch_size = int(self._hyperparameters.batch_size)
-        self.dataset_setup()
+        self._dataset_setup()
         self._init_swag_arrays()
         self._n = 0
 

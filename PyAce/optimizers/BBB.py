@@ -227,7 +227,7 @@ class BBB(Optimizer):
             )
 
         self._alpha = self._hyperparameters.alpha
-        self.dataset_setup()
+        self._dataset_setup()
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()
 
