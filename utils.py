@@ -1,9 +1,9 @@
 import PyAce.optimizers as om
-import tensorflow as tf
+import tensorflow as tf, numpy as np
 from PyAce.distributions import GaussianPrior
-from PyAce.tests.gym_example_1 import test_srlz
+from PyAce.optimizers.hyperparameters import HyperParameters
 from matplotlib import pyplot as plt
-import json, os, shutil
+import json, os, shutil, pickle
 
 connectors = "._-"
 
@@ -34,7 +34,7 @@ def check_mandatory(form, term, missing):
     if not term:
         return missing
     if isinstance(term,str):
-        if form.get(term) != "":
+        if form.get(term):
             return missing
         return missing+[term]
     if isinstance(term, list):
@@ -155,7 +155,7 @@ def nn_create(acts, hidden, kernel, filters, ipd=None, n_classes=None):
     return None
 
 def hyp_get(hypf, hyp):
-    hyperparams = om.HyperParameters()
+    hyperparams = HyperParameters()
     if hyp:
         hyperparams.parse(hyp)
     elif hypf:
@@ -207,37 +207,119 @@ def optim_dataset(options, fm, hypf, hyp, model_config, dataset):
         optim.compile_extra_components(extra)
     return optim    
 
-def draw_nn(shape):
-    # Auxilliary function, currently not used 
-    plt.title("Visualize neural network")
-    x = 0
-    xs = [[],[]]
-    ys = [[],[]]
-    lines = ("dashed", "solid")
-    title = "Fully connected "
-    scale = 1
-    for s in range(2):
-        if s == 1 and shape[0]:
-            title = "Convolutional "
-            scale = shape[0][-1]/shape[1][0]
-        for i in range(len(shape[s])-1):
-            xs[s] += [x,x+5]
-            ys[s] += [shape[s][i]/2*scale, shape[s][i+1]/2*scale]
-            x += 6
-           
-    plt.title(title+"neural network")
-    plt.xticks([])
-    plt.yticks([])
-    for s in range(2):
-        plt.plot(xs[s], ys[s], linestyle=lines[s], c="k")
-        plt.plot(xs[s], [-y for y in ys[s]], linestyle=lines[s], c="k")
-        for i in range(len(xs[s])):
-            plt.plot([xs[s][i],xs[s][i]],[ys[s][i], -ys[s][i]], c="k")
-    ymax = max(ys[1])
-    if shape[0]:
-        ymax = max(ymax, max(ys[0]))
-    plt.vlines([0], -ymax, ymax, linestyles="dashed")
-    plt.annotate("input layer", (0,-ymax/2))
-    plt.savefig("static/drawnn.png")
+def store_hyp(hyp, fn):
+    f = open(fn, "w")
+    json.dump(hyp._params, f) 
+    f.close()
 
+def load_hyp(fn):
+    f = open(fn,)
+    res = HyperParameters(**json.load(f))  
+    f.close()
+    return res
+
+def store_optim(optim, pref):
+    for k in ["_dataset", "_training_dataset", "_data_iterator", "_dataloader"]:
+        setattr(optim, k, None)
+    store_hyp(optim._hyperparameters, pref+"dynhyp.json")
+    optim._hyperparameters = None
+    f = open(pref+"dyn.pkl", "wb")
+    pickle.dump(optim, f)
+    f.close()
+    print("pickle finish")
+
+def load_optim(pref):
+    f = open(pref+"dyn.pkl", "rb")
+    optim = pickle.load(f)
+    f.close()
+    optim._hyperparameters = load_hyp(pref+"dynhyp.json")
+    print("load pickle finish")
+    print(optim._frequency, optim._k)
+    return optim
+
+def plot_task(rewards, states, actions):
+    pref = "static/results/"
+    ts = range(len(rewards))
+    plt.title("Rewards over time")
+
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('time step')
+    ax1.set_ylabel('height/displacement')
+    ax1.scatter(ts, [state[1] for state in states], color='b')
+    ax1.scatter(ts, [state[0] for state in states], color='r')
+    ax1.plot(ts, actions)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    ax2.set_ylabel('speeds')
+    ax2.scatter(ts, [state[4] for state in states], color='c')
+    plt.savefig(pref+"record.png")
+
+    plt.clf()
+    plt.title("Reward over time")
+    plt.plot(ts, rewards)
+    plt.savefig(pref+"reward.png")
+
+# def store_optim(optim, pref):
+#     arrays = []
+#     def check_arrtype(a):
+#         if isinstance(a, np.ndarray):
+#             return "array"
+#         if isinstance(a, tf.Tensor):
+#             return "tensor"
+#         return ""
+#     def array_collector(value):
+#         if isinstance(value, list):
+#             t = check_arrtype(value[0])
+#             if t:
+#                 for i in range(len(value)):
+#                     arrays.append(value[i])
+#                     value[i] = t+str(len(arrays))
+#                 return True
+#             return array_collector(value[0])
+#         if isinstance(value, dict):
+#             i = 0
+#             kvps = list(value.items())
+#             while i < len(kvps):
+#                 k,v = kvps[i]
+#                 t = check_arrtype(value[0])
+#                 if t:
+#                     arrays.append(v)
+#                     value[k] = t+str(len(arrays))
+#                     i += 1
+#                 else:
+#                     return all(array_collector(v) for k,v in kvps[i:])
+#             return True
+
+#     attrs = optim.__dict__
+#     collectors = []
+#     for k, v in attrs.items():
+#         t = check_arrtype(v)
+#         if t:
+#             arrays.append(v)
+#             setattr(optim, k, t+str(len(arrays)))
+#             collectors.append(k)
+#         elif array_collector(v):
+#             setattr(optim, k, v)
+#             collectors.append(k)
+
+#     array_cnt = 0
+#     while array_cnt < len(arrays):
+#         a = arrays[array_cnt]
+#         if isinstance(a, np.ndarray):
+#             np.save(pref+"array"+str(array_cnt+1)+".npy", a)
+#         elif isinstance(a, tf.Tensor):
+#             np.save(pref+"tensor"+str(array_cnt+1)+".npy", a.numpy())
+#         array_cnt += 1
+#     print(optim.__dict__)
+#     f = open(pref+"dyn.pkl", "wb")
+#     pickle.dump(optim, f)
+#     f.close()
+            
+    # value = {"a0": {"a1":np.array([1,2])}, "a2":np.array([3,4])}
+    # print(array_collector(value), value, arrays)
+
+
+# from PyAce.tests.gym_example_1 import test_srlz
 # test_srlz()
+print("Num GPUs Available: ", tf.config.list_physical_devices('GPU'))
+# print(tf.version.VERSION)

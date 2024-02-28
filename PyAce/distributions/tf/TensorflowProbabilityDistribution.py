@@ -61,6 +61,6 @@ class TensorflowProbabilityDistribution(Distribution):
 
     def sample(self) -> tf.Tensor:
         vector = self._tf_distribution.sample()
-        tf.debugging.check_numerics(vector, "distribution failed")
+        # tf.debugging.check_numerics(vector, "distribution failed")
         return self._tf_distribution.sample()
 

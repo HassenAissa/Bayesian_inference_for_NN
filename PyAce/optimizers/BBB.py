@@ -218,22 +218,18 @@ class BBB(Optimizer):
             self._prior2 = GaussianPrior(0.0,0.0)
         self._lr = self._hyperparameters.lr
         self._pi = self._hyperparameters.pi
-        self._batch_size = self._hyperparameters.batch_size
-        sign = self._prior._std_dev/abs(self._prior._std_dev)
+        self._batch_size = int(self._hyperparameters.batch_size)
         if isinstance(self._prior._mean, int) or isinstance(self._prior._mean, float):
+            sign = self._prior._std_dev/abs(self._prior._std_dev)
             self._prior = GaussianPrior(
                 self._prior._mean * self._pi + self._prior2._mean * (1 - self._pi),
                 sign * math.sqrt((self._prior._std_dev * self._pi)**2 + (self._prior2._std_dev * (1 - self._pi))**2),
             )
 
         self._alpha = self._hyperparameters.alpha
-        self._dataloader = (self._dataset.training_dataset()
-                            .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(self._batch_size))
-        self._data_iterator = iter(self._dataloader)
+        self.dataset_setup()
         self._priors_list = self._prior.get_model_priors(self._base_model)
         self._init_BBB_arrays()
-
 
     def _init_BBB_arrays(self):
         """
@@ -266,8 +262,8 @@ class BBB(Optimizer):
                 layer_std_dev_list[i]= tf.reshape(layer_std_dev_list[i], (-1,))
             mean = tf.concat(layer_mean_list, 0)
             std_dev = tf.concat(layer_std_dev_list,0)
-            tf.debugging.check_numerics(mean, "mean")
-            tf.debugging.check_numerics(std_dev, "standard deviation")
+            # tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(std_dev, "standard deviation")
             tf_dist = tfp.distributions.Normal(
                 tf.reshape(mean, (-1,)),
                 tf.math.softplus(tf.reshape(std_dev, (-1,)))

@@ -7,9 +7,9 @@ from tensorflow.keras import models, layers
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
 from PyAce.optimizers import HMC
-from PyAce.optimizers import HyperParameters
+from PyAce.optimizers.hyperparameters import HyperParameters
 from PyAce.optimizers import SWAG
-from PyAce.visualisations import Visualisation
+from PyAce.visualisations import Metrics
 import tensorflow_datasets as tfds
 import sklearn
 import tensorflow_probability as tfp
@@ -29,7 +29,7 @@ def SWAG_test(dataset, base_model):
     hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
     # instantiate your optimizer
     optimizer = SWAG()
-    optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model = base_model)
+    optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model = base_model, batch_size = 128)
     optimizer.train(100)
     bayesian_model: BayesianModel = optimizer.result()
     return bayesian_model
@@ -80,8 +80,8 @@ def runner():
         # store_path = r"..."
         # bayesian_model.store(store_path)
         # bayesian_model: BayesianModel= BayesianModel.load(store_path)
-        analytics_builder = Visualisation(bayesian_model)
+        analytics_builder = Metrics(bayesian_model)
         analytics_builder.visualise(dataset, 2)
 
 
-runner()
+# runner()

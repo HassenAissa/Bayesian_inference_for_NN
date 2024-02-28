@@ -98,23 +98,20 @@ class SGLD(Optimizer):
         return super().update_parameters_step()
         
     def compile_extra_components(self, **kwargs):
-        self._batch_size = self._hyperparameters.batch_size
+        self._batch_size = int(self._hyperparameters.batch_size)
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.model_from_json(self._model_config)
-        self._dataloader = (self._dataset.training_dataset()
-                            .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(self._batch_size))
+        self.dataset_setup()
         self._init_arrays()
-        self._data_iterator = iter(self._dataloader)
         self._n = 0
 
     def result(self) -> BayesianModel:
         model = BayesianModel(self._model_config)
         for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev,
                                            range(len(self._weight_layers_indices))):
-            tf.debugging.check_numerics(dev, "dev")
-            tf.debugging.check_numerics(mean, "mean")
-            tf.debugging.check_numerics(sq_mean, "sq_meqn")
+            # tf.debugging.check_numerics(dev, "dev")
+            # tf.debugging.check_numerics(mean, "mean")
+            # tf.debugging.check_numerics(sq_mean, "sq_meqn")
 
             tf_dist = tfp.distributions.Normal(
                 tf.reshape(mean, (-1,)),

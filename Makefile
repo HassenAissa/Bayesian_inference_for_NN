@@ -10,3 +10,9 @@ pdoc:
 
 vis:
 	python3 visualize.py
+
+test1:
+	python3 PyAce/tests/unittest1.py
+
+test2:
+	python3 PyAce/tests/unittest2.py

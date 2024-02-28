@@ -5,9 +5,9 @@ from tensorflow.keras import models, layers
 
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
-from PyAce.optimizers import HyperParameters
+from PyAce.optimizers.hyperparameters import HyperParameters
 from PyAce.optimizers import SWAG
-from PyAce.visualisations import Visualisation
+from PyAce.visualisations import Metrics, Plotter
 import tensorflow_datasets as tfds
 import sklearn
 import tensorflow_probability as tfp
@@ -21,6 +21,7 @@ def runner():
         tf.keras.losses.SparseCategoricalCrossentropy(),
         "Classification"    
     )
+    print(dataset.input_shape())
 
     initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
     base_model = tf.keras.Sequential()
@@ -36,7 +37,7 @@ def runner():
     # optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
 
 
-    hyperparams = HyperParameters(lr=5, alpha = 0.00)
+    hyperparams = HyperParameters(lr=5, alpha = 0.00, pi = 1, batch_size = 100)
     # instantiate your optimizer
     optimizer = BBB()
     prior = GaussianPrior(.0,-2.0)
@@ -58,8 +59,10 @@ def runner():
     # bayesian_model.store(store_path)
     # bayesian_model: BayesianModel= BayesianModel.load(store_path)
 
-    analytics_builder = Visualisation(bayesian_model)
+    analytics_builder = Metrics(bayesian_model, dataset)
+    analytics_builder.classification_uncertainty()
+    analytics_builder.summary(35)
+    plotter = Plotter(bayesian_model, dataset)
+    plotter.entropy()
 
-    analytics_builder.visualise(dataset, 2)
-
-
+# runner()

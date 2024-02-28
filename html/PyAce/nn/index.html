@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>PyAce.nn API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>PyAce.nn</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from .BayesianModel import BayesianModel
+
+from os.path import dirname, basename, isfile, join
+import glob
+modules = glob.glob(join(dirname(__file__), &#34;*.py&#34;))
+__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith(&#39;__init__.py&#39;)]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="PyAce.nn.BayesianModel"><code class="flex name class">
+<span>class <span class="ident">BayesianModel</span></span>
+<span>(</span><span>model_config: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class that represents a trained bayesian model that could predict outputs. It could also be stored and loaded.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BayesianModel:
+    &#34;&#34;&#34;
+        a class that represents a trained bayesian model that could predict outputs. It could also be stored and loaded.
+    &#34;&#34;&#34;
+    def __init__(self, model_config: str):
+        self._model_config = model_config
+        model: tf.keras.Model = tf.keras.models.model_from_json(model_config)
+        self._n_layers = len(model.layers)
+        self._layers_dtbn_intervals = []
+        self._distributions: list[Distribution] = []
+        self._model: tf.keras.Model = model
+
+
+    # intended implementation: dtbn intervals takes the form like [[0,2],[3,4],[5,5],[6,6],[7,12]...]
+    # interval may be single (equal) or double (unequal); distribution list each element correspond to an interval
+    def apply_distribution(self, distribution: Distribution, start_layer: int, end_layer: int):
+        &#34;&#34;&#34;
+            set the distributions of the given layers to the one provided
+            Args:
+                distribution (Distribution): the distribution
+                start_layer (int): the starting layer to be set
+                end_layer (int): the ending layer to be set
+        &#34;&#34;&#34;
+        if start_layer &gt; end_layer:
+            raise ValueError(&#39;starting_layer must be less than end_layer&#39;)
+        elif start_layer &lt; 0 or end_layer &gt;= self._n_layers:
+            raise ValueError(&#39;out of bounds&#39;)
+        interval = [start_layer, end_layer]
+
+        if len(self._layers_dtbn_intervals) == 0:
+            self._layers_dtbn_intervals.append(interval)
+            self._distributions.append(distribution)
+            return
+        for i in range(len(self._layers_dtbn_intervals)):
+            if start_layer &gt; self._layers_dtbn_intervals[i][0]:
+                self._layers_dtbn_intervals = self._layers_dtbn_intervals[:i + 1] + [
+                    interval] + self._layers_dtbn_intervals[i + 1:]
+                self._distributions = self._distributions[:i + 1] + [distribution] + self._distributions[i + 1:]
+                break
+        &#34;&#34;&#34;
+        TODO: Implement this without errors
+        if start_layer &gt; end_layer:
+            raise ValueError(&#39;starting_layer must be less than end_layer&#39;)
+        elif start_layer &lt; 0 or end_layer &gt;= self._n_layers:
+            raise ValueError(&#39;out of bounds&#39;)
+        start_index = bisect.bisect_right(self._layers_dtbn_intervals, start_layer)
+        if self._layers_dtbn_intervals[start_index - 1] != start_layer:
+            self._layers_dtbn_intervals.insert(start_index, start_layer)
+        else:
+            start_index -= 1
+        end_index = bisect.bisect_right(end_layer)
+        if self._layers_dtbn_intervals[end_index]:
+            pass
+        &#34;&#34;&#34;
+
+
+    def apply_distributions_layers(self, layer_list, dtbn_list):
+        &#34;&#34;&#34;
+        DEPRECATED
+        set the correlated layers and their distributions
+        Args:
+            layer_list (_type_): _description_
+            dtbn_list (_type_): _description_
+        &#34;&#34;&#34;
+        self._layers_dtbn_intervals = layer_list
+        self._distributions = dtbn_list
+
+    def _sample_weights(self):
+        &#34;&#34;&#34;
+            sample the weights of the model
+        &#34;&#34;&#34;
+        for interval_idx in range(len(self._layers_dtbn_intervals)):
+            vector_weights: tf.Tensor = self._distributions[interval_idx].sample()
+            start = self._layers_dtbn_intervals[interval_idx][0]
+            end = self._layers_dtbn_intervals[interval_idx][1]
+            take_from = 0
+            for layer_idx in range(start, end + 1):
+                for w in self._model.layers[layer_idx].trainable_variables:
+                    size = tf.size(w).numpy()
+                    w.assign(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
+                    take_from += size
+
+    def sample_model(self) -&gt; tf.keras.Model:
+        self._sample_weights()
+        return tf.keras.models.clone_model(self._model)
+    def predict(self, x: tf.Tensor, nb_samples: int):
+        &#34;&#34;&#34;
+        use monte carlo approxiamtion over nb_samples to predict the result for the input
+
+
+        Args:
+            x (tf.Tensor): the inuput
+            nb_samples (int): number of samples for monte carlo approximation
+
+        Returns:
+            (list, tf.Tensor): a pair containing the sampled results and their mean as the prediction
+        &#34;&#34;&#34;
+        result = 0
+        samples_results = []
+        for i in range(nb_samples):
+            self._sample_weights()
+            prediction = self._model(x)
+            result += prediction
+            samples_results.append(prediction)
+        result /= nb_samples
+        return samples_results, result
+
+    @classmethod
+    def load(cls, model_path: str, custom_distribution_register=None) -&gt; &#39;BayesianModel&#39;:
+        &#34;&#34;&#34;
+        load a model from a document
+        Args:
+            model_path (str): the path where the model is stored
+            custom_distribution_register (dict, optional): If the distribution used is not implemented,
+            a deserialiser should be specified in this dctionnary. Defaults to None.
+
+        Returns:
+            BayesianModel: the loaded bayesian model
+        &#34;&#34;&#34;
+        if custom_distribution_register is None:
+            custom_distribution_register = dict()
+        with open(os.path.join(model_path, &#34;config.json&#34;), &#34;r&#34;) as config_file:
+            bayesian_model = BayesianModel(config_file.read())
+
+        layers_intervals = []
+        with open(os.path.join(model_path,&#34;layers_config.txt&#34;), &#34;r&#34;) as layers_file:
+            # layers information are saved as name, start, end (both included)
+            n_intervals = int(layers_file.readline())
+            for i in range(n_intervals):
+                layers_intervals.append(
+                    (layers_file.readline()[:-1], int(layers_file.readline()), int(layers_file.readline())))
+
+        for i in range(n_intervals):
+            distribution = DistributionSerializer.load_from(
+                layers_intervals[i][0],
+                custom_distribution_register,
+                os.path.join(model_path, &#34;distribution&#34; + str(i))
+            )
+            bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
+        return bayesian_model
+
+
+    def _empty_folder(self,path):
+        for filename in os.listdir(path):
+            file_path = os.path.join(path, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(&#39;Failed to delete %s. Reason: %s&#39; % (file_path, e))
+
+    def store(self, model_path: str):
+        &#34;&#34;&#34;
+        store a model to a document
+        Args:
+            model_path (str): the path where the model will be stored, this folder should already exist on the system
+            custom_distribution_register (dict, optional): If the distribution used is not implemented,
+            a serialiser should be specified in this dctionnary. Defaults to None.
+
+        Returns:
+            BayesianModel: the loaded bayesian model
+        &#34;&#34;&#34;
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+        self._empty_folder(model_path)
+        with open(os.path.join(model_path,&#34;config.json&#34;), &#34;w&#34;) as config_file:
+            config_file.write(self._model.to_json())
+
+        with open(os.path.join(model_path, &#34;layers_config.txt&#34;), &#34;w&#34;) as layers_file:
+            layers_file.write(str(len(self._layers_dtbn_intervals))+&#39;\n&#39;)
+            for i in range(len(self._layers_dtbn_intervals)):
+                layers_start = self._layers_dtbn_intervals[i][0]
+                layers_end = self._layers_dtbn_intervals[i][1]
+                layers_file.write(self._distributions[i].__class__.__name__+&#39;\n&#39;+str(layers_start)+&#39;\n&#39;+str(layers_end)+&#39;\n&#39;)
+
+        for i in range(len(self._layers_dtbn_intervals)):
+            os.mkdir(os.path.join(model_path, &#34;distribution&#34;+str(i)))
+            self._distributions[i].store(os.path.join(model_path, &#34;distribution&#34;+str(i)))</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="PyAce.nn.BayesianModel.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>model_path: str, custom_distribution_register=None) ‑> PyAce.nn.BayesianModel.BayesianModel</span>
+</code></dt>
+<dd>
+<div class="desc"><p>load a model from a document</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>model_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>the path where the model is stored</dd>
+<dt><strong><code>custom_distribution_register</code></strong> :&ensp;<code>dict</code>, optional</dt>
+<dd>If the distribution used is not implemented,</dd>
+</dl>
+<p>a deserialiser should be specified in this dctionnary. Defaults to None.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="PyAce.nn.BayesianModel" href="#PyAce.nn.BayesianModel">BayesianModel</a></code></dt>
+<dd>the loaded bayesian model</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def load(cls, model_path: str, custom_distribution_register=None) -&gt; &#39;BayesianModel&#39;:
+    &#34;&#34;&#34;
+    load a model from a document
+    Args:
+        model_path (str): the path where the model is stored
+        custom_distribution_register (dict, optional): If the distribution used is not implemented,
+        a deserialiser should be specified in this dctionnary. Defaults to None.
+
+    Returns:
+        BayesianModel: the loaded bayesian model
+    &#34;&#34;&#34;
+    if custom_distribution_register is None:
+        custom_distribution_register = dict()
+    with open(os.path.join(model_path, &#34;config.json&#34;), &#34;r&#34;) as config_file:
+        bayesian_model = BayesianModel(config_file.read())
+
+    layers_intervals = []
+    with open(os.path.join(model_path,&#34;layers_config.txt&#34;), &#34;r&#34;) as layers_file:
+        # layers information are saved as name, start, end (both included)
+        n_intervals = int(layers_file.readline())
+        for i in range(n_intervals):
+            layers_intervals.append(
+                (layers_file.readline()[:-1], int(layers_file.readline()), int(layers_file.readline())))
+
+    for i in range(n_intervals):
+        distribution = DistributionSerializer.load_from(
+            layers_intervals[i][0],
+            custom_distribution_register,
+            os.path.join(model_path, &#34;distribution&#34; + str(i))
+        )
+        bayesian_model.apply_distribution(distribution, layers_intervals[i][1], layers_intervals[i][2])
+    return bayesian_model</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="PyAce.nn.BayesianModel.apply_distribution"><code class="name flex">
+<span>def <span class="ident">apply_distribution</span></span>(<span>self, distribution: PyAce.distributions.Distribution.Distribution, start_layer: int, end_layer: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>set the distributions of the given layers to the one provided</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>distribution</code></strong> :&ensp;<code>Distribution</code></dt>
+<dd>the distribution</dd>
+<dt><strong><code>start_layer</code></strong> :&ensp;<code>int</code></dt>
+<dd>the starting layer to be set</dd>
+<dt><strong><code>end_layer</code></strong> :&ensp;<code>int</code></dt>
+<dd>the ending layer to be set</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply_distribution(self, distribution: Distribution, start_layer: int, end_layer: int):
+    &#34;&#34;&#34;
+        set the distributions of the given layers to the one provided
+        Args:
+            distribution (Distribution): the distribution
+            start_layer (int): the starting layer to be set
+            end_layer (int): the ending layer to be set
+    &#34;&#34;&#34;
+    if start_layer &gt; end_layer:
+        raise ValueError(&#39;starting_layer must be less than end_layer&#39;)
+    elif start_layer &lt; 0 or end_layer &gt;= self._n_layers:
+        raise ValueError(&#39;out of bounds&#39;)
+    interval = [start_layer, end_layer]
+
+    if len(self._layers_dtbn_intervals) == 0:
+        self._layers_dtbn_intervals.append(interval)
+        self._distributions.append(distribution)
+        return
+    for i in range(len(self._layers_dtbn_intervals)):
+        if start_layer &gt; self._layers_dtbn_intervals[i][0]:
+            self._layers_dtbn_intervals = self._layers_dtbn_intervals[:i + 1] + [
+                interval] + self._layers_dtbn_intervals[i + 1:]
+            self._distributions = self._distributions[:i + 1] + [distribution] + self._distributions[i + 1:]
+            break
+    &#34;&#34;&#34;
+    TODO: Implement this without errors
+    if start_layer &gt; end_layer:
+        raise ValueError(&#39;starting_layer must be less than end_layer&#39;)
+    elif start_layer &lt; 0 or end_layer &gt;= self._n_layers:
+        raise ValueError(&#39;out of bounds&#39;)
+    start_index = bisect.bisect_right(self._layers_dtbn_intervals, start_layer)
+    if self._layers_dtbn_intervals[start_index - 1] != start_layer:
+        self._layers_dtbn_intervals.insert(start_index, start_layer)
+    else:
+        start_index -= 1
+    end_index = bisect.bisect_right(end_layer)
+    if self._layers_dtbn_intervals[end_index]:
+        pass
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="PyAce.nn.BayesianModel.apply_distributions_layers"><code class="name flex">
+<span>def <span class="ident">apply_distributions_layers</span></span>(<span>self, layer_list, dtbn_list)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>DEPRECATED
+set the correlated layers and their distributions</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>layer_list</code></strong> :&ensp;<code>_type_</code></dt>
+<dd><em>description</em></dd>
+<dt><strong><code>dtbn_list</code></strong> :&ensp;<code>_type_</code></dt>
+<dd><em>description</em></dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply_distributions_layers(self, layer_list, dtbn_list):
+    &#34;&#34;&#34;
+    DEPRECATED
+    set the correlated layers and their distributions
+    Args:
+        layer_list (_type_): _description_
+        dtbn_list (_type_): _description_
+    &#34;&#34;&#34;
+    self._layers_dtbn_intervals = layer_list
+    self._distributions = dtbn_list</code></pre>
+</details>
+</dd>
+<dt id="PyAce.nn.BayesianModel.predict"><code class="name flex">
+<span>def <span class="ident">predict</span></span>(<span>self, x: tensorflow.python.framework.tensor.Tensor, nb_samples: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>use monte carlo approxiamtion over nb_samples to predict the result for the input</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>tf.Tensor</code></dt>
+<dd>the inuput</dd>
+<dt><strong><code>nb_samples</code></strong> :&ensp;<code>int</code></dt>
+<dd>number of samples for monte carlo approximation</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>(list, tf.Tensor): a pair containing the sampled results and their mean as the prediction</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def predict(self, x: tf.Tensor, nb_samples: int):
+    &#34;&#34;&#34;
+    use monte carlo approxiamtion over nb_samples to predict the result for the input
+
+
+    Args:
+        x (tf.Tensor): the inuput
+        nb_samples (int): number of samples for monte carlo approximation
+
+    Returns:
+        (list, tf.Tensor): a pair containing the sampled results and their mean as the prediction
+    &#34;&#34;&#34;
+    result = 0
+    samples_results = []
+    for i in range(nb_samples):
+        self._sample_weights()
+        prediction = self._model(x)
+        result += prediction
+        samples_results.append(prediction)
+    result /= nb_samples
+    return samples_results, result</code></pre>
+</details>
+</dd>
+<dt id="PyAce.nn.BayesianModel.sample_model"><code class="name flex">
+<span>def <span class="ident">sample_model</span></span>(<span>self) ‑> keras.src.engine.training.Model</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sample_model(self) -&gt; tf.keras.Model:
+    self._sample_weights()
+    return tf.keras.models.clone_model(self._model)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.nn.BayesianModel.store"><code class="name flex">
+<span>def <span class="ident">store</span></span>(<span>self, model_path: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>store a model to a document</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>model_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>the path where the model will be stored, this folder should already exist on the system</dd>
+<dt><strong><code>custom_distribution_register</code></strong> :&ensp;<code>dict</code>, optional</dt>
+<dd>If the distribution used is not implemented,</dd>
+</dl>
+<p>a serialiser should be specified in this dctionnary. Defaults to None.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="PyAce.nn.BayesianModel" href="#PyAce.nn.BayesianModel">BayesianModel</a></code></dt>
+<dd>the loaded bayesian model</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def store(self, model_path: str):
+    &#34;&#34;&#34;
+    store a model to a document
+    Args:
+        model_path (str): the path where the model will be stored, this folder should already exist on the system
+        custom_distribution_register (dict, optional): If the distribution used is not implemented,
+        a serialiser should be specified in this dctionnary. Defaults to None.
+
+    Returns:
+        BayesianModel: the loaded bayesian model
+    &#34;&#34;&#34;
+    if not os.path.exists(model_path):
+        os.makedirs(model_path)
+    self._empty_folder(model_path)
+    with open(os.path.join(model_path,&#34;config.json&#34;), &#34;w&#34;) as config_file:
+        config_file.write(self._model.to_json())
+
+    with open(os.path.join(model_path, &#34;layers_config.txt&#34;), &#34;w&#34;) as layers_file:
+        layers_file.write(str(len(self._layers_dtbn_intervals))+&#39;\n&#39;)
+        for i in range(len(self._layers_dtbn_intervals)):
+            layers_start = self._layers_dtbn_intervals[i][0]
+            layers_end = self._layers_dtbn_intervals[i][1]
+            layers_file.write(self._distributions[i].__class__.__name__+&#39;\n&#39;+str(layers_start)+&#39;\n&#39;+str(layers_end)+&#39;\n&#39;)
+
+    for i in range(len(self._layers_dtbn_intervals)):
+        os.mkdir(os.path.join(model_path, &#34;distribution&#34;+str(i)))
+        self._distributions[i].store(os.path.join(model_path, &#34;distribution&#34;+str(i)))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="PyAce" href="../index.html">PyAce</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PyAce.nn.BayesianModel" href="#PyAce.nn.BayesianModel">BayesianModel</a></code></h4>
+<ul class="">
+<li><code><a title="PyAce.nn.BayesianModel.apply_distribution" href="#PyAce.nn.BayesianModel.apply_distribution">apply_distribution</a></code></li>
+<li><code><a title="PyAce.nn.BayesianModel.apply_distributions_layers" href="#PyAce.nn.BayesianModel.apply_distributions_layers">apply_distributions_layers</a></code></li>
+<li><code><a title="PyAce.nn.BayesianModel.load" href="#PyAce.nn.BayesianModel.load">load</a></code></li>
+<li><code><a title="PyAce.nn.BayesianModel.predict" href="#PyAce.nn.BayesianModel.predict">predict</a></code></li>
+<li><code><a title="PyAce.nn.BayesianModel.sample_model" href="#PyAce.nn.BayesianModel.sample_model">sample_model</a></code></li>
+<li><code><a title="PyAce.nn.BayesianModel.store" href="#PyAce.nn.BayesianModel.store">store</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

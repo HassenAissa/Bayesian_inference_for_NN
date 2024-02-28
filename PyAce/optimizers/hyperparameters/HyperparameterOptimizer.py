@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 import tensorflow as tf
 from typing import Type
 import multiprocessing
-from PyAce.optimizers import Optimizer
 
 class HyperparameterOptimizer(ABC):
     def __init__(self):

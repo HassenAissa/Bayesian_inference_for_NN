@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request
-from matplotlib import pyplot as plt
+from static.rewards import all_rewards
 from PyAce.datasets.Dataset import Dataset
 from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics
-from static.rewards import all_rewards
 import PyAce.datasets.utils as dsu, utils as apu
 import tensorflow as tf
 import os, json, pickle, time
@@ -11,6 +10,7 @@ sl_mandatory = [("if", "f1", "", ["lcat", ("if", "lcat", "Classification", "dfil
     ("if", "f2", "", ["lcat", "loss", ("or", ("or", "nnjson", "nnjsons"), ["ipd", "opd", "mname", "hidden", "activations"]), ("or", "dfile", "dfiles"), "batch", "optim", "ite"])]
 rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", ("or", "pnnjson", "pnnjsons"), ["pmname", "phidden", "pactivations"]), "poact",
                 ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "doact", "optim", "reward"]
+rl_f2mand = ["envname", "session", ("if", "resume", "", ["envname", "lep"])]
 sl_opkeys = ["lcat", "loss", "optim"]
 rl_opkeys = ["poact", "doact","optim", "reward"]
     
@@ -52,8 +52,6 @@ class RLInfo(ModelInfo):
     def __init__(self):
         super().__init__()
         self.envname = ""
-        self.policy = None
-        self.dyn_train = None
         self.agent = None
         self.real_task = False
         self.options = {"sessions": [[]]+apu.read_sessions("rl"),
@@ -62,17 +60,33 @@ class RLInfo(ModelInfo):
                         "doact": [""]+["sigmoid", "relu", "tanh", "softmax", "linear"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
                         "reward": [""]+list(all_rewards.keys())}
-    def save_policy(self):
-        f = open("static/sessions/rl/"+self.sname+"/policy.pkl", "wb")
-        pickle.dump(self.policy.network, f)
+        
+    def pause(self, tot_epochs):
+        pref = "static/sessions/rl/"+self.sname+"/"
+        self.agent.store(pref, tot_epochs)
+        apu.store_hyp(self.agent.policy.hyperparams, pref+"policyhyp.json")
+        self.agent.policy.hyperparams = None
+        f = open(pref+"policy.pkl", "wb")
+        pickle.dump(self.agent.policy, f)
         f.close()
-    def find_policy(self, policy, env):
-        f = open("static/sessions/"+policy+"/policy.pkl", "rb")
-        p = NNPolicy(pickle.load(f), "", "") 
-        BayesianDynamics(env, 0, None, p, None, None) # No object created, only setting up policy
-        self.policy = p
-        print("found policy load", self.policy)
+        apu.store_optim(self.agent.dyn_training.optimizer, pref)
+
+    def restore(self, env):
+        pref = "static/sessions/rl/"+self.sname+"/"
+        f = open(pref+"policy.pkl", "rb")
+        policy = pickle.load(f)
         f.close()
+        policy.hyperparams = apu.load_hyp(pref+"policyhyp.json")
+        optim = apu.load_optim(pref)
+        f = open(pref+"loss.pkl", "rb")
+        loss = pickle.load(f)
+        f.close()
+        f = open(pref+"agent.json")
+        args = json.load(f)
+        dyn_training = DynamicsTraining(optim, {"loss": loss, "likelihood": args["likelihood"]})
+        self.agent = BayesianDynamics(env, args["horizon"], dyn_training, policy, 
+                         args["rew_name"], args["learn_config"])
+        return args["tot_epochs"]
 
 app = Flask(__name__) 
 sl = SLInfo()
@@ -83,43 +97,54 @@ def reinforce():
     fm = request.form
     print(fm)
     options = rl.options
-    if fm.get("render"):
-        envname = fm.get("envname")
-        rl.envname = envname
-        policy, rmode = fm.get("policy"), fm.get("rmode")
-        if rmode: # Start real task
-            env = gym.make(rl.envname, render_mode=rmode)
-            env.reset(seed=42)
-            observation, info = env.reset(seed=42)
-            if policy:
-                rl.find_policy(policy, env)
-            print(rl.policy)
-            if rl.policy:
-                total_reward = 0
-                t = 0
-                done = False
-                # Run the game loop
-                print(">>Start real game")
-                rl.real_task = True
-                plt.title("Accumulative reward over time step")
-                ts = [0]
-                rewards = [0]
-                while not done:
-                    action = tf.reshape(rl.policy.act(tf.convert_to_tensor(observation)), 
-                                        shape=env.action_space.shape)
-                    # action = action.numpy()
-                    observation, reward, terminated, truncated, info = env.step(
-                        tf.cast(action, env.action_space.dtype))
-                    total_reward += reward  # Accumulate the reward
-                    t += 1
-                    rewards.append(total_reward)
-                    ts.append(t)
-                    if terminated or truncated:
-                        done = True
-                    # You can add a delay here if the visualization is too fast
-                    time.sleep(0.05)
-                plt.plot(ts, rewards)
-                plt.savefig("static/results/rewards.png")
+    record_file="static/results/learning.txt"
+    ep_count = 0
+    missing = apu.check_mandatory(fm, rl_f2mand, [])
+    print("f2missing", missing)
+    if not missing:
+        rl.sname = fm.get("session")
+        rl.envname, rmode = fm.get("envname"), fm.get("rmode")
+        if not rmode:
+            rmode = None
+        env = gym.make(rl.envname, render_mode=rmode)
+        observation, info = env.reset(seed=42)
+        if fm.get("resume"): 
+            ep_count = rl.restore(env)
+            print(">> Learning resumed")
+            nb_epochs = int(fm.get("lep"))
+            rl.agent.learn(nb_epochs, record_file=record_file)
+            rl.pause(ep_count+nb_epochs)
+        elif fm.get("render"):
+            total_reward = 0
+            t = 0
+            done = False
+            # Run the game loop
+            print(">> Start real task")
+            f = open("static/sessions/rl/"+rl.sname+"/policy.pkl", "rb")
+            policy = pickle.load(f)
+            f.close()
+            rl.real_task = True
+            t = 0
+            rewards = []
+            states = []
+            actions = []
+            while not done:
+                states.append(observation)
+                action = tf.reshape(policy.act(tf.convert_to_tensor(observation)), 
+                                    shape=env.action_space.shape)
+                actions.append(action)
+                # action = action.numpy()
+                observation, reward, terminated, truncated, info = env.step(
+                    tf.cast(action, env.action_space.dtype))
+                total_reward += reward  # Accumulate the reward
+                rewards.append(total_reward)
+                t += 1
+                if terminated or truncated:
+                    done = True
+                # You can add a delay here if the visualization is too fast
+                time.sleep(0.02)
+            apu.plot_task(rewards, states, actions)
+            
         return render_template('reinforce.html', options=options, info=rl)
     missing = []
     if fm and "session" not in fm:
@@ -138,6 +163,8 @@ def reinforce():
     rl.form = dict(fm)
     rl.envname = fm.get("envname")
     rl.sname = apu.add_sessions(fm.get("sname"), "rl", fm.get("sdesc"), rl.envname)
+    if not os.path.exists("static/sessions/rl/"+rl.sname):
+        os.mkdir("static/sessions/rl/"+rl.sname)
     rl.store("static/sessions/rl/"+rl.sname+"/rl.json")
     options["sessions"] = [""]+apu.read_sessions("rl")
     env = gym.make(rl.envname)
@@ -188,7 +215,7 @@ def reinforce():
         horizon=int(fm.get("hor")),
         dyn_training=dyn_training,
         policy=policy,
-        state_reward=all_rewards[fm.get("reward")],
+        rew_name=fm.get("reward"),
         learn_config=(int(fm.get("dynep")),int(fm.get("npar")),float(fm.get("disc"))) 
         # dynamic epochs, particle number, discount factor
     )
@@ -198,13 +225,12 @@ def reinforce():
         extra["starting_model"] = apu.optim_mstart(fm, dyn_config)
     dyn_training.compile_more(extra)
     env.reset(seed=42)
-    record_file="static/results/learning.txt"
-    rl.agent.learn(nb_epochs=int(fm.get("lep")),record_file=record_file)
+    nb_epochs = int(fm.get("lep"))
+    rl.agent.learn(nb_epochs,record_file=record_file)
     f = open(record_file, "r")
     rl.process =f.read() 
     f.close()
-    rl.policy = policy
-    rl.save_policy()
+    rl.pause(nb_epochs)
     return render_template('reinforce.html', options=rl.options, info=rl)
 
 @app.route('/', methods=['GET', 'POST'])    # main page

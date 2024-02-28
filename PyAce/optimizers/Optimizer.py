@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from PyAce.datasets import Dataset
 from PyAce.nn import BayesianModel
-from PyAce.optimizers import HyperParameters
+from .hyperparameters import HyperParameters
 import tensorflow as tf
 import os
 import shutil
@@ -32,6 +32,15 @@ class Optimizer(ABC):
             float: the loss value after the step
         """
         pass
+
+    def dataset_setup(self):
+        self._training_dataset: tf.data.Dataset = self._dataset.training_dataset()
+        self._training_dataset_cardinality = self._training_dataset.cardinality().numpy().item()
+        self._dataloader = (self._training_dataset
+                            .shuffle(self._training_dataset_cardinality)
+                            .batch(self._batch_size))
+        self._data_iterator = iter(self._dataloader)
+        
 
     def compile(self, hyperparameters: HyperParameters, model_config: str, dataset, verbose=True,**kwargs):
         """compile the model

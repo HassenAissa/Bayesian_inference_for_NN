@@ -1,0 +1,1 @@
+{"learn_config": [20, 50, 0.95], "rew_name": "Acb rwdl", "horizon": 20, "likelihood": "Regression", "tot_epochs": 40}

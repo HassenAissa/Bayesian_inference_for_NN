@@ -139,6 +139,10 @@ class Dataset:
             self.train_data = self.train_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
             self.valid_data = self.valid_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
             self.test_data = self.test_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
+        else:
+            self.train_data = self.train_data.map(lambda x,y: (x/255,y))
+            self.valid_data = self.valid_data.map(lambda x,y: (x/255,y))
+            self.test_data = self.test_data.map(lambda x,y: (x/255,y))
 
 
         

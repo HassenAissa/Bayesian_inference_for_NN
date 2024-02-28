@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>PyAce.dynamics.deep_pilco API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>PyAce.dynamics.deep_pilco</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from .control import gym, Policy, Control,np
+from PyAce.datasets import Dataset
+from PyAce.optimizers import Optimizer
+import tensorflow as tf
+import tensorflow_probability as tfp
+import copy
+
+def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
+    network = tf.keras.Sequential()
+    network.add(tf.keras.Input(shape=ipd))
+    for layer in template.layers:
+        network.add(layer)
+    network.add(tf.keras.layers.Dense(opd[0], out_activation))   
+    return network
+
+class NNPolicy(Policy):
+    # using tensorflow neural network for optimizing policy params &#34;phi&#34;
+    def __init__(self, network, out_activation, hyperparams):
+        self.network = network # template network consisting of inner layers
+        self.out_activation = out_activation
+        self.hyperparams = hyperparams
+
+    def setup(self, ipd, opd, aspace:gym.spaces, model_ready=False):
+        if not model_ready:
+            self.network = complete_model(self.network, ipd, opd, self.out_activation)
+        if isinstance(aspace, gym.spaces.Discrete):
+            self.bounded = True
+            self.low = tf.fill(opd, 0.0)
+            self.high = tf.fill(opd, float(aspace.n-1))
+        else:
+            self.bounded = aspace.is_bounded()
+            if self.bounded:
+                self.low = tf.convert_to_tensor(aspace.low)
+                self.high = tf.convert_to_tensor(aspace.high)
+        
+    def optimize_step(self, grad, check_converge=False):
+        print(&#34;Updating policy Valid gradient; length&#34;, len(grad))
+        weights = self.network.get_weights()
+        new_weights = []
+        for i in range(len(grad)):
+            wg = tf.math.multiply(grad[i], self.hyperparams.lr)
+            m = tf.math.subtract(weights[i], wg)
+            new_weights.append(m)
+        self.network.set_weights(new_weights)
+
+        # To be implemented: check convergence
+        if check_converge:
+            converge = False
+            return converge
+
+    def act(self, state, training=False):
+        # convert state to 2D tensor
+        # state = tf.convert_to_tensor(state, dtype=tf.float32)
+        action = self.network(tf.reshape(state, shape=(1, -1)), training=training)
+        action = tf.reshape(action, shape=(-1,))
+        # action needs to be a 1D tensor
+        if self.bounded:
+            action = tf.math.maximum(self.low, action)
+            action = tf.math.minimum(self.high, action)
+        return action
+
+
+class DynamicsTraining:
+    # learn dynamic model f for state action transitions
+    def __init__(self, optimizer:Optimizer, data_specs:dict, 
+                 template, out_activation, hyperparams):
+        self.optimizer, self.template, self.out_activation = optimizer, template, out_activation
+        self.hyperparams = hyperparams
+        self.data_specs = data_specs
+        self.start = False   
+
+    def create_model(self, sfd, afd):
+        ipd = (sfd[0]+afd[0],)
+        model = complete_model(self.template, ipd, sfd, self.out_activation) 
+        self.model = model   
+
+    def compile_more(self, extra):
+        self.rems = extra
+
+    def train(self, features, targets, opd, nb_epochs):
+        data = tf.data.Dataset.from_tensor_slices((features, targets))
+        train_dataset = Dataset(data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+        # train_dataset = Dataset(
+        #     dataset.train_data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+        if not self.start:
+            self.optimizer.compile(self.hyperparams, self.model.to_json(), 
+                                   train_dataset, **self.rems)
+            self.start = True
+        else:
+            self.optimizer._dataset = train_dataset
+        self.optimizer.train(nb_epochs)
+
+
+class BayesianDynamics(Control):
+    def __init__(
+        self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
+        policy: NNPolicy, state_reward, learn_config:tuple
+    ):
+        super().__init__(env, horizon, policy)
+        if dyn_training:
+            dyn_training.create_model(
+                self.state_fd, self.action_fd)
+        self.dyn_training = dyn_training
+        self.policy.setup(self.state_d, self.action_fd, self.env.action_space, model_ready=(dyn_training is None))        
+        self.state_reward = state_reward
+        if learn_config:
+            self.dyntrain_ep, self.kp, self.gamma = learn_config
+        # self.policy_optimizer = policy_optimizer
+
+    def sample_initial(self):
+        # default sampling method
+        sample = self.env.observation_space.sample()
+        return tf.convert_to_tensor(sample) 
+    
+    def dyn_feature(self, state0, action0):
+        s0 = tf.reshape(state0, self.state_fd)
+        a0 = tf.reshape(action0, self.action_fd)
+        feature = tf.concat([s0, a0], axis=0)
+        return feature
+    
+    def dyn_target(self, state1):
+        target = tf.reshape(state1, self.state_fd)
+        return target
+        
+    def execute(self):
+        all_states, all_actions = super().execute()
+        features = []
+        targets = []
+        for s in range(len(all_states)-1):
+            feature = self.dyn_feature(all_states[s], all_actions[s])
+            target = self.dyn_target(all_states[s+1])
+            features.append(feature)
+            targets.append(target)
+        return tf.convert_to_tensor(features),tf.convert_to_tensor(targets)
+
+    def k_particles(self):
+        # create k random bnn weights and k random inputs
+        self.models = []
+        samples = []
+        bnn = self.dyn_training.optimizer.result()
+        for i in range(self.kp):
+            bnn._sample_weights()
+            self.models.append(copy.deepcopy(bnn._model))
+            samples.append(self.sample_initial())
+        return tf.convert_to_tensor(samples) 
+    
+    def forward(self, samples):  
+        ys = []      
+        actions = []
+        for i in range(self.kp):
+            state = samples[i]
+            action = self.policy.act(state, training=True) 
+            actions.append(action)
+            feature = self.dyn_feature(state, action)
+            y = self.models[i](tf.reshape(feature, shape=(1,-1)))
+            ys.append(tf.reshape(y, shape=(-1,)))
+        ys = tf.convert_to_tensor(ys)
+        ymean = tf.math.reduce_mean(ys, axis=0)
+        ystd = tf.math.reduce_std(ys, axis=0)
+        dtbn = tfp.distributions.Normal(ymean, ystd)
+        new_states = []
+        for i in range(self.kp):
+            x = dtbn.sample()
+            new_states.append(x)
+        return ys, actions, tf.convert_to_tensor(new_states) 
+        
+    def t_reward(self, ys, actions, t):
+        k_rew = 0
+        for i in range(self.kp):
+            # if calculating cost, use negative state reward
+            k_rew += self.state_reward(ys[i], actions[i], t)
+        exp_rew = k_rew / self.kp
+        return exp_rew
+
+    def learn(self, nb_epochs, record_file):
+        def step(ep, check_converge=False):
+            print(&#34;&gt;&gt;Learning epoch&#34;, ep)
+            # train dynamic model using transition dataset
+            xs, ys = self.execute()
+            self.dyn_training.train(xs, ys, self.state_fd[0], self.dyntrain_ep)
+            # k sample inputs and k dynamic bnn
+            states = self.k_particles()
+            # predict trajectory and calculate gradient
+            discount = 1
+            tot_grad = None
+            tot_loss = 0
+            prev_tmark = 0
+            for t in range(self.horizon):
+                with tf.GradientTape(persistent=True) as tape:
+                    ys, actions, new_states = self.forward(states)
+                    l = -self.t_reward(ys, actions, t)
+                    loss = tf.fill([1], l)
+                grad = tape.gradient(loss, self.policy.network.trainable_variables)
+                tmark = int(10*t/self.horizon)
+                if tmark &gt; prev_tmark and tmark % 2 == 0:
+                    print(&#34;Time step: &#34;+str(t)+&#34;/&#34;+str(self.horizon))
+                prev_tmark = tmark
+                if not tot_grad:
+                    tot_grad = grad
+                    tot_loss = l
+                elif None not in grad: 
+                    for g in range(len(grad)):
+                        tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
+                    tot_loss += l * discount
+                discount *= self.gamma
+                states = new_states
+            f = open(record_file, &#34;a&#34;)
+            f.write(&#34;Learning epoch &#34;+str(ep)+&#34;, total loss: &#34;+str(tot_loss)+&#34;\n&#34;)
+            if None in tot_grad:
+                f.write(&#34;Invalid gradient!\n&#34;)
+                f.close()
+                return 
+            for g in range(len(tot_grad)):
+                f.write(&#34;gradient &#34;+str(g)+&#34;\n&#34;)
+                f.write(str(tot_grad[g])+&#34;\n&#34;)
+            f.close()
+            return self.policy.optimize_step(tot_grad, check_converge=check_converge)
+        
+        f = open(record_file, &#34;w&#34;)
+        f.write(&#34;&#34;)
+        f.close()
+        if nb_epochs:
+            # learning for a given number of epochs
+            for ep in range(1, nb_epochs+1):
+                step(ep)
+        else:
+            ep = 1
+            while not step(ep, check_converge=True):
+                # continue learning if policy not converge
+                ep += 1
+                continue
+        print(&#34;--Learning completed--&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="PyAce.dynamics.deep_pilco.complete_model"><code class="name flex">
+<span>def <span class="ident">complete_model</span></span>(<span>template: keras.src.engine.sequential.Sequential, ipd, opd, out_activation)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
+    network = tf.keras.Sequential()
+    network.add(tf.keras.Input(shape=ipd))
+    for layer in template.layers:
+        network.add(layer)
+    network.add(tf.keras.layers.Dense(opd[0], out_activation))   
+    return network</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics"><code class="flex name class">
+<span>class <span class="ident">BayesianDynamics</span></span>
+<span>(</span><span>env: gymnasium.core.Env, horizon: int, dyn_training: <a title="PyAce.dynamics.deep_pilco.DynamicsTraining" href="#PyAce.dynamics.deep_pilco.DynamicsTraining">DynamicsTraining</a>, policy: <a title="PyAce.dynamics.deep_pilco.NNPolicy" href="#PyAce.dynamics.deep_pilco.NNPolicy">NNPolicy</a>, state_reward, learn_config: tuple)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BayesianDynamics(Control):
+    def __init__(
+        self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
+        policy: NNPolicy, state_reward, learn_config:tuple
+    ):
+        super().__init__(env, horizon, policy)
+        if dyn_training:
+            dyn_training.create_model(
+                self.state_fd, self.action_fd)
+        self.dyn_training = dyn_training
+        self.policy.setup(self.state_d, self.action_fd, self.env.action_space, model_ready=(dyn_training is None))        
+        self.state_reward = state_reward
+        if learn_config:
+            self.dyntrain_ep, self.kp, self.gamma = learn_config
+        # self.policy_optimizer = policy_optimizer
+
+    def sample_initial(self):
+        # default sampling method
+        sample = self.env.observation_space.sample()
+        return tf.convert_to_tensor(sample) 
+    
+    def dyn_feature(self, state0, action0):
+        s0 = tf.reshape(state0, self.state_fd)
+        a0 = tf.reshape(action0, self.action_fd)
+        feature = tf.concat([s0, a0], axis=0)
+        return feature
+    
+    def dyn_target(self, state1):
+        target = tf.reshape(state1, self.state_fd)
+        return target
+        
+    def execute(self):
+        all_states, all_actions = super().execute()
+        features = []
+        targets = []
+        for s in range(len(all_states)-1):
+            feature = self.dyn_feature(all_states[s], all_actions[s])
+            target = self.dyn_target(all_states[s+1])
+            features.append(feature)
+            targets.append(target)
+        return tf.convert_to_tensor(features),tf.convert_to_tensor(targets)
+
+    def k_particles(self):
+        # create k random bnn weights and k random inputs
+        self.models = []
+        samples = []
+        bnn = self.dyn_training.optimizer.result()
+        for i in range(self.kp):
+            bnn._sample_weights()
+            self.models.append(copy.deepcopy(bnn._model))
+            samples.append(self.sample_initial())
+        return tf.convert_to_tensor(samples) 
+    
+    def forward(self, samples):  
+        ys = []      
+        actions = []
+        for i in range(self.kp):
+            state = samples[i]
+            action = self.policy.act(state, training=True) 
+            actions.append(action)
+            feature = self.dyn_feature(state, action)
+            y = self.models[i](tf.reshape(feature, shape=(1,-1)))
+            ys.append(tf.reshape(y, shape=(-1,)))
+        ys = tf.convert_to_tensor(ys)
+        ymean = tf.math.reduce_mean(ys, axis=0)
+        ystd = tf.math.reduce_std(ys, axis=0)
+        dtbn = tfp.distributions.Normal(ymean, ystd)
+        new_states = []
+        for i in range(self.kp):
+            x = dtbn.sample()
+            new_states.append(x)
+        return ys, actions, tf.convert_to_tensor(new_states) 
+        
+    def t_reward(self, ys, actions, t):
+        k_rew = 0
+        for i in range(self.kp):
+            # if calculating cost, use negative state reward
+            k_rew += self.state_reward(ys[i], actions[i], t)
+        exp_rew = k_rew / self.kp
+        return exp_rew
+
+    def learn(self, nb_epochs, record_file):
+        def step(ep, check_converge=False):
+            print(&#34;&gt;&gt;Learning epoch&#34;, ep)
+            # train dynamic model using transition dataset
+            xs, ys = self.execute()
+            self.dyn_training.train(xs, ys, self.state_fd[0], self.dyntrain_ep)
+            # k sample inputs and k dynamic bnn
+            states = self.k_particles()
+            # predict trajectory and calculate gradient
+            discount = 1
+            tot_grad = None
+            tot_loss = 0
+            prev_tmark = 0
+            for t in range(self.horizon):
+                with tf.GradientTape(persistent=True) as tape:
+                    ys, actions, new_states = self.forward(states)
+                    l = -self.t_reward(ys, actions, t)
+                    loss = tf.fill([1], l)
+                grad = tape.gradient(loss, self.policy.network.trainable_variables)
+                tmark = int(10*t/self.horizon)
+                if tmark &gt; prev_tmark and tmark % 2 == 0:
+                    print(&#34;Time step: &#34;+str(t)+&#34;/&#34;+str(self.horizon))
+                prev_tmark = tmark
+                if not tot_grad:
+                    tot_grad = grad
+                    tot_loss = l
+                elif None not in grad: 
+                    for g in range(len(grad)):
+                        tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
+                    tot_loss += l * discount
+                discount *= self.gamma
+                states = new_states
+            f = open(record_file, &#34;a&#34;)
+            f.write(&#34;Learning epoch &#34;+str(ep)+&#34;, total loss: &#34;+str(tot_loss)+&#34;\n&#34;)
+            if None in tot_grad:
+                f.write(&#34;Invalid gradient!\n&#34;)
+                f.close()
+                return 
+            for g in range(len(tot_grad)):
+                f.write(&#34;gradient &#34;+str(g)+&#34;\n&#34;)
+                f.write(str(tot_grad[g])+&#34;\n&#34;)
+            f.close()
+            return self.policy.optimize_step(tot_grad, check_converge=check_converge)
+        
+        f = open(record_file, &#34;w&#34;)
+        f.write(&#34;&#34;)
+        f.close()
+        if nb_epochs:
+            # learning for a given number of epochs
+            for ep in range(1, nb_epochs+1):
+                step(ep)
+        else:
+            ep = 1
+            while not step(ep, check_converge=True):
+                # continue learning if policy not converge
+                ep += 1
+                continue
+        print(&#34;--Learning completed--&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PyAce.dynamics.control.Control" href="control.html#PyAce.dynamics.control.Control">Control</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.dyn_feature"><code class="name flex">
+<span>def <span class="ident">dyn_feature</span></span>(<span>self, state0, action0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dyn_feature(self, state0, action0):
+    s0 = tf.reshape(state0, self.state_fd)
+    a0 = tf.reshape(action0, self.action_fd)
+    feature = tf.concat([s0, a0], axis=0)
+    return feature</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.dyn_target"><code class="name flex">
+<span>def <span class="ident">dyn_target</span></span>(<span>self, state1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dyn_target(self, state1):
+    target = tf.reshape(state1, self.state_fd)
+    return target</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.execute"><code class="name flex">
+<span>def <span class="ident">execute</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def execute(self):
+    all_states, all_actions = super().execute()
+    features = []
+    targets = []
+    for s in range(len(all_states)-1):
+        feature = self.dyn_feature(all_states[s], all_actions[s])
+        target = self.dyn_target(all_states[s+1])
+        features.append(feature)
+        targets.append(target)
+    return tf.convert_to_tensor(features),tf.convert_to_tensor(targets)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, samples)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, samples):  
+    ys = []      
+    actions = []
+    for i in range(self.kp):
+        state = samples[i]
+        action = self.policy.act(state, training=True) 
+        actions.append(action)
+        feature = self.dyn_feature(state, action)
+        y = self.models[i](tf.reshape(feature, shape=(1,-1)))
+        ys.append(tf.reshape(y, shape=(-1,)))
+    ys = tf.convert_to_tensor(ys)
+    ymean = tf.math.reduce_mean(ys, axis=0)
+    ystd = tf.math.reduce_std(ys, axis=0)
+    dtbn = tfp.distributions.Normal(ymean, ystd)
+    new_states = []
+    for i in range(self.kp):
+        x = dtbn.sample()
+        new_states.append(x)
+    return ys, actions, tf.convert_to_tensor(new_states) </code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.k_particles"><code class="name flex">
+<span>def <span class="ident">k_particles</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def k_particles(self):
+    # create k random bnn weights and k random inputs
+    self.models = []
+    samples = []
+    bnn = self.dyn_training.optimizer.result()
+    for i in range(self.kp):
+        bnn._sample_weights()
+        self.models.append(copy.deepcopy(bnn._model))
+        samples.append(self.sample_initial())
+    return tf.convert_to_tensor(samples) </code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.learn"><code class="name flex">
+<span>def <span class="ident">learn</span></span>(<span>self, nb_epochs, record_file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def learn(self, nb_epochs, record_file):
+    def step(ep, check_converge=False):
+        print(&#34;&gt;&gt;Learning epoch&#34;, ep)
+        # train dynamic model using transition dataset
+        xs, ys = self.execute()
+        self.dyn_training.train(xs, ys, self.state_fd[0], self.dyntrain_ep)
+        # k sample inputs and k dynamic bnn
+        states = self.k_particles()
+        # predict trajectory and calculate gradient
+        discount = 1
+        tot_grad = None
+        tot_loss = 0
+        prev_tmark = 0
+        for t in range(self.horizon):
+            with tf.GradientTape(persistent=True) as tape:
+                ys, actions, new_states = self.forward(states)
+                l = -self.t_reward(ys, actions, t)
+                loss = tf.fill([1], l)
+            grad = tape.gradient(loss, self.policy.network.trainable_variables)
+            tmark = int(10*t/self.horizon)
+            if tmark &gt; prev_tmark and tmark % 2 == 0:
+                print(&#34;Time step: &#34;+str(t)+&#34;/&#34;+str(self.horizon))
+            prev_tmark = tmark
+            if not tot_grad:
+                tot_grad = grad
+                tot_loss = l
+            elif None not in grad: 
+                for g in range(len(grad)):
+                    tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
+                tot_loss += l * discount
+            discount *= self.gamma
+            states = new_states
+        f = open(record_file, &#34;a&#34;)
+        f.write(&#34;Learning epoch &#34;+str(ep)+&#34;, total loss: &#34;+str(tot_loss)+&#34;\n&#34;)
+        if None in tot_grad:
+            f.write(&#34;Invalid gradient!\n&#34;)
+            f.close()
+            return 
+        for g in range(len(tot_grad)):
+            f.write(&#34;gradient &#34;+str(g)+&#34;\n&#34;)
+            f.write(str(tot_grad[g])+&#34;\n&#34;)
+        f.close()
+        return self.policy.optimize_step(tot_grad, check_converge=check_converge)
+    
+    f = open(record_file, &#34;w&#34;)
+    f.write(&#34;&#34;)
+    f.close()
+    if nb_epochs:
+        # learning for a given number of epochs
+        for ep in range(1, nb_epochs+1):
+            step(ep)
+    else:
+        ep = 1
+        while not step(ep, check_converge=True):
+            # continue learning if policy not converge
+            ep += 1
+            continue
+    print(&#34;--Learning completed--&#34;)</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.sample_initial"><code class="name flex">
+<span>def <span class="ident">sample_initial</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sample_initial(self):
+    # default sampling method
+    sample = self.env.observation_space.sample()
+    return tf.convert_to_tensor(sample) </code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.BayesianDynamics.t_reward"><code class="name flex">
+<span>def <span class="ident">t_reward</span></span>(<span>self, ys, actions, t)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def t_reward(self, ys, actions, t):
+    k_rew = 0
+    for i in range(self.kp):
+        # if calculating cost, use negative state reward
+        k_rew += self.state_reward(ys[i], actions[i], t)
+    exp_rew = k_rew / self.kp
+    return exp_rew</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.DynamicsTraining"><code class="flex name class">
+<span>class <span class="ident">DynamicsTraining</span></span>
+<span>(</span><span>optimizer: PyAce.optimizers.Optimizer.Optimizer, data_specs: dict, template, out_activation, hyperparams)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DynamicsTraining:
+    # learn dynamic model f for state action transitions
+    def __init__(self, optimizer:Optimizer, data_specs:dict, 
+                 template, out_activation, hyperparams):
+        self.optimizer, self.template, self.out_activation = optimizer, template, out_activation
+        self.hyperparams = hyperparams
+        self.data_specs = data_specs
+        self.start = False   
+
+    def create_model(self, sfd, afd):
+        ipd = (sfd[0]+afd[0],)
+        model = complete_model(self.template, ipd, sfd, self.out_activation) 
+        self.model = model   
+
+    def compile_more(self, extra):
+        self.rems = extra
+
+    def train(self, features, targets, opd, nb_epochs):
+        data = tf.data.Dataset.from_tensor_slices((features, targets))
+        train_dataset = Dataset(data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+        # train_dataset = Dataset(
+        #     dataset.train_data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+        if not self.start:
+            self.optimizer.compile(self.hyperparams, self.model.to_json(), 
+                                   train_dataset, **self.rems)
+            self.start = True
+        else:
+            self.optimizer._dataset = train_dataset
+        self.optimizer.train(nb_epochs)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="PyAce.dynamics.deep_pilco.DynamicsTraining.compile_more"><code class="name flex">
+<span>def <span class="ident">compile_more</span></span>(<span>self, extra)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compile_more(self, extra):
+    self.rems = extra</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.DynamicsTraining.create_model"><code class="name flex">
+<span>def <span class="ident">create_model</span></span>(<span>self, sfd, afd)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_model(self, sfd, afd):
+    ipd = (sfd[0]+afd[0],)
+    model = complete_model(self.template, ipd, sfd, self.out_activation) 
+    self.model = model   </code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.DynamicsTraining.train"><code class="name flex">
+<span>def <span class="ident">train</span></span>(<span>self, features, targets, opd, nb_epochs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def train(self, features, targets, opd, nb_epochs):
+    data = tf.data.Dataset.from_tensor_slices((features, targets))
+    train_dataset = Dataset(data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+    # train_dataset = Dataset(
+    #     dataset.train_data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+    if not self.start:
+        self.optimizer.compile(self.hyperparams, self.model.to_json(), 
+                               train_dataset, **self.rems)
+        self.start = True
+    else:
+        self.optimizer._dataset = train_dataset
+    self.optimizer.train(nb_epochs)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.NNPolicy"><code class="flex name class">
+<span>class <span class="ident">NNPolicy</span></span>
+<span>(</span><span>network, out_activation, hyperparams)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NNPolicy(Policy):
+    # using tensorflow neural network for optimizing policy params &#34;phi&#34;
+    def __init__(self, network, out_activation, hyperparams):
+        self.network = network # template network consisting of inner layers
+        self.out_activation = out_activation
+        self.hyperparams = hyperparams
+
+    def setup(self, ipd, opd, aspace:gym.spaces, model_ready=False):
+        if not model_ready:
+            self.network = complete_model(self.network, ipd, opd, self.out_activation)
+        if isinstance(aspace, gym.spaces.Discrete):
+            self.bounded = True
+            self.low = tf.fill(opd, 0.0)
+            self.high = tf.fill(opd, float(aspace.n-1))
+        else:
+            self.bounded = aspace.is_bounded()
+            if self.bounded:
+                self.low = tf.convert_to_tensor(aspace.low)
+                self.high = tf.convert_to_tensor(aspace.high)
+        
+    def optimize_step(self, grad, check_converge=False):
+        print(&#34;Updating policy Valid gradient; length&#34;, len(grad))
+        weights = self.network.get_weights()
+        new_weights = []
+        for i in range(len(grad)):
+            wg = tf.math.multiply(grad[i], self.hyperparams.lr)
+            m = tf.math.subtract(weights[i], wg)
+            new_weights.append(m)
+        self.network.set_weights(new_weights)
+
+        # To be implemented: check convergence
+        if check_converge:
+            converge = False
+            return converge
+
+    def act(self, state, training=False):
+        # convert state to 2D tensor
+        # state = tf.convert_to_tensor(state, dtype=tf.float32)
+        action = self.network(tf.reshape(state, shape=(1, -1)), training=training)
+        action = tf.reshape(action, shape=(-1,))
+        # action needs to be a 1D tensor
+        if self.bounded:
+            action = tf.math.maximum(self.low, action)
+            action = tf.math.minimum(self.high, action)
+        return action</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="PyAce.dynamics.control.Policy" href="control.html#PyAce.dynamics.control.Policy">Policy</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="PyAce.dynamics.deep_pilco.NNPolicy.act"><code class="name flex">
+<span>def <span class="ident">act</span></span>(<span>self, state, training=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def act(self, state, training=False):
+    # convert state to 2D tensor
+    # state = tf.convert_to_tensor(state, dtype=tf.float32)
+    action = self.network(tf.reshape(state, shape=(1, -1)), training=training)
+    action = tf.reshape(action, shape=(-1,))
+    # action needs to be a 1D tensor
+    if self.bounded:
+        action = tf.math.maximum(self.low, action)
+        action = tf.math.minimum(self.high, action)
+    return action</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.NNPolicy.optimize_step"><code class="name flex">
+<span>def <span class="ident">optimize_step</span></span>(<span>self, grad, check_converge=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def optimize_step(self, grad, check_converge=False):
+    print(&#34;Updating policy Valid gradient; length&#34;, len(grad))
+    weights = self.network.get_weights()
+    new_weights = []
+    for i in range(len(grad)):
+        wg = tf.math.multiply(grad[i], self.hyperparams.lr)
+        m = tf.math.subtract(weights[i], wg)
+        new_weights.append(m)
+    self.network.set_weights(new_weights)
+
+    # To be implemented: check convergence
+    if check_converge:
+        converge = False
+        return converge</code></pre>
+</details>
+</dd>
+<dt id="PyAce.dynamics.deep_pilco.NNPolicy.setup"><code class="name flex">
+<span>def <span class="ident">setup</span></span>(<span>self, ipd, opd, aspace: <module 'gymnasium.spaces' from 'C:\\Users\\hasse\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\gymnasium\\spaces\\__init__.py'>, model_ready=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setup(self, ipd, opd, aspace:gym.spaces, model_ready=False):
+    if not model_ready:
+        self.network = complete_model(self.network, ipd, opd, self.out_activation)
+    if isinstance(aspace, gym.spaces.Discrete):
+        self.bounded = True
+        self.low = tf.fill(opd, 0.0)
+        self.high = tf.fill(opd, float(aspace.n-1))
+    else:
+        self.bounded = aspace.is_bounded()
+        if self.bounded:
+            self.low = tf.convert_to_tensor(aspace.low)
+            self.high = tf.convert_to_tensor(aspace.high)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="PyAce.dynamics" href="index.html">PyAce.dynamics</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="PyAce.dynamics.deep_pilco.complete_model" href="#PyAce.dynamics.deep_pilco.complete_model">complete_model</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics" href="#PyAce.dynamics.deep_pilco.BayesianDynamics">BayesianDynamics</a></code></h4>
+<ul class="two-column">
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.dyn_feature" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.dyn_feature">dyn_feature</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.dyn_target" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.dyn_target">dyn_target</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.execute" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.execute">execute</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.forward" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.forward">forward</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.k_particles" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.k_particles">k_particles</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.learn" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.learn">learn</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.sample_initial" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.sample_initial">sample_initial</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.BayesianDynamics.t_reward" href="#PyAce.dynamics.deep_pilco.BayesianDynamics.t_reward">t_reward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PyAce.dynamics.deep_pilco.DynamicsTraining" href="#PyAce.dynamics.deep_pilco.DynamicsTraining">DynamicsTraining</a></code></h4>
+<ul class="">
+<li><code><a title="PyAce.dynamics.deep_pilco.DynamicsTraining.compile_more" href="#PyAce.dynamics.deep_pilco.DynamicsTraining.compile_more">compile_more</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.DynamicsTraining.create_model" href="#PyAce.dynamics.deep_pilco.DynamicsTraining.create_model">create_model</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.DynamicsTraining.train" href="#PyAce.dynamics.deep_pilco.DynamicsTraining.train">train</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="PyAce.dynamics.deep_pilco.NNPolicy" href="#PyAce.dynamics.deep_pilco.NNPolicy">NNPolicy</a></code></h4>
+<ul class="">
+<li><code><a title="PyAce.dynamics.deep_pilco.NNPolicy.act" href="#PyAce.dynamics.deep_pilco.NNPolicy.act">act</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.NNPolicy.optimize_step" href="#PyAce.dynamics.deep_pilco.NNPolicy.optimize_step">optimize_step</a></code></li>
+<li><code><a title="PyAce.dynamics.deep_pilco.NNPolicy.setup" href="#PyAce.dynamics.deep_pilco.NNPolicy.setup">setup</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
