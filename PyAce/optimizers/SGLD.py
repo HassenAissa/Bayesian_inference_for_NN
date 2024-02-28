@@ -72,12 +72,8 @@ class SGLD(Optimizer):
 
                 # update the deviation matrix
                 deviation_matrix = self._dev[bayesian_layer_index]
-                if deviation_matrix.shape[0] == self._hyperparameters.k:
-                    self._dev[bayesian_layer_index] = tf.concat(
-                        (deviation_matrix[:, :self._hyperparameters.k - 1], theta - mean), axis=1)
-                else:
-                    self._dev[bayesian_layer_index] = tf.concat(
-                        (deviation_matrix, theta - mean), axis=1)
+                self._dev[bayesian_layer_index] = tf.concat(
+                    (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
         return loss
