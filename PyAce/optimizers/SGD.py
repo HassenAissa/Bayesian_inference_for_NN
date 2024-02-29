@@ -46,7 +46,7 @@ class SGD(Optimizer):
         
         # if the iterator reaches the end of the dataset, reinitialise the iterator
         if sample is None:
-            print("\n Loss after epoch %s: "%(self._epoch_num), self._running_loss / self._seen_batches)
+            # print("\n Loss after epoch %s: "%(self._epoch_num), self._running_loss / self._seen_batches)
             self._data_iterator = iter(self._dataloader)
             self._seen_batches = 1
             self._running_loss = 0
@@ -113,7 +113,7 @@ class SGD(Optimizer):
                 else: 
                     init_val = tf.concat((init_val, tf.dtypes.cast(tf.reshape(w, (-1)), dtype=tf.float32)), axis=0)
                 size += tf.size(w).numpy()
-            print(init_val)
+            # print(init_val)
             if size != 0:
                 #self._mean.append(tf.zeros((size, 1), dtype=tf.float32))
                 self._mean.append(tf.expand_dims(init_val, axis=-1))
@@ -146,6 +146,9 @@ class SGD(Optimizer):
                                            range(len(self._weight_layers_indices))):
             # tf.debugging.check_numerics(mean, "mean")
             tf_dist =tfp.distributions.Deterministic(tf.reshape(mean, (-1,)))
+            tf_dist = TensorflowProbabilityDistribution(
+                tf_dist
+            )
             start_idx = self._weight_layers_indices[idx]
             end_idx = len(self._base_model.layers) - 1
             if idx + 1 < len(self._weight_layers_indices):

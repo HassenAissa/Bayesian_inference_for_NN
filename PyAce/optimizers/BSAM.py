@@ -22,8 +22,8 @@ class BSAM(Optimizer):
         beta_1: mean learning rate
         beta_2: second moment learning rate
         lam: precision parameter
-        rho:
-        gam:
+        rho: !!!!!!!!!!!!!!!!!
+        gam: !!!!!!!!!!!!!!!!!
         num_data: size of training data
     """
     def __init__(self):
@@ -52,7 +52,7 @@ class BSAM(Optimizer):
         self._total_batches += 1
         # if the iterator reaches the end of the dataset, reinitialise the iterator
         if sample is None:
-            print("\n Loss after epoch %s: "%(self._epoch_num), self._running_loss / self._seen_batches)
+            # print("\n Loss after epoch %s: "%(self._epoch_num), self._running_loss / self._seen_batches)
             self._data_iterator = iter(self._dataloader)
             self._seen_batches = 1
             self._running_loss = 0
@@ -159,8 +159,8 @@ class BSAM(Optimizer):
     def result(self) -> BayesianModel:
         self._mean = []
         self._var = []
-        for x in self._v:
-            print(x.shape)
+        # for x in self._v:
+        #     print(x.shape)
         model = BayesianModel(self._model_config)
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]; size = 0

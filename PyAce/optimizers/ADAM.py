@@ -48,7 +48,7 @@ class ADAM(Optimizer):
         self._total_batches += 1
         # if the iterator reaches the end of the dataset, reinitialise the iterator
         if sample is None:
-            print("\n Loss after epoch %s: "%(self._epoch_num), self._running_loss / self._seen_batches)
+            # print("\n Loss after epoch %s: "%(self._epoch_num), self._running_loss / self._seen_batches)
             self._data_iterator = iter(self._dataloader)
             self._seen_batches = 1
             self._running_loss = 0
