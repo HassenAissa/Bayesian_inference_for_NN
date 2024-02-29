@@ -11,7 +11,17 @@ import copy
 
 
 class ADAM(Optimizer):
-
+    """
+    ADAM is a class that inherits from Optimizer. 
+    This inference methods is taken from the paper : "Fast and Scalable Bayesian Deep Learning by Weight-Perturbation in Adam"
+    https://arxiv.org/pdf/1806.04854.pdf
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one epoch
+        lr: the learning rate
+        beta_1: mean learning rate
+        beta_2: second moment learning rate
+    """
     def __init__(self):
         super().__init__()
         self._n = None
@@ -59,10 +69,10 @@ class ADAM(Optimizer):
         it_val = 0
         for var, grad in zip(self._base_model.trainable_variables, var_grad):
             if grad is not None:
-                self._m[it_val] = self._hyperparameters.beta_1 * self._m[it_val] + (1 - self._hyperparameters.beta_1) * grad
-                self._v[it_val] = self._hyperparameters.beta_2 * self._v[it_val] + (1 - self._hyperparameters.beta_2) * grad**2
-                self._m_hat[it_val] = self._m[it_val] /(1 - (self._hyperparameters.beta_1**self._epoch_num))
-                self._v_hat[it_val] = self._v[it_val] /(1 - (self._hyperparameters.beta_2**self._epoch_num))
+                self._m[it_val] = self._beta_1 * self._m[it_val] + (1 - self._beta_1) * grad
+                self._v[it_val] = self._beta_2 * self._v[it_val] + (1 - self._beta_2) * grad**2
+                self._m_hat[it_val] = self._m[it_val] /(1 - (self._beta_1**self._epoch_num))
+                self._v_hat[it_val] = self._v[it_val] /(1 - (self._beta_2**self._epoch_num))
                 var.assign_sub(self._lr * self._m_hat[it_val]/(tf.sqrt(self._v_hat[it_val]) + 1e-3))  
                 it_val += 1
         
@@ -85,18 +95,23 @@ class ADAM(Optimizer):
             self._weight_layers_indices.append(layer_idx)
                 
     def compile_extra_components(self, **kwargs):
-        self._frequency = self._hyperparameters.frequency
+        """
+            compiles components of subclasses
+            Args:
+                starting_model: this is the starting model for the inference method. It could be a pretrained model.
+        """
         self._lr = self._hyperparameters.lr
-        self._scale = self._hyperparameters.scale
+        self._batch_size = self._hyperparameters.batch_size
+        self._beta_1 = self._hyperparameters.beta_1
+        self._beta_2 = self._hyperparameters.beta_2
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(1))
+                            .batch(self._batch_size))
         self._init_adam_arrays()
         self._data_iterator = iter(self._dataloader)
         self._n = 0
-        self._lam = self._hyperparameters.lam
 
 
     def result(self) -> BayesianModel:
@@ -115,6 +130,9 @@ class ADAM(Optimizer):
             
         for mean, idx in zip(self._mean, range(len(self._weight_layers_indices))):
             tf_dist = tfp.distributions.Deterministic(tf.reshape(mean, (-1,)))
+            tf_dist = TensorflowProbabilityDistribution(
+                tf_dist
+            )
             start_idx = self._weight_layers_indices[idx]
             end_idx = len(self._base_model.layers) - 1
             if idx + 1 < len(self._weight_layers_indices):

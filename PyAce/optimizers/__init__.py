@@ -4,6 +4,10 @@ from .FSVI import FSVI
 from .HMC import HMC
 from .SGLD import SGLD
 from .SWAG import SWAG
+from .ADAM import ADAM
+from .BSAM import BSAM
+from .SGD import SGD
+from .VADAM import VADAM
 
 from os.path import dirname, basename, isfile, join
 import glob

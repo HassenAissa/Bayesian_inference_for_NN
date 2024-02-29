@@ -98,6 +98,9 @@ class SGLD(Optimizer):
         return super().update_parameters_step()
         
     def compile_extra_components(self, **kwargs):
+        """
+            compiles components of subclasses
+        """
         self._batch_size = int(self._hyperparameters.batch_size)
         self._lr = self._hyperparameters.lr
         self._base_model = tf.keras.models.model_from_json(self._model_config)

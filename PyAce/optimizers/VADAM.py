@@ -70,11 +70,11 @@ class VADAM(Optimizer):
         it_val = 0
         for var, grad in zip(self._base_model.trainable_variables, var_grad):
             if grad is not None:
-                self._m[it_val] = self._hyperparameters.beta_1 * self._m[it_val] 
-                self._m[it_val] += (1 - self._hyperparameters.beta_1) * (grad + (self._lam * var/self._num_data))
-                self._v[it_val] = self._hyperparameters.beta_2 * self._v[it_val] + (1 - self._hyperparameters.beta_2) * grad**2
-                self._m_hat[it_val] = self._m[it_val] /(1 - (self._hyperparameters.beta_1**self._epoch_num))
-                self._v_hat[it_val] = self._v[it_val] /(1 - (self._hyperparameters.beta_2**self._epoch_num))
+                self._m[it_val] = self._beta_1 * self._m[it_val] 
+                self._m[it_val] += (1 - self._beta_1) * (grad + (self._lam * var/self._num_data))
+                self._v[it_val] = self._beta_2 * self._v[it_val] + (1 - self._beta_2) * grad**2
+                self._m_hat[it_val] = self._m[it_val] /(1 - (self._beta_1**self._epoch_num))
+                self._v_hat[it_val] = self._v[it_val] /(1 - (self._beta_2**self._epoch_num))
                 var.assign_sub(self._lr * self._m_hat[it_val]/(tf.sqrt(self._v_hat[it_val]) + self._lam/self._num_data))  # assign_sub for SGD update
                 it_val += 1
         
@@ -97,21 +97,28 @@ class VADAM(Optimizer):
             self._weight_layers_indices.append(layer_idx)
                 
     def compile_extra_components(self, **kwargs):
+        """
+            compiles components of subclasses
+            Args:
+                starting_model: this is the starting model for the inference method. It could be a pretrained model.
+        """
         self._frequency = self._hyperparameters.frequency
         self._lr = self._hyperparameters.lr
         self._scale = self._hyperparameters.scale
+        self._batch_size = int(self._hyperparameters.batch_size)
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(
-                                int(self._hyperparameters.batch_size)
-                            ))
+                            .batch(self._batch_size))
         self._init_adam_arrays()
         self._data_iterator = iter(self._dataloader)
         self._n = 0
         self._lam = getattr(self._hyperparameters, 'lam', None) if hasattr(self._hyperparameters, 'lam') else self._lam
         self._num_data = self._hyperparameters.num_data
+        self._beta_1 = self._hyperparameters.beta_1
+        self._beta_2 = self._hyperparameters.beta_2
+
         
     def result(self) -> BayesianModel:
         self._mean = []

@@ -79,7 +79,7 @@ class Dataset:
         for imagestr in sorted(os.listdir(dir)):
             if imagestr.endswith('.png'):
                 image = Image.open(os.path.join(dir, imagestr)).convert('L')
-                images.append(np.asarray(image) / 255.)
+                images.append(np.asarray(image))
         return np.array(images)
 
 

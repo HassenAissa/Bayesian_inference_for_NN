@@ -11,7 +11,16 @@ import copy
 
 
 class SGD(Optimizer):
-
+    """
+    SGD is a class that inherits from Optimizer. 
+    This simple inference methods is taken from the paper : "Simple and Scalable Predictive Uncertainty Estimation using Deep Ensemble"
+    https://arxiv.org/pdf/1612.01474.pdf
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one epoch
+        lr: the learning rate
+        frequency: moment update frequency. It could be left to 1 and increased for performance reasons.
+    """
     def __init__(self):
         super().__init__()
         self._n = None
@@ -66,7 +75,7 @@ class SGD(Optimizer):
             if len(layer.trainable_variables) != 0:
                 theta = [tf.reshape(i, (-1, 1)) for i in layer.trainable_variables]
                 theta = tf.reshape(tf.concat(theta, 0), (-1, 1))
-                if self._n % self._hyperparameters.frequency == 0:
+                if self._n % self._frequency == 0:
                     mean = self._mean[bayesian_layer_index]
                     sq_mean = self._sq_mean[bayesian_layer_index]
 
@@ -113,14 +122,19 @@ class SGD(Optimizer):
                 self._weight_layers_indices.append(layer_idx)
                 
     def compile_extra_components(self, **kwargs):
+        """
+            compiles components of subclasses
+            Args:
+                starting_model: this is the starting model for the inference method. It could be a pretrained model.
+        """
         self._frequency = self._hyperparameters.frequency
         self._lr = self._hyperparameters.lr
-        self._scale = self._hyperparameters.scale
+        self._batch_size = self._hyperparameters.batch_size
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(1))
+                            .batch(self._batch_size))
         self._init_sgd_arrays()
         self._data_iterator = iter(self._dataloader)
         self._n = 0
@@ -131,7 +145,6 @@ class SGD(Optimizer):
         for mean, sq_mean, dev, idx in zip(self._mean, self._sq_mean, self._dev,
                                            range(len(self._weight_layers_indices))):
             # tf.debugging.check_numerics(mean, "mean")
-            #TODO add scale
             tf_dist =tfp.distributions.Deterministic(tf.reshape(mean, (-1,)))
             start_idx = self._weight_layers_indices[idx]
             end_idx = len(self._base_model.layers) - 1

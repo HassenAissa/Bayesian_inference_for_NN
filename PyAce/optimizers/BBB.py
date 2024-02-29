@@ -10,6 +10,19 @@ import tensorflow_probability as tfp
 
 
 class BBB(Optimizer):
+
+    """
+    BBB is a class that inherits from Optimizer. 
+    This inference method is taken from the paper : "Weight Uncertainty in Neural Networks"
+    https://arxiv.org/pdf/1505.05424.pdf
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one epoch
+        lr: the learning rate
+        pi: A weight to average between the first and the second prior (only if we have a single prior for the network). If we have a single prior this hyperparameter is ignored. This value should be between 0 and 1.
+        alpha: the scale of the KL divergence in the loss function. It should be between 0 and 1
+    """
+
     def __init__(self):
         super().__init__()
         self._data_iterator = None
@@ -210,6 +223,11 @@ class BBB(Optimizer):
 
 
     def compile_extra_components(self, **kwargs):
+        """
+            Args:
+                prior (GaussianPrior): the prior
+                prior2 (GuassianPrior): second prior used to create a mixture prior weighted with hyperparameter pi
+        """
         self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._prior = kwargs["prior"]
         if "prior2" in kwargs:
@@ -217,7 +235,7 @@ class BBB(Optimizer):
         else:  
             self._prior2 = GaussianPrior(0.0,0.0)
         self._lr = self._hyperparameters.lr
-        self._pi = self._hyperparameters.pi
+        self._pi = getattr(self._hyperparameters, 'pi', None) if hasattr(self._hyperparameters, 'pi') else 1
         self._batch_size = int(self._hyperparameters.batch_size)
         if isinstance(self._prior._mean, int) or isinstance(self._prior._mean, float):
             sign = self._prior._std_dev/abs(self._prior._std_dev)

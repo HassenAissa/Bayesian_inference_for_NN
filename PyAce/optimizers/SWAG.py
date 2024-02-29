@@ -11,6 +11,18 @@ import copy
 
 
 class SWAG(Optimizer):
+    """
+    SWAG is a class that inherits from Optimizer. 
+    This simple inference methods is taken from the paper : "A simple baseline for Bayesian uncertianty in deep learning"
+    https://arxiv.org/pdf/1902.02476.pdf
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one epoch
+        lr: the learning rate
+        k: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account only the last part of the training where we start converging.
+        scale: the scale of the deviation matrix. It should be between 0 and 1
+        frequency: moment update frequency. It could be left to 1 and increased for performance reasons.
+    """
 
     def __init__(self):
         super().__init__()
@@ -82,6 +94,11 @@ class SWAG(Optimizer):
 
 
     def compile_extra_components(self, **kwargs):
+        """
+            compiles components of subclasses
+            Args:
+                starting_model: this is the starting model for the inference method. It could be a pretrained model.
+        """
         self._k = self._hyperparameters.k
         self._frequency = self._hyperparameters.frequency
         self._lr = self._hyperparameters.lr
@@ -115,11 +132,10 @@ class SWAG(Optimizer):
             # tf.debugging.check_numerics(dev, "dev")
             # tf.debugging.check_numerics(mean, "mean")
             # tf.debugging.check_numerics(sq_mean, "sq_meqn")
-            #TODO add scale
             tf_dist = MultivariateNormalDiagPlusLowRank(
                 tf.reshape(mean, (-1,)),
                 tf.reshape(sq_mean - mean ** 2, (-1,)),
-                sqrt((1 / (self._k - 1))) * dev,
+                sqrt((self._scale / (self._k - 1))) * dev,
             )
             start_idx = self._weight_layers_indices[idx]
             end_idx = len(self._base_model.layers) - 1

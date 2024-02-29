@@ -11,7 +11,17 @@ from PyAce.distributions import Sampled
 
 
 class HMC(Optimizer):
-
+    """
+    HMC is an class that inherits from Optimizer
+    This powerful inference method is taken from: "MCMC Using Hamiltonian Dynamics"
+    https://www.mcmchandbook.net/HandbookChapter5.pdf
+    It takes the following hyperparameters:
+    Hyperparameters:
+        m:
+        L:
+        epsilon:
+        
+    """
     def __init__(self):
         super().__init__()
         self._nb_burn_epoch = 10
@@ -33,6 +43,13 @@ class HMC(Optimizer):
         self._current_loss = 0
 
     def compile_extra_components(self, **kwargs):
+        """
+            compiles components of subclasses
+            Args:
+                prior (GaussianPrior): the model priors
+                nb_burn_epochs (int): number of burn epochs
+
+        """
         self._m = self._hyperparameters.m
         self._L = self._hyperparameters.L
         self._epsilon = self._hyperparameters.epsilon

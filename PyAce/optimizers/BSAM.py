@@ -12,7 +12,20 @@ import copy
 
 # Implimentation of: https://arxiv.org/pdf/2210.01620.pdf
 class BSAM(Optimizer):
-
+    """
+    ADAM is a class that inherits from Optimizer. 
+    This inference methods is taken from the paper : ""
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one epoch
+        lr: the learning rate
+        beta_1: mean learning rate
+        beta_2: second moment learning rate
+        lam: precision parameter
+        rho:
+        gam:
+        num_data: size of training data
+    """
     def __init__(self):
         super().__init__()
         self._n = None
@@ -21,7 +34,6 @@ class BSAM(Optimizer):
         self._base_model_optimizer = None
         self._base_model: tf.keras.Model = None
         self._lr = None
-        self._frequency = None
         self._k = None
         self._mean: list[tf.Tensor] = []
         self._sq_mean: list[tf.Tensor] = []
@@ -94,11 +106,11 @@ class BSAM(Optimizer):
                 #print("NORMS: ")
                 #print(tf.norm(grad))
                 
-                self._m[it_val] = self._hyperparameters.beta_1 * self._m[it_val] 
-                self._m[it_val] += (1 - self._hyperparameters.beta_1) * (grad + (self._lam * var))
+                self._m[it_val] = self._beta_1 * self._m[it_val] 
+                self._m[it_val] += (1 - self._beta_1) * (grad + (self._lam * var))
                 
-                self._v[it_val] = self._hyperparameters.beta_2 * self._v[it_val] 
-                self._v[it_val] += (1 - self._hyperparameters.beta_2) * (tf.sqrt(self._v[it_val]) * tf.abs(orig_grads[it_val] + self._lam + self._gam))
+                self._v[it_val] = self._beta_2 * self._v[it_val] 
+                self._v[it_val] += (1 - self._beta_2) * (tf.sqrt(self._v[it_val]) * tf.abs(orig_grads[it_val] + self._lam + self._gam))
                 
                 var.assign_sub(self._lr * self._m[it_val]/self._v[it_val])  
                 it_val += 1
@@ -122,14 +134,20 @@ class BSAM(Optimizer):
             self._weight_layers_indices.append(layer_idx)
                 
     def compile_extra_components(self, **kwargs):
-        self._frequency = self._hyperparameters.frequency
+        """
+            compiles components of subclasses
+            Args:
+                starting_model: this is the starting model for the inference method. It could be a pretrained model.
+        """
         self._lr = self._hyperparameters.lr
-        self._scale = self._hyperparameters.scale
+        self._beta_1 = self._hyperparameters.beta_1
+        self._beta_2 = self._hyperparameters.beta_2
+        self._batch_size = self._hyperparameters.batch_size
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._dataloader = (self._dataset.training_dataset()
                             .shuffle(self._dataset.training_dataset().cardinality())
-                            .batch(1))
+                            .batch(self._batch_size))
         self._init_adam_arrays()
         self._data_iterator = iter(self._dataloader)
         self._n = 0

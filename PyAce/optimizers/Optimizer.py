@@ -22,7 +22,6 @@ class Optimizer(ABC):
     @abstractmethod
     def step(self, save_document_path=None):
         """
-        TODO : Add loss return signature
         Performs one step of the training
 
         Args:
@@ -66,7 +65,7 @@ class Optimizer(ABC):
     @abstractmethod
     def compile_extra_components(self, **kwargs):
         """
-        used to compile components of subclasses
+            compiles components of subclasses
         """
         pass
 
