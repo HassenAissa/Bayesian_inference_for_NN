@@ -23,13 +23,13 @@ class Dataset:
     valid_data: tf.data.Dataset
     size: int
 
-    def __init__(self, 
-                 dataset, loss, likelihoodModel="Classification", 
-                 load_images = False,
+    def __init__(self,
+                 dataset, loss, likelihoodModel="Classification",
+                 load_images=False,
                  target_dim=1,
-                 feature_normalisation=False, label_normalisation = False,
+                 feature_normalisation=False, label_normalisation=False,
                  train_proportion=0.8,
-                 test_proportion=0.1,valid_proportion=0.1):
+                 test_proportion=0.1, valid_proportion=0.1):
         """
         constructor of a dataset
 
@@ -58,11 +58,11 @@ class Dataset:
             self._init_from_tf_dataset(dataset)
         elif (isinstance(dataset, tf.data.Dataset)):
             self._init_from_tf_dataset(dataset)
-        elif(isinstance(dataset, pd.DataFrame)):
-            self._init_from_dataframe(dataset) 
-        elif(isinstance(dataset, str) and load_images == False):
+        elif (isinstance(dataset, pd.DataFrame)):
+            self._init_from_dataframe(dataset)
+        elif (isinstance(dataset, str) and load_images == False):
             self._init_from_csv(dataset)
-        elif(isinstance(dataset, str) and load_images == True):
+        elif (isinstance(dataset, str) and load_images == True):
             input, label = self._load_images_and_csv(dataset)
             dataset = tf.data.Dataset.from_tensor_slices((input, label))
             self._init_from_tf_dataset(dataset)
@@ -82,7 +82,6 @@ class Dataset:
                 images.append(np.asarray(image))
         return np.array(images)
 
-
     def _load_images_and_csv(self, directory):
         """
         Return the dataset as numpy arrays.
@@ -96,7 +95,7 @@ class Dataset:
         images = self._load_images_from_directory(os.path.join(directory, 'images'))
         labels = np.loadtxt(os.path.join(directory, 'labels.csv'), dtype=int)
         return images, labels
-        
+
     def _init_from_tf_dataset(self, dataset: tf.data.Dataset):
         dataset = dataset.shuffle(dataset.cardinality())
         self.size = tf.data.experimental.cardinality(dataset).numpy()
@@ -108,7 +107,7 @@ class Dataset:
         self.valid_data = self.test_data.skip(self.test_size)
         self.test_data = self.test_data.take(self.test_size)
 
-    def _init_from_dataframe(self, dataframe: pd.DataFrame):            
+    def _init_from_dataframe(self, dataframe: pd.DataFrame):
         features = dataframe.iloc[:, :-self.target_dim]
         targets = dataframe.iloc[:, -self.target_dim:]
         dataset = tf.data.Dataset.from_tensor_slices((features.values, targets.values))
@@ -127,7 +126,7 @@ class Dataset:
             tf.data.Dataset: the training dataset
         """
         return self.train_data
-    
+
     def loss(self):
         """
         returns the loss function to be used on the dataset
@@ -136,45 +135,40 @@ class Dataset:
             tf.keras.losses: the loss function
         """
         return self._loss
-    
+
     def input_shape(self):
         return next(iter(self.train_data))[0].shape
 
-    def _normalise_feature(self, x,y, mean, std):
-        return ((x-mean)/std, y)
-    
-    def _normalise_label(self, x,y, mean, std):
-        return (x, (y-mean)/std)
-    
+    def _normalise_feature(self, x, y, mean, std):
+        return ((x - mean) / std, y)
+
+    def _normalise_label(self, x, y, mean, std):
+        return (x, (y - mean) / std)
+
     def label_normalisation(self):
         if self.likelihood_model == "Regression":
-            input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy()/10)))
+            input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy() / 10)))
             self._label_mean = tf.reduce_mean(label)
-            self._label_std = tf.math.reduce_std(tf.cast(label, dtype = tf.float64))
+            self._label_std = tf.math.reduce_std(tf.cast(label, dtype=tf.float64))
             self.train_data = self.train_data.map(
-                lambda x,y: self._normalise_label(x,y, self._label_mean,self._label_std+1e-8))
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8))
             self.valid_data = self.valid_data.map(
-                lambda x,y: self._normalise_label(x,y, self._label_mean,self._label_std+1e-8))
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8))
             self.test_data = self.test_data.map(
-                lambda x,y: self._normalise_label(x,y, self._label_mean,self._label_std+1e-8))
-    
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8))
+
     def feature_normalisation(self):
         """
         normalises the dataset
         """
         if self.likelihood_model == "Regression":
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy())))
-            mean = tf.reduce_mean(input, axis = 0)
-            std = tf.math.reduce_std(tf.cast(input, dtype = tf.float64), axis = 0)
-            self.train_data = self.train_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
-            self.valid_data = self.valid_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
-            self.test_data = self.test_data.map(lambda x,y: self._normalise_feature(x,y,mean,std+1e-8))
+            mean = tf.reduce_mean(input, axis=0)
+            std = tf.math.reduce_std(tf.cast(input, dtype=tf.float64), axis=0)
+            self.train_data = self.train_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8))
+            self.valid_data = self.valid_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8))
+            self.test_data = self.test_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8))
         else:
-            self.train_data = self.train_data.map(lambda x,y: (x/255,y))
-            self.valid_data = self.valid_data.map(lambda x,y: (x/255,y))
-            self.test_data = self.test_data.map(lambda x,y: (x/255,y))
-
-
-        
-
-    
+            self.train_data = self.train_data.map(lambda x, y: (x / 255, y))
+            self.valid_data = self.valid_data.map(lambda x, y: (x / 255, y))
+            self.test_data = self.test_data.map(lambda x, y: (x / 255, y))
