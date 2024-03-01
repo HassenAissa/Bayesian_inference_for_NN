@@ -8,6 +8,7 @@ from . import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy
+import numpy as np
 
 # lr_func kwarg represents the learning rate for each step
 class SGLD(Optimizer):
@@ -18,6 +19,9 @@ class SGLD(Optimizer):
         self._dataloader = None
         self._base_model_optimizer = None
         self._base_model: tf.keras.Model = None
+        self._lr_upper = None
+        self._lr_lower = None
+        self._lr_gamma = None
         self._lr = None
         self._mean: list[tf.Tensor] = []
         self._sum = 0
@@ -94,6 +98,9 @@ class SGLD(Optimizer):
                 self._dev.append(tf.zeros((size, 0), dtype=tf.float32))
                 self._weight_layers_indices.append(layer_idx)
 
+    def _init_sgld_lr(self):
+        self._lr = lambda step: self._lr_a * np.power((self._lr_b+step),-self._lr_gamma)
+
     def update_parameters_step(self):
         return super().update_parameters_step()
         
@@ -102,7 +109,10 @@ class SGLD(Optimizer):
             compiles components of subclasses
         """
         self._batch_size = int(self._hyperparameters.batch_size)
-        self._lr = self._hyperparameters.lr
+        self._lr_a = self._hyperparameters.lr[0]
+        self._lr_b = self._hyperparameters.lr[1]
+        self._lr_gamma = self._hyperparameters.lr[2]
+        self._init_sgld_lr()
         self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._dataset_setup()
         self._init_arrays()
