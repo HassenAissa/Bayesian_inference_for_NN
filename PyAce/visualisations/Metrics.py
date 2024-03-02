@@ -5,7 +5,7 @@ import sklearn.metrics as skmet
 import tensorflow as tf
 import os
 import sklearn as sk
-
+import tensorflow_probability as tfp
 
 class Metrics():
     """
@@ -56,6 +56,7 @@ class Metrics():
             self.rmse(nb_boundaries, save_path)
             self.mae(nb_boundaries, save_path)
             self.r2(nb_boundaries, save_path)
+            self.log_likeliood(nb_boundaries, save_path)
 
             
         elif self._dataset.likelihood_model == "Classification":
@@ -104,12 +105,14 @@ class Metrics():
         print("R2 score: {}".format(res))
         return res
 
-    # def log_likeliood(self, nb_boundaries: int, save_path = None):
-    #     input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
-    #     y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
-    #     self._save(save_path, "log_likelihood", res)
-    #     print("log likelihood: {}".format(res))
-    #     return res   
+    def log_likeliood(self, nb_boundaries: int, save_path = None):
+        input, y_true = next(iter(self._dataset.valid_data.batch(self._dataset.valid_data.cardinality())))
+        y_samples, y_pred, y_true, input = self._get_predictions(input, nb_boundaries, y_true)
+        guassian_distribution = tfp.distributions.Normal(tf.cast(y_true, dtype = y_pred.dtype), tf.ones_like(y_true, dtype = y_pred.dtype))
+        res = tf.reduce_mean(guassian_distribution.log_prob(y_pred))
+        self._save(save_path, "log_likelihood", res)
+        print("log likelihood: {}".format(res))
+        return res   
             
         
     # Classification performance metrics

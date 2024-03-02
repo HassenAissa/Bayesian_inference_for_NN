@@ -82,7 +82,7 @@ class SWAG(Optimizer):
 
                     # update the deviation matrix
                     deviation_matrix = self._dev[bayesian_layer_index]
-                    if deviation_matrix.shape[0] == self._hyperparameters.k:
+                    if deviation_matrix.shape[1] == self._hyperparameters.k:
                         self._dev[bayesian_layer_index] = tf.concat(
                             (deviation_matrix[:, :self._hyperparameters.k - 1], theta - mean), axis=1)
                     else:

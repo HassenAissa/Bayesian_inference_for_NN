@@ -56,7 +56,7 @@ class BBB(Optimizer):
             tf.Tensor: the likelihood
         """
         guassian_distribution = tfp.distributions.Normal(mean, tf.math.softplus(std_dev))
-        return tf.reduce_mean(guassian_distribution.log_prob(weights))
+        return tf.reduce_sum(guassian_distribution.log_prob(weights))
 
     def _prior_guassian_likelihood(self):
         """
