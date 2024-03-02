@@ -12,6 +12,12 @@ import sklearn as sk
 
 
 class Plotter:
+    """
+        a class giving visualisation tools for performance analysis of a model over a dataset
+        Args:
+            model (BayesianModel): trained model that will make the predictions
+            dataset (Dataset): the dataset on which to calculate the metrics
+    """
     def __init__(self, model: BayesianModel, dataset: Dataset):
         self._dataset = dataset
         self._model: BayesianModel = model
@@ -125,6 +131,17 @@ class Plotter:
         return dim1, dim2, grid_x_augmented
     
     def roc_one_vs_rest(self, n_samples = 100, label_of_interest: int = 0, n_boundaries = 10, data_type = "test"):
+        """plots the ROC curve in a one vs the rest fashion
+
+        Args:
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            label_of_interest (int, optional): The label that will be opposed to the other for ROC calculation. Defaults to 0.
+            n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation. Defaults to 10.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+
+        Raises:
+            ValueError: when the method is called for other than a classification problem
+        """
         if self._dataset.likelihood_model != "Classification":
             raise ValueError("ROC can only be plotted for Classification")  
         x,y_true = self._get_x_y(n_samples, data_type)
@@ -144,27 +161,24 @@ class Plotter:
         )
         plt.show()
 
-    # def calibration_curve(self, nb_bins = 5, n_samples = 100, label_of_interest: int = 0, n_boundaries = 10, data_type = "test"):
-    #     if self._dataset.likelihood_model != "Classification":
-    #         raise ValueError("ROC can only be plotted for Classification")  
-    #     x,y_true = self._get_x_y(n_samples, data_type)
-    #     y_samples, y_pred, y_true = self._get_predictions(x, n_boundaries, y_true)
-    #     one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)   
-    #     _, mean_pred = sk.calibration.calibration_curve(
-    #                 one_hot_y_true[:, label_of_interest],
-    #                 y_pred[:, label_of_interest],
-    #                 n_bins = nb_bins)  
-    #     step = 1/nb_bins
-    #     x_ticks = [str((round(step*n,2), round(step*(1+n),2))) for n in range(nb_bins)]
-    #     plt.bar(x_ticks, mean_pred, color = "green", width = 0.5)
-    #     plt.xlabel("Calibration curve")
-    #     plt.ylabel("mean predicted probability in each bin")
-    #     plt.title("probability bins")
-    #     # plt.axline((0,0), slope = 1)
-    #     plt.show()
-    
-    def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=10, n_samples=100,
+   
+    def plot_decision_boundaries(self, dimension=2, granularity=1e-2, n_boundaries=30, n_samples=100,
                                  data_type="test", un_zoom_level=0.2, save_path=None):
+        """plots the n_boundaries decision boundaries for a classification task
+
+        Args:
+            dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
+            granularity (_type_, optional): _description_. Defaults to 1e-2.
+            n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+            un_zoom_level (float, optional): The zoom level for the plot. Defaults to 0.2.
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+
+        Raises:
+            ValueError: when the method is called for other than a classification problem
+
+        """
         if self._dataset.likelihood_model != "Classification":
             raise ValueError("Decision boundary can only be plotted for Classification")
         x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
@@ -181,6 +195,20 @@ class Plotter:
                               n_samples=100, data_type="test", uncertainty_threshold=0.8,
                               un_zoom_level=0.2,
                               save_path=None):
+        """plots the uncertainty area for a classification task
+
+        Args:
+            dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
+            granularity (float, optional): _description_. Defaults to 1e-2.
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+            uncertainty_threshold (float, optional): the threshold below which we consider the prediction uncertain. Defaults to 0.8.
+            un_zoom_level (float, optional): The zoom level for the plot. Defaults to 0.2.
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+
+        Raises:
+            ValueError: when the method is called for other than a classification problem
+        """
         if self._dataset.likelihood_model != "Classification":
             raise ValueError("Uncertainty area can only be plotted for Classification")
         x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
@@ -191,11 +219,19 @@ class Plotter:
             self._save(save_path, "uncertainty_area") if save_path else plt.show()
 
 
-    def regression_uncertainty(self, data_type="test", n_samples = 100, n_boundaries = 100, save_path=None) -> tuple:
-        # For classification, we might use the entropy of the predicted probabilities
-        # as a measure of aleatoric uncertainty and variance of multiple stochastic
-        # forward passes as epistemic uncertainty.
-        # Assuming predict returns a distribution over classes for each sample
+    def regression_uncertainty(self, n_boundaries = 30, n_samples = 100, data_type="test", save_path=None) -> tuple:
+        """Plots the epistemic uncertainty for a regression problem
+
+        Args:
+            n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+
+        Raises:
+            ValueError: when the method is called for other than a regression dataset
+
+        """
         if self._dataset.likelihood_model == "Regression":
             x,y_true = self._get_x_y(n_samples, data_type)
             y_samples, y_pred, y_true,x = self._get_predictions(x, n_boundaries, y_true, data_type)
@@ -213,11 +249,26 @@ class Plotter:
             plt.ylabel('Pred-True difference')
             self._save(save_path, "epistemic_uncertainty") if save_path else plt.show()
         else:
-            raise Exception("regression uncertainty cannot be computed for classification problems")
+            raise ValueError("regression uncertainty cannot be computed for other than regression problems")
 
     
 
-    def confusion_matrix(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
+    def confusion_matrix(self, n_boundaries = 30, n_samples=100, data_type="test",  save_path=None):
+        """Plots the confusion matrix for a classification problem
+
+        Args:
+            n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+
+        Raises:
+            ValueError: when the method is called for other than a classification problem
+
+        """
+        if self._dataset.likelihood_model != "Classification":
+            raise ValueError("Confusion matrix cannot be computed for other than classification problems")
+
         x,y_true = self._get_x_y(n_samples, data_type)
         y_samples, y_pred, y_true,x = self._get_predictions(x, n_boundaries, y_true, data_type)
         y_pred_labels = tf.argmax(y_pred, axis=1)
@@ -226,7 +277,16 @@ class Plotter:
         self._save(save_path, "confusion_matrix") if save_path else plt.show()
             
 
-    def compare_prediction_to_target(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
+    def compare_prediction_to_target(self, n_boundaries = 30, n_samples=100, data_type="test", save_path=None):
+        """
+        Plots a comparision between the true values or labels and the predicitions for both classification and regression problems.
+
+        Args:
+            n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+        """
         x,y_true = self._get_x_y(n_samples, data_type)
         y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true, data_type)
         if self._dataset.likelihood_model == "Regression":
@@ -279,7 +339,19 @@ class Plotter:
         plt.title('First Three Dimensions of Projected True Data (left) VS Predicted Data (right) After Applying PCA')
         self._save(save_path, "comparison_pred_true") if save_path else plt.show()
 
-    def entropy(self, n_samples=100, data_type="test", n_boundaries = 100, save_path=None):
+    def entropy(self, n_boundaries = 30, n_samples=100, data_type="test", save_path=None):
+        """Plots the entropy over the prediciton probabilities for a classification problem
+
+        Args:
+            n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
+            n_samples (int, optional): number of samples from the dataset. Defaults to 100.
+            data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+
+        Raises:
+            ValueError: when the method is called for other than a classification problem
+
+        """
         x,y_true = self._get_x_y(n_samples, data_type)
         y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true, data_type)
         if self._dataset.likelihood_model == "Classification":
@@ -297,7 +369,13 @@ class Plotter:
         
 
 
-    def learning_diagnostics(self, loss_file, save_path=None):
+    def learning_diagnostics(self, loss_file: str, save_path=None):
+        """plots the evolution of the loss function during the training. The losses should be saved inside a file.
+
+        Args:
+            loss_file (str): The path to the file with the training losses
+            save_path (string, optional): Path to folder in which a report folder will be created and sotres the plots. Defaults to None.
+        """
         if loss_file != None:
             losses = np.loadtxt(loss_file)
             plt.plot(losses)
