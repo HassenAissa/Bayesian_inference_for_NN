@@ -49,10 +49,7 @@ class SGLD(Optimizer):
         var_grad = tape.gradient(loss, self._base_model.trainable_variables)
         for var, grad in zip(self._base_model.trainable_variables, var_grad):
             if grad is not None:
-                noise = tfp.distributions.Normal(
-                        tf.zeros(grad.shape),
-                        tf.ones(grad.shape) / sqrt(self._lr(self._n))
-                    ).sample()
+                noise = tf.random.normal(shape=grad.shape, mean = 0.0, stddev=self._lr(self._n))
                 var.assign_add(-self._lr(self._n) * (grad + noise)) 
 
         bayesian_layer_index = 0
@@ -80,8 +77,7 @@ class SGLD(Optimizer):
                     (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
-        return loss
-        
+        return self._running_loss / self._n        
         
     def _init_arrays(self):
         """
@@ -99,7 +95,18 @@ class SGLD(Optimizer):
                 self._weight_layers_indices.append(layer_idx)
 
     def _init_sgld_lr(self):
-        self._lr = lambda step: self._lr_a * np.power((self._lr_b+step),-self._lr_gamma)
+        n = self._nb_iterations
+        l_g = np.power(self._lr_lower, 1.0 / self._lr_gamma)
+        u_g = np.power(self._lr_upper, 1.0 / self._lr_gamma)
+        b = -(n * l_g) / (l_g - u_g)
+        a = self._lr_upper * np.power(b, self._lr_gamma)
+        self._lr = lambda step: a * np.power((b+step), -self._lr_gamma)
+
+    def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None,
+              model_save_path: str = None, weights_and_biases_log = False):
+        self._nb_iterations = nb_iterations
+        self._init_sgld_lr()
+        super().train(nb_iterations, loss_save_document_path, model_save_frequency, model_save_path, weights_and_biases_log)
 
     def update_parameters_step(self):
         return super().update_parameters_step()
@@ -109,14 +116,14 @@ class SGLD(Optimizer):
             compiles components of subclasses
         """
         self._batch_size = int(self._hyperparameters.batch_size)
-        self._lr_a = self._hyperparameters.lr[0]
-        self._lr_b = self._hyperparameters.lr[1]
+        self._lr_upper = self._hyperparameters.lr[0]
+        self._lr_lower = self._hyperparameters.lr[1]
         self._lr_gamma = self._hyperparameters.lr[2]
-        self._init_sgld_lr()
         self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._dataset_setup()
         self._init_arrays()
         self._n = 0
+        self._running_loss = 0
 
     def result(self) -> BayesianModel:
         model = BayesianModel(self._model_config)
@@ -141,3 +148,4 @@ class SGLD(Optimizer):
 
             model.apply_distribution(tf_dist, start_idx, start_idx)
         return model
+        
