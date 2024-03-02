@@ -235,10 +235,18 @@ def load_optim(pref):
     print(optim._frequency, optim._k)
     return optim
 
-def plot_task(rewards, states, actions):
+def plot_cart(rewards, states, actions):
     pref = "static/results/"
     ts = range(len(rewards))
     plt.title("Rewards over time")
+    plt.plot(ts, rewards)
+    plt.savefig(pref+"reward.png")
+
+def plot_acb(rewards, states, actions):
+    pref = "static/results/"
+    ts = range(len(rewards))
+    plt.title("Rewards over time")
+    plt.plot()
 
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('time step')
@@ -316,7 +324,15 @@ def plot_task(rewards, states, actions):
     # value = {"a0": {"a1":np.array([1,2])}, "a2":np.array([3,4])}
     # print(array_collector(value), value, array
 
-# from gymnasium import spaces
+# import gymnasium as gym
+# env = gym.make("CartPole")
+# for i in range(10):
+#     print(env.observation_space.sample())
+
+# obs, info = env.reset(options={"lows": "", "highs": ""})
 # # obs = spaces.Box(np.array([1,2]), np.array([5,6]), (2,), int)
 # obs = spaces.Discrete(3)
 # print(obs.dtype(1.2))
+# a = tf.constant(1)
+# print(min(a))
+# print(tf.reshape(a, [1,-1]))
