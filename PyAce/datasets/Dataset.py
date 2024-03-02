@@ -137,6 +137,11 @@ class Dataset:
         return self._loss
 
     def input_shape(self):
+        """gives the input shape for the dataset
+
+        Returns:
+            tuple: The input shape
+        """
         return next(iter(self.train_data))[0].shape
 
     def _normalise_feature(self, x, y, mean, std):
@@ -146,6 +151,9 @@ class Dataset:
         return (x, (y - mean) / std)
 
     def label_normalisation(self):
+        """
+            normalises the dataset labels
+        """
         if self.likelihood_model == "Regression":
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy() / 10)))
             self._label_mean = tf.reduce_mean(label)
@@ -159,7 +167,7 @@ class Dataset:
 
     def feature_normalisation(self):
         """
-        normalises the dataset
+            normalises the dataset features
         """
         if self.likelihood_model == "Regression":
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy())))

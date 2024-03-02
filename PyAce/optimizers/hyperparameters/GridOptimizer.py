@@ -7,6 +7,10 @@ from PyAce.optimizers.hyperparameters.space import Number, Real, Integer
 
 
 class GridOptimizer(HyperparameterOptimizer):
+    """A grid optimizer inheriting from HyperparametersOptimizer. It performs a grid search over the given hyperparameter \
+    possibilities.
+
+    """
     def __init__(self):
         super().__init__()
         self._axes = []
@@ -42,6 +46,11 @@ class GridOptimizer(HyperparameterOptimizer):
                             self._axes.append(sorted(list(set(points))))
 
     def optimize(self, nb_processes: int):
+        """performs the grid search
+
+        Args:
+            nb_processes (int): The maximum number of processes
+        """
         self._results = {}
 
         omega = list(product(*self._axes))
@@ -73,6 +82,11 @@ class GridOptimizer(HyperparameterOptimizer):
                                  completed=str(n_res) + "/" + str(n_omega))
 
     def save(self, path: str):
+        """Saves the results of the hyperparameter optimization.
+
+        Args:
+            path (str): The path to the file in ehich the results will be saved
+        """
         final_res = {"args_name": self._names, "results": self._results}
         with open(path, "w") as file:
             file.write(",".join(self._names)+"\n")
