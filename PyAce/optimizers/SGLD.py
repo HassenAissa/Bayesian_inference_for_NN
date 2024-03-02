@@ -15,6 +15,7 @@ class SGLD(Optimizer):
     def __init__(self):
         super().__init__()
         self._n = None
+        self._running_loss = None
         self._data_iterator = None
         self._dataloader = None
         self._base_model_optimizer = None
@@ -41,6 +42,7 @@ class SGLD(Optimizer):
             predictions = self._base_model(sample, training = True)
             # get the loss
             loss = self._dataset.loss()(label, predictions)
+            self._running_loss += loss
             # save the loss if the path is specified
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
