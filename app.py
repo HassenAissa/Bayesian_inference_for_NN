@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from static.rewards import all_rewards
 from PyAce.datasets.Dataset import Dataset
-from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model
+from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model, RBF
 import PyAce.datasets.utils as dsu, utils as apu
 import tensorflow as tf
 import os, json, pickle, time
@@ -93,11 +93,11 @@ class RLInfo(ModelInfo):
         f = open("static/models/policy/config.json", "r")
         config = json.load(f)
         f.close()
-        rbfu, rbfscale = config["rbfu"], config["rbfscale"]
-        rl.policy_config = {"rbfu": rbfu, "rbfscale": rbfscale}
+        rbfu, rbfgamma = config["rbfu"], config["rbfgamma"]
+        rl.policy_config = {"rbfu": rbfu, "rbfgamma": rbfgamma}
         policy_template = tf.keras.Sequential()
         policy_template.add(
-           tf.keras.layers.experimental.RandomFourierFeatures(output_dim=rbfu, scale=rbfscale)
+           RBF(rbfu, rbfgamma)
         ) 
         policy_nn = complete_model(policy_template, config["ipd"], config["opd"], config["oact"])
         f = open(pref+"policy_nn.pkl", "rb")
@@ -160,7 +160,7 @@ def reinforce():
             actions = ([],[])
             while not done:
                 states.append(observation)
-                a, at = policy.act(tf.reshape(policy.vec_normalize("obs", observation), (1,-1)))
+                a, at = policy.act(tf.reshape(tf.convert_to_tensor(observation), (1,-1)))
                 actions[0].append(a[0])
                 actions[1].append(at[0])
                 # action = action.numpy()
@@ -171,7 +171,8 @@ def reinforce():
                     done = True
                 # You can add a delay here if the visualization is too fast
                 time.sleep(0.02)
-            apu.plot_cart(rewards, states, actions)
+            apu.plot_acb(rewards, states, actions[1])
+            env.close()
             
         return render_template('reinforce.html', options=options, info=rl)
     missing = []
@@ -232,15 +233,15 @@ def reinforce():
         f.write(dyn_config)
         f.close()
     policy_hyp = apu.hyp_get(fm.get("phyp"))
-    rbfu, rbfscale = int(fm.get("rbfu")), fm.get("rbfscale")
-    if rbfscale:
-        rbfscale = int(rbfscale)
+    rbfu, rbfgamma = int(fm.get("rbfu")), fm.get("rbfgamma")
+    if rbfgamma:
+        rbfgamma = int(rbfgamma)
     else:
-        rbfscale = None
-    rl.policy_config = {"rbfu": rbfu, "rbfscale": rbfscale}
+        rbfgamma = None
+    rl.policy_config = {"rbfu": rbfu, "rbfgamma": rbfgamma}
     policy_template = tf.keras.Sequential()
     policy_template.add(
-        tf.keras.layers.experimental.RandomFourierFeatures(output_dim=rbfu, scale=rbfscale)
+        RBF(rbfu,rbfgamma)
     ) 
     policy = NNPolicy(policy_template, policy_hyp)
     dyn_hyp = apu.hyp_get(fm.get("dhyp"))
@@ -256,10 +257,10 @@ def reinforce():
         learn_config=(int(fm.get("dynep")),int(fm.get("npar")),float(fm.get("disc"))) 
         # dynamic epochs, particle number, discount factor
     )
-    if fm.get("mstart"):
-        extra["starting_model"] = dyn_training.model
-    elif fm.get("start_json"):
+    if fm.get("start_json"):
         extra["starting_model"] = apu.optim_mstart(fm, dyn_config)
+    else:
+        extra["starting_model"] = dyn_training.model
     dyn_training.compile_more(extra)
     nb_epochs = int(fm.get("lep"))
     rl.agent.learn(nb_epochs,record_file=record_file)

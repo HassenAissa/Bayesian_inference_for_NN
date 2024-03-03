@@ -1,1 +1,1 @@
-{"learn_config": [32, 32, 0.97], "rew_name": "Acb 2 factors", "horizon": 10, "likelihood": "Regression", "tot_epochs": 4}
+{"learn_config": [50, 32, 0.97], "rew_name": "Acb 2 factors", "horizon": 28, "likelihood": "Regression", "tot_epochs": 7}

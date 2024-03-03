@@ -105,8 +105,9 @@ class Control(ABC):
     def learn(self, nb_epochs, record):
         pass
     
-
 class NNPolicyOptimizer(PolicyOptimizer):
+    pass
+'''
     """Neural network policy optimizer for reinforcement learning
         model: tf.keras.Model - neural network model
         hyperparams: dict - hyperparameters for the optimizer
@@ -151,3 +152,5 @@ class NNPolicyOptimizer(PolicyOptimizer):
         # Check for convergence
         if check_convergence:
             return self.check_convergence(loss)
+
+'''
