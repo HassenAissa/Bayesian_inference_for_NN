@@ -118,9 +118,9 @@ class SGLD(Optimizer):
             compiles components of subclasses
         """
         self._batch_size = int(self._hyperparameters.batch_size)
-        self._lr_upper = self._hyperparameters.lr[0]
-        self._lr_lower = self._hyperparameters.lr[1]
-        self._lr_gamma = self._hyperparameters.lr[2]
+        self._lr_upper = self._hyperparameters.lr_upper
+        self._lr_lower = self._hyperparameters.lr_lower
+        self._lr_gamma = self._hyperparameters.lr_gamma
         self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._dataset_setup()
         self._init_arrays()
