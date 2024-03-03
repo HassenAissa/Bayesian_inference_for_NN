@@ -12,10 +12,8 @@ def runner():
     
     print(">>Start learning")
     # Neural network templates: only contain inner layers; no input/output layers
-    policy_template = tf.keras.Sequential()
-    policy_template.add(
-        tf.keras.layers.experimental.RandomFourierFeatures(output_dim=50)
-    ) 
+    policy_template = tf.keras.Sequential(
+        [tf.keras.layers.experimental.RandomFourierFeatures(output_dim=32)])
     pol_hyp = HyperParameters(lr=1e-2,batch_size=10)
     policy = NNPolicy(policy_template, pol_hyp)
 
@@ -23,19 +21,19 @@ def runner():
     dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
     dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
     dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(16, activation='tanh'))
-    dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=8, scale=1, batch_size=20)
+    dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
+    dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=12, scale=1, batch_size=20)
     dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
         dyntrain_nn, dyn_hyp)
 
     env = gym.make("Acrobot")
     bnn = BayesianDynamics(
         env=env,
-        horizon=25,
+        horizon=32,
         dyn_training=dyn_training,
         policy=policy,
         rew_name="Acb 2 factors", # reward function in static/rewards.py
-        learn_config=(25, 32, 0.95), # dynamic epochs factor, particle number, discount factor
+        learn_config=(50, 32, 0.95), # dynamic epochs factor, particle number, discount factor
     )
     dyn_training.compile_more(extra={"starting_model":dyn_training.model})
 
@@ -78,7 +76,7 @@ def runner():
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     ax2.set_ylabel('Total rewards (cyan line)')
     ax1.plot(ts, rewards, color='c')
-    plt.show()
+    plt.savefig("static/results/reward.png")
     env.close()  # Close the environment when done
 
 # def test_srlz():

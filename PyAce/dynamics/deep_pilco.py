@@ -193,7 +193,7 @@ class BayesianDynamics(Control):
         return exp_rew
 
     def learn(self, nb_epochs, record_file):
-        freq = int(self.horizon / 25)
+        freq = max(int(self.horizon / 25), 1)
         def step(ep, check_converge=False):
             print(">>Learning epoch", ep)
             # train dynamic model using transition dataset

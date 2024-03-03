@@ -19,7 +19,7 @@ class Policy(ABC):  # Policy optimizer
         self.action_d = aspace.shape
         self.action_fd = space_flat(aspace.shape)
         if isinstance(aspace, gym.spaces.Discrete):
-            self.action_fd = (aspace.n,)
+            self.action_fd = (int(aspace.n),)
             self.oact = "softmax"
             self.range = (tf.convert_to_tensor(aspace.start), tf.convert_to_tensor(aspace.start+aspace.n-1))
             self.dtype = tf.int32

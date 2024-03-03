@@ -66,7 +66,7 @@ class RLInfo(ModelInfo):
         self.agent.policy.hyperparams = None
         # policy config
         f = open("static/models/policy/config.json", "w")
-        content = {"ipd": rl.agent.state_d, "opd": rl.agent.action_fd, "oact": rl.agent.policy.oacts[1]}
+        content = {"ipd": rl.agent.state_d, "opd": rl.agent.policy.action_fd, "oact": rl.agent.policy.oact}
         content.update(rl.policy_config)
         json.dump(content, f)
         f.close()
