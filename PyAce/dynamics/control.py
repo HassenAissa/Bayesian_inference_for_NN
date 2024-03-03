@@ -3,66 +3,38 @@ import gymnasium as gym
 import numpy as np
 from abc import ABC, abstractmethod
 
+def space_flat(orig_shape):
+    if orig_shape == ():
+        return (1,)
+    shape = 1
+    for s in orig_shape:
+        shape *= s
+    return (shape,)
+
 class Policy(ABC):  # Policy optimizer
     def __init__(self):
-        self.dtype, self.start, self.range, self.oacts = [],[],[],[]
+        self.dtype, self.range = None, None
     def setup(self, env: gym.Env):
-        ospace, aspace = env.observation_space, env.action_space
-        self.act_dim = aspace.shape
-        for space in [ospace, aspace]:
-            # Use original shapes not flatten
-            self.dtype.append(space.dtype)
-            min_start, max_range, lim = 0,0,5000
-            if isinstance(space, gym.spaces.Discrete):
-                self.start.append(tf.convert_to_tensor(space.start, float))
-                self.range.append(tf.convert_to_tensor(space.n-1, float))
-                min_start, max_range = space.start, space.n-1
-            elif isinstance(space, gym.spaces.Box):
-                low, high = None, None
-                if isinstance(space.low, np.ndarray):
-                    low = tf.convert_to_tensor(space.low, float)
-                else:
-                    low = tf.fill(space.shape, float(space.low))
-                if isinstance(space.high, np.ndarray):
-                    high = tf.convert_to_tensor(space.high, float)
-                else:
-                    high = tf.fill(space.shape, float(space.high))
-                self.start.append(low)
-                rg = tf.subtract(high, low)
-                self.range.append(rg)
-                min_start, max_range = min(low), max(rg)
-
-            oact = "tanh"
-            if max_range > lim:
-                if min_start >= 0:
-                    oact = "relu"
-                else:
-                    oact = "linear"
-            self.oacts.append(oact)
-        print("Output activations", self.oacts)
-
-    def vec_normalize(self, mode, vec:tf.Tensor):
-        m = 0   # mode == "obs"
-        if mode == "act":
-            m = 1
-        if self.oacts[m] != "tanh":
-            return vec
-        diff = tf.math.subtract(tf.cast(vec, float), self.start[m])
-        res = tf.divide(diff, self.range[m]) * 2 - 1    # from -1 to 1, match tanh
-        return res
-
-    def norm_restore(self, mode, norm:tf.Tensor):
-        m = 0   # mode == "obs"
-        if mode == "act":
-            m = 1
-        if self.oacts[m] != "tanh":
-            return norm
-        diff = tf.multiply((norm + 1) / 2, self.range[m])
-        orig = tf.math.add(diff, self.start[m])
-        dtype = self.dtype[m]
-        if tf.cast(1.2, dtype) == 1:
-            orig = tf.cast(tf.round(orig), dtype) 
-        return orig
+        aspace = env.action_space
+        self.action_d = aspace.shape
+        self.action_fd = space_flat(aspace.shape)
+        if isinstance(aspace, gym.spaces.Discrete):
+            self.action_fd = (aspace.n,)
+            self.oact = "softmax"
+            self.range = (tf.convert_to_tensor(aspace.start), tf.convert_to_tensor(aspace.start+aspace.n-1))
+            self.dtype = tf.int32
+        elif isinstance(aspace, gym.spaces.Box):
+            low = None
+            if isinstance(aspace.low, np.ndarray):
+                low = min(aspace.low)
+            else:
+                low = aspace.low
+            if low >= 0:
+                self.oact = "relu"
+            else:
+                self.oact = "linear"
+            self.range = (tf.convert_to_tensor(aspace.low), tf.convert_to_tensor(aspace.high))
+            self.dtype = aspace.dtype
 
     @abstractmethod
     def optimize_step(self, **kwargs):
@@ -90,21 +62,10 @@ class Control(ABC):
     def __init__(self, env:gym.Env, horizon:int, policy:Policy):
         self.env = env
         self.state_d = env.observation_space.shape
-        self.action_d = env.action_space.shape
-        self.action_fd = Control.space_flat(self.action_d)
-        self.state_fd = Control.space_flat(self.state_d)
-        print("Observation and action space/flatten",
-            self.state_d, self.state_fd, self.action_d, self.action_fd)
+        self.state_fd = space_flat(self.state_d)
         self.horizon = horizon
         self.policy = policy
         # self.policy.setup(env)
-    def space_flat(orig_shape):
-        if orig_shape == ():
-            return (1,)
-        shape = 1
-        for s in orig_shape:
-            shape *= s
-        return (shape,)
 
     @abstractmethod
     def sample_initial(self):
@@ -127,18 +88,17 @@ class Control(ABC):
 
     def execute(self):
         # take actions according to policy for n episodes, rest env every time for initial states
-        obs, info = self.env.reset()#options={"low":-0.5, "high":0.5})
-        print("Main trial initial state", obs)
-        state = self.policy.vec_normalize("obs", tf.convert_to_tensor(obs))
-        all_states = [state]
-        all_actions = []
+        state = self.sample_initial()
+        print("Main trial initial state", state)
+        all_states = [tf.convert_to_tensor(state)]
+        all_actions,takes = [],[]
         for t in range(self.horizon):
             actions, action_takes = self.policy.act(tf.reshape(state, (1,-1)))
             state, reward, terminated, truncated, info = self.env.step(action_takes[0].numpy())
-            state = self.policy.vec_normalize("obs", tf.convert_to_tensor(state))
-            all_states.append(state)
+            all_states.append(tf.convert_to_tensor(state))
             all_actions.append(actions[0])
-        print(all_states[:3], all_states[-3:], "\nactions", [a.numpy()[0] for a in all_actions])
+            takes.append(action_takes[0].numpy())
+        print("First 3 states", all_states[:3], "\nLast 3 states", all_states[-3:], "\nactions", takes)
         return all_states, all_actions
     
     @abstractmethod
