@@ -14,16 +14,16 @@ def runner():
     # Neural network templates: only contain inner layers; no input/output layers
     policy_template = tf.keras.Sequential()
     policy_template.add(
-        tf.keras.layers.experimental.RandomFourierFeatures(output_dim=50)
+        tf.keras.layers.Dense(50)
     ) 
-    pol_hyp = HyperParameters(lr=1e-2,batch_size=10)
+    pol_hyp = HyperParameters(lr=1e-2,batch_size=25)
     policy = NNPolicy(policy_template, pol_hyp)
 
     dyntrain_nn = tf.keras.Sequential()
     dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
-    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(16, activation='tanh'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
+    dyntrain_nn.add(tf.keras.layers.Dense(16, activation='linear'))
     dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=8, scale=1, batch_size=20)
     dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
         dyntrain_nn, dyn_hyp)
@@ -57,7 +57,7 @@ def runner():
         # normalize observation -1 to 1 when taking policy; 
         # action take is the actual action taken without normalization
         action, action_take = policy.act(tf.reshape(policy.vec_normalize("obs", observation), (1,-1)))
-        actions[].append(action_take[0])
+        actions.append(action_take[0])
         observation, reward, terminated, truncated, info = env.step(action_take[0].numpy())
         total_reward += reward  # Accumulate the reward
         rewards.append(total_reward)
@@ -81,6 +81,7 @@ def runner():
     plt.show()
     env.close()  # Close the environment when done
 
+runner()
 # def test_srlz():
 #     f = open("static/sessions/rl/continue/loss.pkl", "wb")
 #     pickle.dump(tf.keras.losses.MeanSquaredError(), f)

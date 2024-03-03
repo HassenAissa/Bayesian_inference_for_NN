@@ -102,7 +102,7 @@ class SWAG(Optimizer):
         self._k = int(self._hyperparameters.k)
         self._frequency = int(self._hyperparameters.frequency)
         self._lr = self._hyperparameters.lr
-        self._scale = int(self._hyperparameters.scale)
+        self._scale = self._hyperparameters.scale
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
         self._batch_size = int(self._hyperparameters.batch_size)
