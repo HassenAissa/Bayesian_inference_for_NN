@@ -5,16 +5,13 @@ import numpy as np
 
 class HyperParameters:
     """
-    Kind of a useless class for the moment as it just represents a dict.
-    An instance of parameters needs to be passed to the optimizer
-
-    This class will be used in the future to improve the parameters and do some parameters optimization
-    and analysis on the parameters. It might even allow to do AutoML in the future.
-
-    THIS CLASS IS IMMUTABLE !!!! TRUST ME!
+        This class represents the hyperparameters for an Optimizer
+        Args:
+            batch_size: the batch size. Defaults to 64.
+            **kwargs: the hyperparameters of the Optimizer
     """
 
-    def __init__(self,batch_size = 64, **kwargs):      
+    def __init__(self,batch_size = 64, **kwargs):    
         self._params = copy.deepcopy(kwargs)
         self._params["batch_size"] = batch_size
         self.connectors = "._-"

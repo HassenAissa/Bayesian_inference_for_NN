@@ -22,19 +22,12 @@ class TensorflowProbabilityDistribution(Distribution):
 
     @classmethod
     def __DISTRIBUTION_SERIALIZER_REGISTER(cls):
-        """
-        returns the register of serialisers for tfp distributions
-
-        Returns:
-            dict: the serialiser register
-        """
         return {
 
         }
 
     @classmethod
     def __DEFAULT_BASE_SERIALIZER(cls):
-        # python logic...
         from PyAce.distributions.tf.BaseSerializer import BaseSerializer
         return BaseSerializer()
 

@@ -17,7 +17,7 @@ class SWAG(Optimizer):
     https://arxiv.org/pdf/1902.02476.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         k: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account only the last part of the training where we start converging.
         scale: the scale of the deviation matrix. It should be between 0 and 1
@@ -68,7 +68,7 @@ class SWAG(Optimizer):
             if len(layer.trainable_variables) != 0:
                 theta = [tf.reshape(i, (-1, 1)) for i in layer.trainable_variables]
                 theta = tf.reshape(tf.concat(theta, 0), (-1, 1))
-                if self._n % self._hyperparameters.frequency == 0:
+                if self._n % self._frequency == 0:
                     mean = self._mean[bayesian_layer_index]
                     sq_mean = self._sq_mean[bayesian_layer_index]
 
@@ -82,9 +82,9 @@ class SWAG(Optimizer):
 
                     # update the deviation matrix
                     deviation_matrix = self._dev[bayesian_layer_index]
-                    if deviation_matrix.shape[1] == self._hyperparameters.k:
+                    if deviation_matrix.shape[1] == self._k:
                         self._dev[bayesian_layer_index] = tf.concat(
-                            (deviation_matrix[:, :self._hyperparameters.k - 1], theta - mean), axis=1)
+                            (deviation_matrix[:, :self._k - 1], theta - mean), axis=1)
                     else:
                         self._dev[bayesian_layer_index] = tf.concat(
                             (deviation_matrix, theta - mean), axis=1)
@@ -99,8 +99,8 @@ class SWAG(Optimizer):
             Args:
                 starting_model: this is the starting model for the inference method. It could be a pretrained model.
         """
-        self._k = self._hyperparameters.k
-        self._frequency = self._hyperparameters.frequency
+        self._k = int(self._hyperparameters.k)
+        self._frequency = int(self._hyperparameters.frequency)
         self._lr = self._hyperparameters.lr
         self._scale = self._hyperparameters.scale
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])

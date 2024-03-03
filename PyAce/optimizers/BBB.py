@@ -17,7 +17,7 @@ class BBB(Optimizer):
     https://arxiv.org/pdf/1505.05424.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         pi: A weight to average between the first and the second prior (only if we have a single prior for the network). If we have a single prior this hyperparameter is ignored. This value should be between 0 and 1.
         alpha: the scale of the KL divergence in the loss function. It should be between 0 and 1
@@ -142,7 +142,6 @@ class BBB(Optimizer):
                 predictions
             )
         # get the weight, mean and standard deviation gradients
-        weight_gradients = tape.gradient(likelihood, self._base_model.trainable_variables)
         mean_gradients = tape.gradient(likelihood, self._posterior_mean_list)
         std_dev_gradients = tape.gradient(likelihood, self._posterior_std_dev_list)
 
@@ -164,7 +163,9 @@ class BBB(Optimizer):
 
                 for i in range(len(layer.trainable_variables)):
                     # calculate the new mean of the posterior
-                    mean_gradient = mean_gradients[trainable_layer_index][i]+weight_gradients[gradient_layer_index]
+                    weight_gradients = tape.gradient(likelihood, layer.trainable_variables[i])
+
+                    mean_gradient = mean_gradients[trainable_layer_index][i]+weight_gradients
                     _new_mean_layer_weights.append(
                         self._posterior_mean_list[trainable_layer_index][i]-self._lr*mean_gradient
                     )
@@ -172,14 +173,13 @@ class BBB(Optimizer):
                     posterior_std_dev = self._posterior_std_dev_list[trainable_layer_index][i]
                     noise = noises[gradient_layer_index]
                     std_dev_grad = noise / (1 + tf.math.exp(-posterior_std_dev))
-                    std_dev_grad *= weight_gradients[gradient_layer_index]
+                    std_dev_grad *= weight_gradients
                     std_dev_grad += std_dev_gradients[trainable_layer_index][i]
                     # calculate the new standard deviation of the posterior
                     _new_std_dev_layer_weights.append(
                         posterior_std_dev-self._lr*std_dev_grad
                     )
                     gradient_layer_index += 1
-
                 trainable_layer_index += 1
                 new_posterior_mean_list.append(_new_mean_layer_weights)
                 new_posterior_std_dev_list.append(_new_std_dev_layer_weights)

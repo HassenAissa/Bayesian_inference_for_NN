@@ -17,7 +17,7 @@ class BSAM(Optimizer):
     This inference methods is taken from the paper : ""
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         beta_1: mean learning rate
         beta_2: second moment learning rate

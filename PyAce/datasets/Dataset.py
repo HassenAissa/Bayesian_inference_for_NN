@@ -68,7 +68,10 @@ class Dataset:
             self._init_from_tf_dataset(dataset)
         else:
             raise Exception("Unsupported dataset format")
+        self.train_data= self.train_data.cache()
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
+        self.train_data = self.train_data.prefetch(tf.data.AUTOTUNE)
+
         if (feature_normalisation):
             self.feature_normalisation()
         if (label_normalisation):
@@ -137,6 +140,11 @@ class Dataset:
         return self._loss
 
     def input_shape(self):
+        """gives the input shape for the dataset
+
+        Returns:
+            tuple: The input shape
+        """
         return next(iter(self.train_data))[0].shape
 
     def _normalise_feature(self, x, y, mean, std):
@@ -146,29 +154,32 @@ class Dataset:
         return (x, (y - mean) / std)
 
     def label_normalisation(self):
+        """
+            normalises the dataset labels
+        """
         if self.likelihood_model == "Regression":
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy() / 10)))
             self._label_mean = tf.reduce_mean(label)
             self._label_std = tf.math.reduce_std(tf.cast(label, dtype=tf.float64))
             self.train_data = self.train_data.map(
-                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8))
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
             self.valid_data = self.valid_data.map(
-                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8))
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
             self.test_data = self.test_data.map(
-                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8))
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
 
     def feature_normalisation(self):
         """
-        normalises the dataset
+            normalises the dataset features
         """
         if self.likelihood_model == "Regression":
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy())))
             mean = tf.reduce_mean(input, axis=0)
             std = tf.math.reduce_std(tf.cast(input, dtype=tf.float64), axis=0)
-            self.train_data = self.train_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8))
-            self.valid_data = self.valid_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8))
-            self.test_data = self.test_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8))
+            self.train_data = self.train_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
+            self.valid_data = self.valid_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
+            self.test_data = self.test_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
         else:
-            self.train_data = self.train_data.map(lambda x, y: (x / 255, y))
-            self.valid_data = self.valid_data.map(lambda x, y: (x / 255, y))
-            self.test_data = self.test_data.map(lambda x, y: (x / 255, y))
+            self.train_data = self.train_data.map(lambda x, y: (x / 255, y), num_parallel_calls=tf.data.AUTOTUNE)
+            self.valid_data = self.valid_data.map(lambda x, y: (x / 255, y), num_parallel_calls=tf.data.AUTOTUNE)
+            self.test_data = self.test_data.map(lambda x, y: (x / 255, y), num_parallel_calls=tf.data.AUTOTUNE)

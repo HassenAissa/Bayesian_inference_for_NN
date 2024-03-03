@@ -235,7 +235,8 @@ def load_optim(pref):
     print(optim._frequency, optim._k)
     return optim
 
-def plot_cart(rewards, states, actions):
+def plot_rewards(rewards):
+    plt.clf()
     pref = "static/results/"
     ts = range(len(rewards))
     plt.title("Rewards over time")
@@ -245,25 +246,19 @@ def plot_cart(rewards, states, actions):
 def plot_acb(rewards, states, actions):
     pref = "static/results/"
     ts = range(len(rewards))
-    plt.title("Rewards over time")
-    plt.plot()
-
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('time step')
-    ax1.set_ylabel('state/action norm')
-    for (c, s) in [('b', 0), ('r', 2), ('g', 4), ('c', 5)]:
+    ax1.set_ylabel('angles and actions (black dots)')
+    for (c, s) in [('b', 0), ('r', 2)]:
         ax1.plot(ts, [state[s] for state in states], color=c)
-    ax1.scatter(ts, actions[0], color='k')
+    ax1.scatter(ts, actions, color='k')
     
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    ax2.set_ylabel('actions taken')
-    ax1.scatter(ts, actions[1], color='b')
+    ax2.set_ylabel('speeds')
+    for (c, s) in [('g', 4), ('y', 5)]:
+        ax1.plot(ts, [state[s] for state in states], color=c)
     plt.savefig(pref+"record.png")
-
-    plt.clf()
-    plt.title("Reward over time")
-    plt.plot(ts, rewards)
-    plt.savefig(pref+"reward.png")
+    plot_rewards(rewards)
 
 # def store_optim(optim, pref):
 #     arrays = []
@@ -336,3 +331,5 @@ def plot_acb(rewards, states, actions):
 # a = tf.constant(1)
 # print(min(a))
 # print(tf.reshape(a, [1,-1]))
+# print(tf.math.maximum(tf.constant([1,2]), 2))
+from PyAce.tests.gym_example_1 import runner

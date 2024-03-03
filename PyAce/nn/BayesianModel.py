@@ -10,6 +10,8 @@ from PyAce.distributions import DistributionSerializer
 class BayesianModel:
     """
         a class that represents a trained bayesian model that could predict outputs. It could also be stored and loaded.
+        Args:
+            model_config (str): the json of the network architecture
     """
     def __init__(self, model_config: str):
         self._model_config = model_config
