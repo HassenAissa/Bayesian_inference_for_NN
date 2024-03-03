@@ -17,7 +17,7 @@ class ADAM(Optimizer):
     https://arxiv.org/pdf/1806.04854.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         beta_1: mean learning rate
         beta_2: second moment learning rate

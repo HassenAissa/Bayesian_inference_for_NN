@@ -79,6 +79,7 @@ def runner():
     plt.savefig("static/results/reward.png")
     env.close()  # Close the environment when done
 
+runner()
 # def test_srlz():
 #     f = open("static/sessions/rl/continue/loss.pkl", "wb")
 #     pickle.dump(tf.keras.losses.MeanSquaredError(), f)
