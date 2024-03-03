@@ -17,7 +17,7 @@ class SGD(Optimizer):
     https://arxiv.org/pdf/1612.01474.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         frequency: moment update frequency. It could be left to 1 and increased for performance reasons.
     """

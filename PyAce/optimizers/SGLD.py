@@ -18,7 +18,7 @@ class SGLD(Optimizer):
     https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr_upper: the learning rate at step 0
         lr_lower: the learning rate at the last step
         lr_gamma: controls rate of change of learning rate [0.5, 1.0)

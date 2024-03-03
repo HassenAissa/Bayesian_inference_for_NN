@@ -17,7 +17,7 @@ class SWAG(Optimizer):
     https://arxiv.org/pdf/1902.02476.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         k: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account only the last part of the training where we start converging.
         scale: the scale of the deviation matrix. It should be between 0 and 1
