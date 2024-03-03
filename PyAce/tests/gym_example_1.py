@@ -56,8 +56,8 @@ def runner():
         states.append(observation)
         # normalize observation -1 to 1 when taking policy; 
         # action take is the actual action taken without normalization
-        action, action_take = policy.act(tf.reshape(policy.vec_normalize("obs", observation), (1,-1)))
-        actions[].append(action_take[0])
+        action, action_take = policy.act(tf.reshape(tf.convert_to_tensor(observation), (1,-1)))
+        actions.append(action_take[0])
         observation, reward, terminated, truncated, info = env.step(action_take[0].numpy())
         total_reward += reward  # Accumulate the reward
         rewards.append(total_reward)
