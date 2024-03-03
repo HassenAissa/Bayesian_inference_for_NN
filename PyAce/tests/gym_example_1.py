@@ -9,81 +9,81 @@ from PyAce.optimizers import SWAG
 from PyAce.optimizers.hyperparameters import HyperParameters
 
 def runner():
-    # Set up the environment
-    env = gym.make("Acrobot")
-    x_prev, info = env.reset(seed=42)
-
-    def state_reward(state, action, t):
-        c1, c2, s1, s2 = state[0],state[2],state[1],state[3]
-        height = -c1-(c1*c2-s1*s2)
-        speed = pow(state[4] + state[5]/2, 2)
-        return 100*(height*100+speed*37)
-
+    
     print(">>Start learning")
     # Neural network templates: only contain inner layers; no input/output layers
-    policy_nn = tf.keras.Sequential()
-    policy_nn.add(tf.keras.layers.Dense(32, activation='relu'))
-    policy_nn.add(tf.keras.layers.Dense(8, activation='relu'))
+    policy_template = tf.keras.Sequential()
+    policy_template.add(
+        tf.keras.layers.experimental.RandomFourierFeatures(output_dim=50)
+    ) 
+    pol_hyp = HyperParameters(lr=1e-2,batch_size=10)
+    policy = NNPolicy(policy_template, pol_hyp)
 
     dyntrain_nn = tf.keras.Sequential()
-    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='relu'))
-    dyntrain_nn.add(tf.keras.layers.Dense(16, activation='relu'))
-    hyperparams = HyperParameters(lr=1e-2, k=10, frequency=1, scale=1)
+    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
+    dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
+    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
+    dyntrain_nn.add(tf.keras.layers.Dense(16, activation='tanh'))
+    dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=8, scale=1, batch_size=20)
+    dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
+        dyntrain_nn, dyn_hyp)
 
-    dyn_training = DynamicsTraining(SWAG(), [
-        tf.keras.losses.MeanSquaredError(),"Regression", True],
-        dyntrain_nn, 'relu', hyperparams)
-    nn_policy = NNPolicy(policy_nn, 'relu', hyperparams)
-
+    env = gym.make("Acrobot")
     bnn = BayesianDynamics(
         env=env,
-        horizon=17,
+        horizon=25,
         dyn_training=dyn_training,
-        policy=nn_policy,
-        state_reward=state_reward,
-        learn_config=(64, 32, 0.7), # dynamic epochs, particle number, discount factor
+        policy=policy,
+        rew_name="Acb 2 factors", # reward function in static/rewards.py
+        learn_config=(25, 32, 0.95), # dynamic epochs factor, particle number, discount factor
     )
-    dyn_training.compile_more(starting_model=dyn_training.model)
+    dyn_training.compile_more(extra={"starting_model":dyn_training.model})
 
-    bnn.learn(nb_epochs=5)
-
+    bnn.learn(nb_epochs=5, record_file="static/results/learning.txt")
 
     # Run an interactive demo of the trained policy
     # Create the environment
     env = gym.make("Acrobot", render_mode="human")  # Use "human" render mode for visualization
     observation, info = env.reset(seed=42)
-
-    total_reward = 0
-    t = 0
     done = False
-
     # Run the game loop
     print(">>Start real game")
     plt.title("Accumulative reward over time step")
-    ts = [0]
-    rewards = [0]
+    rewards, total_reward = [], 0
+    states = []
+    actions = []
     while not done:
-        action = tf.reshape(bnn.policy.act(tf.convert_to_tensor(observation)), shape=bnn.action_d)
-        # action = action.numpy()
-        state, reward, terminated, truncated, info = bnn.env.step(tf.cast(action, tf.int32))
+        states.append(observation)
+        # normalize observation -1 to 1 when taking policy; 
+        # action take is the actual action taken without normalization
+        action, action_take = policy.act(tf.reshape(policy.vec_normalize("obs", observation), (1,-1)))
+        actions[1].append(action_take[0])
+        observation, reward, terminated, truncated, info = env.step(action_take[0].numpy())
         total_reward += reward  # Accumulate the reward
-        t += 1
         rewards.append(total_reward)
-        ts.append(t)
         if terminated or truncated:
             done = True
         # You can add a delay here if the visualization is too fast
-        time.sleep(0.05)
+        time.sleep(0.02)
 
     print("--Game finished--")
-    print(f"Total reward: {total_reward}")
-    plt.plot(ts, rewards)
+    ts = range(len(rewards))
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel('time step')
+    ax1.set_ylabel('states (4 lines: b,r,g,y) actions (black dots)')
+    for (c, s) in [('b', 0), ('r', 2), ('g', 4), ('y', 5)]:
+        ax1.plot(ts, [state[s] for state in states], color=c)
+    ax1.scatter(ts, actions, color='k')
+    
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    ax2.set_ylabel('Total rewards (cyan line)')
+    ax1.plot(ts, rewards, color='c')
     plt.show()
     env.close()  # Close the environment when done
 
-def test_srlz():
-    f = open("static/sessions/rl/continue/loss.pkl", "wb")
-    pickle.dump(tf.keras.losses.MeanSquaredError(), f)
-    f.close() 
+# def test_srlz():
+#     f = open("static/sessions/rl/continue/loss.pkl", "wb")
+#     pickle.dump(tf.keras.losses.MeanSquaredError(), f)
+#     f.close() 
 
     

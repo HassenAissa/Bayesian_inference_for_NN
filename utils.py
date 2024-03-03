@@ -336,3 +336,5 @@ def plot_acb(rewards, states, actions):
 # a = tf.constant(1)
 # print(min(a))
 # print(tf.reshape(a, [1,-1]))
+from PyAce.tests.gym_example_1 import runner
+runner()

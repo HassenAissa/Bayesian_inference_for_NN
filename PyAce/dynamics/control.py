@@ -126,8 +126,8 @@ class Control(ABC):
         return tot_rew
 
     def execute(self):
-        # take actions according to policy for n episodes
-        obs, info = self.env.reset()
+        # take actions according to policy for n episodes, rest env every time for initial states
+        obs, info = self.env.reset()#options={"low":-0.5, "high":0.5})
         print("Main trial initial state", obs)
         state = self.policy.vec_normalize("obs", tf.convert_to_tensor(obs))
         all_states = [state]
@@ -138,7 +138,7 @@ class Control(ABC):
             state = self.policy.vec_normalize("obs", tf.convert_to_tensor(state))
             all_states.append(state)
             all_actions.append(actions[0])
-        print([a.numpy()[0] for a in all_actions])
+        print(all_states[:3], all_states[-3:], "\nactions", [a.numpy()[0] for a in all_actions])
         return all_states, all_actions
     
     @abstractmethod

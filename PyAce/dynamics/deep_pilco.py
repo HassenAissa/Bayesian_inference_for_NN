@@ -33,12 +33,8 @@ class NNPolicy(Policy):
         
     def optimize_step(self, grad, check_converge=False):
         weights = self.network.get_weights()
-        for w in weights:
-            print(w.shape)
         new_weights = []
-        print("gradients")
         for i in range(len(grad)):
-            print(grad[i].shape)
             wg = tf.math.multiply(grad[i], self.hyperparams.lr)
             m = tf.math.add(weights[i-len(grad)], wg)
             new_weights.append(m)
@@ -86,7 +82,8 @@ class DynamicsTraining:
         self.targets += targets
         print("Dyn data size:", len(self.features))
         data = tf.data.Dataset.from_tensor_slices((features, targets))
-        train_dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd[0])
+        train_dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd[0],
+                                train_proportion=1.0, test_proportion=0.0, valid_proportion=0.0)
         # train_dataset = Dataset(
         #     dataset.train_data, self.data_specs["loss"], self.data_specs["likelihood"], opd)
         if not self.start:
@@ -120,7 +117,7 @@ class BayesianDynamics(Control):
     
     def sample_initial(self):
         # default sampling method, return initial normalized states
-        sample, info = self.env.reset()
+        sample, info = self.env.reset()#options={"low":-0.5, "high":0.5})
         res = tf.convert_to_tensor(sample) 
         return self.policy.vec_normalize("obs", res)
     
@@ -171,7 +168,7 @@ class BayesianDynamics(Control):
         for i in range(self.kp):
             x = dtbn.sample()
             new_states.append(x)
-        return ys, actions, tf.convert_to_tensor(new_states)  
+        return actions, tf.convert_to_tensor(new_states)  
         
     def t_reward(self, states, t):
         k_rew = 0
@@ -182,6 +179,7 @@ class BayesianDynamics(Control):
         return exp_rew
 
     def learn(self, nb_epochs, record_file):
+        freq = int(self.horizon / 25)
         def step(ep, check_converge=False):
             print(">>Learning epoch", ep)
             # train dynamic model using transition dataset
@@ -196,18 +194,19 @@ class BayesianDynamics(Control):
                 prev_tmark = 0
                 discount = 1
                 f = open(record_file, "a")
-                f.write("Learning epoch "+str(ep)+"\nInitial state: "+str(states[:5])+"\n; Actions hor: ")
+                f.write("Learning epoch "+str(ep)+"\n; Actions hor: ")
                 for t in range(1,self.horizon+1):
-                    discount *= self.gamma
-                    ys, actions, new_states = self.forward(states)
-                    tot_rew += discount * self.t_reward(new_states, t)
-                    f.write(str([str(a.numpy()[0])+"," for a in actions[:5]]))
+                    actions, new_states = self.forward(states)
                     tmark = int(10*t/self.horizon)
                     if tmark > prev_tmark and tmark % 2 == 0:
                         print("Time step: "+str(t)+"/"+str(self.horizon))
                     prev_tmark = tmark
                     states = new_states
-
+                    if t % freq == 0:
+                        f.write(str([str(a.numpy()[0])+"," for a in actions[:3]]))
+                        discount *= self.gamma
+                        tot_rew += discount * self.t_reward(states, t)
+                        
             grad = tape.gradient(tot_rew, self.policy.network.trainable_variables)
             f.write("\nTotal reward: "+str(tot_rew)+"\n")
             if None in grad:

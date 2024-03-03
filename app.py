@@ -148,7 +148,6 @@ def reinforce():
             rl.pause(ep_count+nb_epochs)
         elif fm.get("render"):
             total_reward = 0
-            t = 0
             done = False
             # Run the game loop
             print(">> Start real task")
@@ -156,7 +155,6 @@ def reinforce():
             policy = rl.agent.policy
             f.close()
             rl.real_task = True
-            t = 0
             rewards = []
             states = []
             actions = ([],[])
@@ -169,7 +167,6 @@ def reinforce():
                 observation, reward, terminated, truncated, info = env.step(at[0].numpy())
                 total_reward += reward  # Accumulate the reward
                 rewards.append(total_reward)
-                t += 1
                 if terminated or truncated:
                     done = True
                 # You can add a delay here if the visualization is too fast
