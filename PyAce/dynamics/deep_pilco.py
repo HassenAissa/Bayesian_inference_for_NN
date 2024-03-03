@@ -22,13 +22,13 @@ class NNPolicy(Policy):
         self.hyperparams = hyperparams
         self.model_ready = False
 
-    def setup(self, env: gym.Env, ipd, opd):
+    def setup(self, env: gym.Env, ipd):
         if self.model_ready:
             return
         print("Setup genral policy")
         Policy.setup(self, env)
         print("Setup NN policy")
-        self.network = complete_model(self.network, ipd, opd, self.oacts[1])
+        self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
         self.model_ready = True
         
     def optimize_step(self, grad, check_converge=False):
@@ -47,12 +47,26 @@ class NNPolicy(Policy):
         
     def act(self, states, take=True):
         actions = self.network(states)
-        action_takes = None
+        action_takes = []
         if take:
-            action_takes = tf.reshape(actions, [actions.shape[0]]+ [d for d in self.act_dim])
-            action_takes = self.norm_restore("act", action_takes)  # restore, original shape
+            # Discrete action takes the maximum probability of all cases
+            if self.oact == "softmax":
+                for action in actions:
+                    i = self.range[0]
+                    max_a, max_p = i, action[0]
+                    for p in action[1:]:
+                        i += 1
+                        if p > max_p:
+                            max_a = i
+                            max_p  = p
+                    action_takes.append(tf.cast(max_a, self.dtype))
+            else:
+                for action in actions:
+                    low = tf.math.maximum(action, self.range[0])
+                    res = tf.math.minimum(low, self.range[1])
+                    action_takes.append(tf.reshape(tf.cast(res, self.dtype), self.action_d))
         return actions, action_takes
-
+                
 class DynamicsTraining:
     # learn dynamic model f for state action transitions
     def __init__(self, optimizer:Optimizer, data_specs:dict, 
@@ -64,11 +78,10 @@ class DynamicsTraining:
         self.start = False   
         self.model_ready = (template is None)
 
-    def create_model(self, sfd, afd, oact):
+    def create_model(self, ipd, opd):
         if self.model_ready:
             return
-        ipd = (sfd[0]+afd[0],)
-        model = complete_model(self.template, ipd, sfd, out_activation=oact) 
+        model = complete_model(self.template, ipd, opd, out_activation="linear") 
         self.model = model   
 
     def compile_more(self, extra):
@@ -106,8 +119,10 @@ class BayesianDynamics(Control):
         policy: NNPolicy, rew_name, learn_config:tuple
     ):
         super().__init__(env, horizon, policy)
-        self.policy.setup(self.env, self.state_d, self.action_fd)
-        dyn_training.create_model(self.state_fd, self.action_fd, self.policy.oacts[0])
+        self.policy.setup(self.env, self.state_d)
+        ipd = (self.state_fd[0] + policy.action_fd[0],)
+        opd = (self.state_fd[0],)
+        dyn_training.create_model(ipd, opd)
         self.dyn_training = dyn_training
         self.rew_name = rew_name    
         self.state_reward = all_rewards[rew_name]
@@ -115,12 +130,11 @@ class BayesianDynamics(Control):
             self.dyntrain_ep, self.kp, self.gamma = learn_config
         # self.policy_optimizer = policy_optimizer
     
-    def sample_initial(self):
+    def sample_initial(self, options=None):
         # default sampling method, return initial normalized states
-        sample, info = self.env.reset()#options={"low":-0.5, "high":0.5})
-        res = tf.convert_to_tensor(sample) 
-        return self.policy.vec_normalize("obs", res)
-    
+        sample, info = self.env.reset(options=options)  #{"low":-0.5, "high":0.5})
+        return sample
+
     def dyn_feature(self, state0, action0):
         s0 = tf.reshape(state0, self.state_fd)
         feature = tf.concat([s0, action0], axis=0)
@@ -203,7 +217,7 @@ class BayesianDynamics(Control):
                     prev_tmark = tmark
                     states = new_states
                     if t % freq == 0:
-                        f.write(str([str(a.numpy()[0])+"," for a in actions[:3]]))
+                        f.write(str([str(a.numpy())+"," for a in actions[:3]]))
                         discount *= self.gamma
                         tot_rew += discount * self.t_reward(states, t)
                         

@@ -5,9 +5,9 @@ def h2(state):
     return state[0]*state[2] - state[1]*state[3]
 
 def ht_speed(state, t):
-    height = -state[0] - state[0]*2 - h2(state)
-    speed = pow(state[4]*15, 2)
-    return (height+speed)/10
+    height = 1-state[0] + 3 - state[0]*2 - h2(state)
+    speed = pow(state[4], 2) + pow(state[5], 2)
+    return height*10+speed
 
 def upright(state, t):
     angle = - state[2] 
