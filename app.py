@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from static.rewards import all_rewards
 from PyAce.datasets.Dataset import Dataset
-from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model
+from PyAce.dynamics.NNPolicy import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model
 import PyAce.datasets.utils as dsu, utils as apu
 import tensorflow as tf
 import os, json, pickle, time

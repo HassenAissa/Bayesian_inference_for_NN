@@ -4,7 +4,7 @@ import gymnasium as gym, time, pickle, json
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from PyAce.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining
+from PyAce.dynamics import DeepPilco, NNPolicy, DynamicsTraining
 from PyAce.optimizers import SWAG
 from PyAce.optimizers.hyperparameters import HyperParameters
 
@@ -27,7 +27,7 @@ def runner():
         dyntrain_nn, dyn_hyp)
 
     env = gym.make("Acrobot")
-    bnn = BayesianDynamics(
+    bnn = DeepPilco(
         env=env,
         horizon=32,
         dyn_training=dyn_training,
@@ -37,7 +37,7 @@ def runner():
     )
     dyn_training.compile_more(extra={"starting_model":dyn_training.model})
 
-    bnn.learn(nb_epochs=5, record_file="static/results/learning.txt")
+    bnn.learn(nb_epochs=20, record_file="static/results/learning.txt")
 
     # Run an interactive demo of the trained policy
     # Create the environment
