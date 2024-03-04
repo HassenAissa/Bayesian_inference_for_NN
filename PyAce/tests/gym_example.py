@@ -18,7 +18,7 @@ def h2(state):
 def ht_speed(state):
     height = 4-state[0] - state[0]*2 - h2(state)
     speed = pow(state[4], 2)
-    return -(height)
+    return -height
 
 def runner():
     policy = tf.keras.models.Sequential()

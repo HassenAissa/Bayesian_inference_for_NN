@@ -59,6 +59,7 @@ class DeepPilco:
             action = self._policy(state, training = True)
             action_taken = tf.argmax(action, axis = 1)
             state, reward, terminated, truncated, info = self._env.step(action_taken[0])
+            print(action_taken[0])
             all_states.append(tf.convert_to_tensor(state))
             all_actions.append(action)
         
@@ -108,7 +109,7 @@ class DeepPilco:
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(self._policy.trainable_variables)
 
-            total_cost = self._expected_reward(particles)
+            total_cost = -self._expected_reward(particles)
             for t in range(self._horizon):
                 predictions = []
                 actions = self._policy(particles, training = True)
@@ -131,9 +132,8 @@ class DeepPilco:
                 gamma *= gamma
         # print(total_reward)
         grad = tape.gradient(total_cost, self._policy.trainable_variables)
-        print(total_cost)
         if grad is not None:
-            # print("hellooo")
+            print(total_cost)
             self._policy_optimizer.apply_gradients(zip(grad, self._policy.trainable_variables))
         return True
 

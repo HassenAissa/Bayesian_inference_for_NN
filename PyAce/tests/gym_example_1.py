@@ -20,16 +20,16 @@ def runner():
     policy = NNPolicy(policy_template, pol_hyp)
 
     dyntrain_nn = tf.keras.Sequential()
-    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
-    dyntrain_nn.add(tf.keras.layers.Dense(128, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
+    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='relu'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(128, activation='sigmoid'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
     dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=12, scale=1, batch_size=20)
     dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
         dyntrain_nn, dyn_hyp)
 
     env = gym.make("Acrobot")
-    bnn = DeepPilco(
+    bnn = BayesianDynamics(
         env=env,
         horizon=32,
         dyn_training=dyn_training,
