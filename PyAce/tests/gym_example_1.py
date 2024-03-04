@@ -4,7 +4,7 @@ import gymnasium as gym, time, pickle, json
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from PyAce.dynamics import DeepPilco, NNPolicy, DynamicsTraining
+from PyAce.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining, RBF
 from PyAce.optimizers import SWAG
 from PyAce.optimizers.hyperparameters import HyperParameters
 
@@ -12,15 +12,17 @@ def runner():
     
     print(">>Start learning")
     # Neural network templates: only contain inner layers; no input/output layers
-    policy_template = tf.keras.Sequential(
-        [tf.keras.layers.experimental.RandomFourierFeatures(output_dim=32)])
-    pol_hyp = HyperParameters(lr=1e-2,batch_size=10)
+    policy_template = tf.keras.Sequential([
+        RBF(80, 0.5),
+    ])
+        #[tf.keras.layers.experimental.RandomFourierFeatures(output_dim=32)])
+    pol_hyp = HyperParameters(lr=1,batch_size=10)
     policy = NNPolicy(policy_template, pol_hyp)
 
     dyntrain_nn = tf.keras.Sequential()
     dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
     dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
-    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
+    dyntrain_nn.add(tf.keras.layers.Dense(128, activation='sigmoid'))
     dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
     dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=12, scale=1, batch_size=20)
     dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},

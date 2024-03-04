@@ -5,6 +5,7 @@ from static.rewards import all_rewards
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy, json, pickle
+from tensorflow.keras import backend as bk
 
 def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
     network = tf.keras.Sequential()
@@ -12,7 +13,29 @@ def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
     for layer in template.layers:
         network.add(layer)
     network.add(tf.keras.layers.Dense(opd[0], out_activation))   
+    print("Network input output", ipd, opd)
     return network
+
+class RBF(tf.keras.layers.Layer):
+    def __init__(self, units, gamma, **kwargs):
+        super(RBF, self).__init__(**kwargs)
+        self.units = units
+        self.gamma = bk.cast_to_floatx(gamma)
+    
+    def build(self, input_shape):
+        self.mean = self.add_weight(name='mean',
+                                  shape=(int(input_shape[1]), self.units),
+                                  initializer='uniform',
+                                  trainable=True)
+        super(RBF, self).build(input_shape)
+
+    def call(self, inputs):
+        diff = bk.expand_dims(inputs) - self.mean
+        norm = bk.sum(bk.pow(diff, 2), axis=1)
+        return bk.exp(-1 * self.gamma * norm)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.units)
 
 class NNPolicy(Policy):
     def __init__(self, network, hyperparams):
@@ -38,7 +61,7 @@ class NNPolicy(Policy):
             wg = tf.math.multiply(grad[i], self.hyperparams.lr)
             m = tf.math.add(weights[i-len(grad)], wg)
             new_weights.append(m)
-        self.network.set_weights(weights[:-2]+new_weights)
+        self.network.set_weights(weights[:-len(grad)]+new_weights)
 
         # To be implemented: check convergence
         if check_converge:
@@ -130,8 +153,9 @@ class BayesianDynamics(Control):
             self.dyntrain_ep, self.kp, self.gamma = learn_config
         # self.policy_optimizer = policy_optimizer
     
-    def sample_initial(self, options=None):
+    def sample_initial(self):
         # default sampling method, return initial normalized states
+        options = {"low":-0.5, "high":0.5}
         sample, info = self.env.reset(options=options)  #{"low":-0.5, "high":0.5})
         return sample
 
@@ -227,7 +251,7 @@ class BayesianDynamics(Control):
                 f.write("Invalid gradient!\n")
                 f.close()
                 return 
-            f.write("Gradient sample: "+str(grad[-1])+"\n")
+            f.write("Gradient sample: "+str(grad[-1])+", length "+str(len(grad))+"\n")
             f.close()
             return self.policy.optimize_step(grad, check_converge=check_converge)
         
