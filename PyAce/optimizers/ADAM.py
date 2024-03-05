@@ -17,7 +17,7 @@ class ADAM(Optimizer):
     https://arxiv.org/pdf/1806.04854.pdf
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one epoch
+        batch_size: the size of the batch for one step
         lr: the learning rate
         beta_1: mean learning rate
         beta_2: second moment learning rate
@@ -35,7 +35,6 @@ class ADAM(Optimizer):
         self._mean: list[tf.Tensor] = []
         self._sq_mean: list[tf.Tensor] = []
         self._dev: list[tf.Tensor] = []
-        self._weight_layers_indices = []
         self._running_loss = 0
         self._seen_batches = 0
         self._total_batches = 0
@@ -65,16 +64,21 @@ class ADAM(Optimizer):
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(loss.numpy()))
         
-        var_grad = tape.gradient(loss, self._base_model.trainable_variables)
-        it_val = 0
-        for var, grad in zip(self._base_model.trainable_variables, var_grad):
-            if grad is not None:
-                self._m[it_val] = self._beta_1 * self._m[it_val] + (1 - self._beta_1) * grad
-                self._v[it_val] = self._beta_2 * self._v[it_val] + (1 - self._beta_2) * grad**2
-                self._m_hat[it_val] = self._m[it_val] /(1 - (self._beta_1**self._epoch_num))
-                self._v_hat[it_val] = self._v[it_val] /(1 - (self._beta_2**self._epoch_num))
-                var.assign_sub(self._lr * self._m_hat[it_val]/(tf.sqrt(self._v_hat[it_val]) + 1e-3))  
-                it_val += 1
+        for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
+            layer = self._base_model.layers[layer_idx]
+            for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):
+                    var_grad = tape.gradient(loss, sublayer)
+                    self._m[layer_idx][sublayer_idx] = (self._beta_1 * self._m[layer_idx][sublayer_idx]
+                                                       + (1 - self._beta_1) * var_grad)
+                    self._v[layer_idx][sublayer_idx] = (self._beta_2 * self._v[layer_idx][sublayer_idx]
+                                                       + (1 - self._beta_2) * var_grad**2)
+                    self._m_hat[layer_idx][sublayer_idx] = (self._m[layer_idx][sublayer_idx] /
+                                                          (1 - (self._beta_1**self._epoch_num)))
+                    self._v_hat[layer_idx][sublayer_idx] = (self._v[layer_idx][sublayer_idx] /
+                                                          (1 - (self._beta_2**self._epoch_num)))
+                    sublayer.assign_sub(self._lr * self._m_hat[layer_idx][sublayer_idx]/
+                                   (tf.sqrt(self._v_hat[layer_idx][sublayer_idx]) + 1e-3)) 
+
         
         return self._running_loss / self._seen_batches
 
@@ -86,14 +90,28 @@ class ADAM(Optimizer):
         self._m_hat = []
         self._v = []
         self._v_hat = []
-        for var in self._base_model.trainable_variables: 
-            self._m.append(tf.zeros(var.shape, dtype=tf.float32))
-            self._m_hat.append(tf.zeros(var.shape, dtype=tf.float32))
-            self._v.append(tf.zeros(var.shape, dtype=tf.float32))
-            self._v_hat.append(tf.zeros(var.shape, dtype=tf.float32))
         for layer_idx in range(len(self._base_model.layers)):
-            self._weight_layers_indices.append(layer_idx)
-                
+            layer = self._base_model.layers[layer_idx]
+            if len(layer.trainable_variables) != 0:
+                m_list = []
+                m_hat_list = []
+                v_list = []
+                v_hat_list = []
+                for var in layer.trainable_variables:
+                    m_list.append(tf.zeros(var.shape, dtype=tf.float32))
+                    m_hat_list.append(tf.zeros(var.shape, dtype=tf.float32))
+                    v_list.append(tf.zeros(var.shape, dtype=tf.float32))
+                    v_hat_list.append(tf.zeros(var.shape, dtype=tf.float32))
+                self._m.append(m_list)
+                self._m_hat.append(m_hat_list)
+                self._v.append(v_list)
+                self._v_hat.append(v_hat_list)
+            else:
+                self._m.append(None)
+                self._m_hat.append(None)
+                self._v.append(None)
+                self._v_hat.append(None)     
+
     def compile_extra_components(self, **kwargs):
         """
             compiles components of subclasses
@@ -115,30 +133,19 @@ class ADAM(Optimizer):
 
 
     def result(self) -> BayesianModel:
-        idx = 0
-        self._mean = []
+
         model = BayesianModel(self._model_config)
-        for layer_idx in range(len(self._base_model.layers)):
-            layer = self._base_model.layers[layer_idx]; size = 0
-            for w in layer.trainable_variables:
-                if(size == 0):
-                    init_val = tf.dtypes.cast(tf.reshape(w, (-1)), dtype=tf.float32)
-                else: 
-                    init_val = tf.concat((init_val, tf.dtypes.cast(tf.reshape(w, (-1)), dtype=tf.float32)), axis=0)
-                size += tf.size(w).numpy()
-            self._mean.append(tf.expand_dims(init_val, axis=-1))
-            
-        for mean, idx in zip(self._mean, range(len(self._weight_layers_indices))):
-            tf_dist = tfp.distributions.Deterministic(tf.reshape(mean, (-1,)))
-            tf_dist = TensorflowProbabilityDistribution(
-                tf_dist
-            )
-            start_idx = self._weight_layers_indices[idx]
-            end_idx = len(self._base_model.layers) - 1
-            if idx + 1 < len(self._weight_layers_indices):
-                end_idx = self._weight_layers_indices[idx + 1]
-            model.apply_distribution(tf_dist, start_idx, start_idx)
-            idx+=1
+        
+        for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
+            if len(layer.trainable_variables) != 0:
+                mean = [tf.reshape(i, (-1, 1)) for i in layer.trainable_variables]
+                mean = tf.reshape(tf.concat(mean, 0), (-1,))
+                
+                tf_dist = tfp.distributions.Deterministic(mean)
+                tf_dist = TensorflowProbabilityDistribution(
+                    tf_dist
+                )
+                model.apply_distribution(tf_dist, layer_idx, layer_idx)
         return model
 
     def update_parameters_step(self):

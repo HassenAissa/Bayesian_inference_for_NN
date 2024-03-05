@@ -42,18 +42,19 @@
           Name the current session: <input type="text" name="sname">; Gym environment: <input type="text" name="envname" value="{{info.form["envname"]}}">; 
           Descriptions: <textarea name="sdesc" cols="70" rows="1"></textarea><br> 
           <b>--Learning specifications--</b> <br>
-          Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="9999">
+          Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic epoch factor: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="9999">
           Number of particles: <input type="number" name="npar" value="{{info.form["npar"]}}" min="1" max="999">; Discount factor: <input type="number" name="disc" value="{{info.form["disc"]}}" min="0.001" max="1.000" step="0.001">;
           Learn epochs: <input type="number" name="lep" value="{{info.form["lep"]}}" min="1" max="999">; Reward function: <select name="reward">{% for r in options["reward"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
           <b>--Policy model--</b> <br>
           Hyperparameters: <textarea name="phyp" cols="70" rows="1">{{info.form["phyp"]}}</textarea><br>
-          <b>Upload .json model</b> (use current <b>{{info.form["pnnjson"]}}</b>) <input type="checkbox" name="pnnjsons" value="{{info.form["pnnjson"]}}">); <input type="file" name="pnnjson"> | Or create manually: <br>
+          Radial basis function hidden units: <input type="number" name="rbfu" value="{{info.form["rbfu"]}}">; Scale: <input type="number" name="rbfgamma" value="{{info.form["rbfgamma"]}}">
+          <!-- <b>Upload .json model</b> (use current <b>{{info.form["pnnjson"]}}</b>) <input type="checkbox" name="pnnjsons" value="{{info.form["pnnjson"]}}">); <input type="file" name="pnnjson"> | Or create manually: <br>
           Model name: <input type="text" name="pmname" value="{{info.form["pmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="pkernel" min="1" max="999" value="{{info.form["pkernel"]}}">; 
           filters list: <br><textarea name="pfilters" cols="70" rows="1">{{info.form["pfilters"]}}</textarea>) <br>
           (All neural networks) <br>
           dimensions of densely connected layers: <br><textarea name="phidden" cols="70" rows="1">{{info.form["phidden"]}}</textarea> <br>
-          all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br>
+          all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br> -->
         <b>--Dynamic model (using bayesian inference)--</b> <br>
           <b>Upload .json model</b> (use current: <b>{{info.form["dnnjson"]}}</b> </b><input type="checkbox" name="dnnjsons" value="{{info.form["dnnjson"]}}">); <input type="file" name="dnnjson"> | Or create manually:<br>
           Model name: <input type="text" name="dmname" value="{{info.form["dmname"]}}">; <br>
@@ -63,7 +64,7 @@
           dimensions of densely connected layers: <br><textarea name="dhidden" cols="70" rows="1">{{info.form["dhidden"]}}</textarea> <br>
           all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="dactivations" cols="70" rows="1">{{info.form["dactivations"]}}</textarea><br>
           <b>--Optimizer for dynamic model--</b> Select optimizer class: <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select> <br>
-          start model (for SWAG): <input type="radio" name="mstart"> same as dynamic model | or <input type="file" name="startjson"> <br>
+          start model (for SWAG): <input type="hidden" name="mstart" value="{{info.form["mstart"]}}"> Default same as dynamic model | or <input type="file" name="startjson"> <br>
           prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
             standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s"]}}" min="-999", max="999" step="0.01">) <br>
           prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 

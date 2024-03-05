@@ -1,14 +1,14 @@
 from flask import Flask, render_template, request
 from static.rewards import all_rewards
 from PyAce.datasets.Dataset import Dataset
-from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics
+from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model, RBF
 import PyAce.datasets.utils as dsu, utils as apu
 import tensorflow as tf
 import os, json, pickle, time
 
 sl_mandatory = [("if", "f1", "", ["lcat", ("if", "lcat", "Classification", "dfile"), "ipd", "opd", "mname", "hidden", "activations"]),
     ("if", "f2", "", ["lcat", "loss", ("or", ("or", "nnjson", "nnjsons"), ["ipd", "opd", "mname", "hidden", "activations"]), ("or", "dfile", "dfiles"), "batch", "optim", "ite"])]
-rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", ("or", ("or", "pnnjson", "pnnjsons"), ["pmname", "phidden", "pactivations"]),
+rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", "rbfu", #("or", ("or", "pnnjson", "pnnjsons"), ["pmname", "phidden", "pactivations"]),
                 ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "optim", "reward"]
 rl_f2mand = ["envname", "session", ("if", "resume", "", ["envname", "lep"])]
 sl_opkeys = ["lcat", "loss", "optim"]
@@ -64,8 +64,23 @@ class RLInfo(ModelInfo):
         self.agent.store(pref, tot_epochs)
         apu.store_hyp(self.agent.policy.hyperparams, pref+"policyhyp.json")
         self.agent.policy.hyperparams = None
+        # policy config
+        f = open("static/models/policy/config.json", "w")
+        content = {"ipd": rl.agent.state_d, "opd": rl.agent.policy.action_fd, "oact": rl.agent.policy.oact}
+        content.update(rl.policy_config)
+        json.dump(content, f)
+        f.close()
+        # policy weights
+        f = open(pref+"policy_nn.pkl", "wb")
+        pickle.dump(self.agent.policy.network.get_weights(), f)
+        f.close()
+        self.agent.policy.network = None
         f = open(pref+"policy.pkl", "wb")
         pickle.dump(self.agent.policy, f)
+        f.close()
+        f = open(pref+"dyn_data.pkl", "wb")
+        pickle.dump({"features": self.agent.dyn_training.features, 
+                     "targets": self.agent.dyn_training.targets}, f)
         f.close()
         apu.store_optim(self.agent.dyn_training.optimizer, pref)
 
@@ -75,6 +90,20 @@ class RLInfo(ModelInfo):
         policy = pickle.load(f)
         f.close()
         policy.hyperparams = apu.load_hyp(pref+"policyhyp.json")
+        f = open("static/models/policy/config.json", "r")
+        config = json.load(f)
+        f.close()
+        rbfu, rbfgamma = config["rbfu"], config["rbfgamma"]
+        rl.policy_config = {"rbfu": rbfu, "rbfgamma": rbfgamma}
+        policy_template = tf.keras.Sequential()
+        policy_template.add(
+           RBF(rbfu, rbfgamma)
+        ) 
+        policy_nn = complete_model(policy_template, config["ipd"], config["opd"], config["oact"])
+        f = open(pref+"policy_nn.pkl", "rb")
+        policy_weights = pickle.load(f)
+        policy_nn.set_weights(policy_weights)
+        policy.network = policy_nn
         optim = apu.load_optim(pref)
         f = open(pref+"loss.pkl", "rb")
         loss = pickle.load(f)
@@ -82,6 +111,11 @@ class RLInfo(ModelInfo):
         f = open(pref+"agent.json")
         args = json.load(f)
         dyn_training = DynamicsTraining(optim, {"loss": loss, "likelihood": args["likelihood"]})
+        f = open(pref+"dyn_data.pkl", "rb")
+        dyn_data = pickle.load(f)
+        f.close()
+        dyn_training.features = dyn_data["features"]
+        dyn_training.targets = dyn_data["targets"]
         self.agent = BayesianDynamics(env, args["horizon"], dyn_training, policy, 
                          args["rew_name"], args["learn_config"])
         return args["tot_epochs"]
@@ -106,41 +140,39 @@ def reinforce():
             rmode = None
         env = gym.make(rl.envname, render_mode=rmode)
         observation, info = env.reset(seed=42)
+        ep_count = rl.restore(env)
         if fm.get("resume"): 
-            ep_count = rl.restore(env)
             print(">> Learning resumed")
             nb_epochs = int(fm.get("lep"))
             rl.agent.learn(nb_epochs, record_file=record_file)
             rl.pause(ep_count+nb_epochs)
         elif fm.get("render"):
             total_reward = 0
-            t = 0
             done = False
             # Run the game loop
             print(">> Start real task")
             f = open("static/sessions/rl/"+rl.sname+"/policy.pkl", "rb")
-            policy = pickle.load(f)
+            policy = rl.agent.policy
             f.close()
             rl.real_task = True
-            t = 0
             rewards = []
             states = []
             actions = ([],[])
             while not done:
                 states.append(observation)
-                action, action_take = policy.act(policy.vec_normalize("obs", observation))
-                actions[0].append(action)
-                actions[1].append(action_take)
+                a, at = policy.act(tf.reshape(tf.convert_to_tensor(observation), (1,-1)))
+                actions[0].append(a[0])
+                actions[1].append(at[0])
                 # action = action.numpy()
-                observation, reward, terminated, truncated, info = env.step(action_take)
+                observation, reward, terminated, truncated, info = env.step(at[0].numpy())
                 total_reward += reward  # Accumulate the reward
                 rewards.append(total_reward)
-                t += 1
                 if terminated or truncated:
                     done = True
                 # You can add a delay here if the visualization is too fast
                 time.sleep(0.02)
-            apu.plot_task(rewards, states, actions)
+            apu.plot_acb(rewards, states, actions[1])
+            env.close()
             
         return render_template('reinforce.html', options=options, info=rl)
     missing = []
@@ -166,22 +198,23 @@ def reinforce():
     options["sessions"] = [""]+apu.read_sessions("rl")
     env = gym.make(rl.envname)
     # Policy network
-    policy_nn = None
-    policy_config = ""
-    pf = apu.access_file("static/models/policy/", fm.get("pnnjsons"), rl.form, "pnnjson")
-    if pf:
-        f = open(pf,"r")
-        policy_config = f.read()
-        f.close()
-        policy_nn = tf.keras.models.model_from_json(policy_config)
-    else:
-        model_file = "static/models/policy/"+fm.get("pmname")+".json"
-        acts,hidden,kernel,filters = fm.get("pactivations"),fm.get("phidden"),fm.get("pkernel"),fm.get("pfilters")
-        policy_nn = apu.nn_create(acts,hidden,kernel,filters)
-        f = open(model_file, "w")
-        policy_config = policy_nn.to_json()
-        f.write(policy_config)
-        f.close()
+    
+    # policy_nn = None
+    # policy_config = ""
+    # pf = apu.access_file("static/models/policy/", fm.get("pnnjsons"), rl.form, "pnnjson")
+    # if pf:
+    #     f = open(pf,"r")
+    #     policy_config = f.read()
+    #     f.close()
+    #     policy_nn = tf.keras.models.model_from_json(policy_config)
+    # else:
+    #     model_file = "static/models/policy/"+fm.get("pmname")+".json"
+    #     acts,hidden,kernel,filters = fm.get("pactivations"),fm.get("phidden"),fm.get("pkernel"),fm.get("pfilters")
+    #     policy_nn = apu.nn_create(acts,hidden,kernel,filters)
+    #     f = open(model_file, "w")
+    #     policy_config = policy_nn.to_json()
+    #     f.write(policy_config)
+    #     f.close()
     # Dynamics network
     pf = apu.access_file("static/models/dynamics/", fm.get("dnnjsons"), rl.form, "dnnjson")
     dyn_nn = None
@@ -200,7 +233,17 @@ def reinforce():
         f.write(dyn_config)
         f.close()
     policy_hyp = apu.hyp_get(fm.get("phyp"))
-    policy = NNPolicy(policy_nn, policy_hyp)
+    rbfu, rbfgamma = int(fm.get("rbfu")), fm.get("rbfgamma")
+    if rbfgamma:
+        rbfgamma = int(rbfgamma)
+    else:
+        rbfgamma = None
+    rl.policy_config = {"rbfu": rbfu, "rbfgamma": rbfgamma}
+    policy_template = tf.keras.Sequential()
+    policy_template.add(
+        RBF(rbfu,rbfgamma)
+    ) 
+    policy = NNPolicy(policy_template, policy_hyp)
     dyn_hyp = apu.hyp_get(fm.get("dhyp"))
     optim, extra = apu.optim_select(options, fm)
     dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
@@ -214,12 +257,11 @@ def reinforce():
         learn_config=(int(fm.get("dynep")),int(fm.get("npar")),float(fm.get("disc"))) 
         # dynamic epochs, particle number, discount factor
     )
-    if fm.get("mstart"):
-        extra["starting_model"] = dyn_training.model
-    elif fm.get("start_json"):
+    if fm.get("start_json"):
         extra["starting_model"] = apu.optim_mstart(fm, dyn_config)
+    else:
+        extra["starting_model"] = dyn_training.model
     dyn_training.compile_more(extra)
-    env.reset(seed=42)
     nb_epochs = int(fm.get("lep"))
     rl.agent.learn(nb_epochs,record_file=record_file)
     f = open(record_file, "r")

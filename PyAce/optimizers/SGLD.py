@@ -8,16 +8,34 @@ from . import Optimizer
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy
+import numpy as np
 
 # lr_func kwarg represents the learning rate for each step
 class SGLD(Optimizer):
+    """
+    SGLD is a class that inherits from Optimizer. 
+    This inference methods is taken from the paper : "Bayesian Learning via Stochastic Gradient Langevin Dynamics"
+    https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one step
+        lr_upper: the learning rate at step 0
+        lr_lower: the learning rate at the last step
+        lr_gamma: controls rate of change of learning rate [0.5, 1.0)
+    """
+
+
     def __init__(self):
         super().__init__()
         self._n = None
+        self._running_loss = None
         self._data_iterator = None
         self._dataloader = None
         self._base_model_optimizer = None
         self._base_model: tf.keras.Model = None
+        self._lr_upper = None
+        self._lr_lower = None
+        self._lr_gamma = None
         self._lr = None
         self._mean: list[tf.Tensor] = []
         self._sum = 0
@@ -37,6 +55,7 @@ class SGLD(Optimizer):
             predictions = self._base_model(sample, training = True)
             # get the loss
             loss = self._dataset.loss()(label, predictions)
+            self._running_loss += loss
             # save the loss if the path is specified
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
@@ -45,10 +64,7 @@ class SGLD(Optimizer):
         var_grad = tape.gradient(loss, self._base_model.trainable_variables)
         for var, grad in zip(self._base_model.trainable_variables, var_grad):
             if grad is not None:
-                noise = tfp.distributions.Normal(
-                        tf.zeros(grad.shape),
-                        tf.ones(grad.shape) / sqrt(self._lr(self._n))
-                    ).sample()
+                noise = tf.random.normal(shape=grad.shape, mean = 0.0, stddev=self._lr(self._n))
                 var.assign_add(-self._lr(self._n) * (grad + noise)) 
 
         bayesian_layer_index = 0
@@ -76,8 +92,7 @@ class SGLD(Optimizer):
                     (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1
-        return loss
-        
+        return self._running_loss / self._n        
         
     def _init_arrays(self):
         """
@@ -94,6 +109,20 @@ class SGLD(Optimizer):
                 self._dev.append(tf.zeros((size, 0), dtype=tf.float32))
                 self._weight_layers_indices.append(layer_idx)
 
+    def _init_sgld_lr(self):
+        n = self._nb_iterations
+        l_g = np.power(self._lr_lower, 1.0 / self._lr_gamma)
+        u_g = np.power(self._lr_upper, 1.0 / self._lr_gamma)
+        b = -(n * l_g) / (l_g - u_g)
+        a = self._lr_upper * np.power(b, self._lr_gamma)
+        self._lr = lambda step: a * np.power((b+step), -self._lr_gamma)
+
+    def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None,
+              model_save_path: str = None, weights_and_biases_log = False):
+        self._nb_iterations = nb_iterations
+        self._init_sgld_lr()
+        super().train(nb_iterations, loss_save_document_path, model_save_frequency, model_save_path, weights_and_biases_log)
+
     def update_parameters_step(self):
         return super().update_parameters_step()
         
@@ -102,11 +131,14 @@ class SGLD(Optimizer):
             compiles components of subclasses
         """
         self._batch_size = int(self._hyperparameters.batch_size)
-        self._lr = self._hyperparameters.lr
+        self._lr_upper = self._hyperparameters.lr_upper
+        self._lr_lower = self._hyperparameters.lr_lower
+        self._lr_gamma = self._hyperparameters.lr_gamma
         self._base_model = tf.keras.models.model_from_json(self._model_config)
         self._dataset_setup()
         self._init_arrays()
         self._n = 0
+        self._running_loss = 0
 
     def result(self) -> BayesianModel:
         model = BayesianModel(self._model_config)
@@ -131,3 +163,4 @@ class SGLD(Optimizer):
 
             model.apply_distribution(tf_dist, start_idx, start_idx)
         return model
+        

@@ -6,11 +6,24 @@ class GaussianPrior:
     """
     class representing a Prioir following a normal distribution of a given mean and standard deviation
     """
-    def __init__(self, mean, std_dev):
-        if(type(mean)) != type(std_dev):
+    def __init__(self, mean, rho):
+        """
+        If the mean and rho are of type int or float, the prior will have these values for all the neurons of the model\
+        if they are a list, then it should correspond to the number of layers in the model.\ 
+        If they are tensors, they should correspond to the exact shape of the model.
+        Args:
+            mean (int or float od list or tensor): The mean of the gaussian prior
+            rho (int or float od list or tensor): This attribute could play the role of the standard deviation of a gaussian or the preimage of the standard deviation \
+            for inference methods that transform before using it. (example: BBB applies a softplus to rho before using it so if we want a small standard deviation, we could put a\
+                negative value for rho otherwise the softplus could be too big)
+
+        Raises:
+            Exception: if mean and rho don't have the same type
+        """
+        if(type(mean)) != type(rho):
             raise Exception("mean and std dev must have the same type")
         self._mean = mean
-        self._std_dev = std_dev
+        self._std_dev = rho
 
     def _get_priors_from_int_or_float(self, model):
         """
