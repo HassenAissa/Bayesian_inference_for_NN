@@ -57,7 +57,7 @@ class VADAM(Optimizer):
             
         with tf.GradientTape(persistent=True) as tape:
             predictions = self._base_model(sample, training = True)
-            loss = self._dataset.loss()(label, predictions)
+            loss = self._dataset.loss(reduction= None)(label, predictions)
             self._running_loss += loss
             # save the loss if the path is specified
             if save_document_path != None:
