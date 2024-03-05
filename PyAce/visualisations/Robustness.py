@@ -108,6 +108,27 @@ class Robustness():
         self.severities = np.arange(1, 6)
         self.dataset = dataset
         self.x, self.y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
+        
+    def adversarial_robustness(self, epsilon=0.1, nb_samples=100, save_path=None):
+        """
+        computes the adversarial robustness of the model using a FGSM gradient attack
+
+        Args:
+            epsilon (float, optional): Severity of the attack. Defaults to 0.1.
+            nb_samples (int, optional): Defaults to 100.
+            save_path (_type_, optional): Defaults to None.
+        """
+        _,_, gradient = self.model.predict(self.x, nb_samples, calculate_gradient=True, y_true=self.y_true, loss_func=self.dataset.loss())
+        x_perturbated = self.x + epsilon * np.asarray(np.sign(gradient))
+        
+        _, predicted = self.model.predict(x_perturbated, nb_samples)
+        if self.regression:
+            robustness = met.root_mean_squared_error(self.y_true, predicted)
+            stat = "Adversarial Robustness: " + str(robustness)
+        else:
+            robustness = met.accuracy_score(self.y_true, tf.argmax(predicted, axis = 1)) * 100
+            stat = "Adversarial Robustness: " + str(robustness) + "%"
+        self._save_data(save_path, "adversarial_robustness", robustness) if save_path else print(stat)
                 
     def mean_corruption_error(self, relative=False, nb_samples=100, save_path=None):
         """
@@ -129,7 +150,7 @@ class Robustness():
             self._save_data(save_path, name, mean)
         else:
             name = "Mean Relative Error: " if relative else "Mean Corruption Error: "
-            stat = name + str(mean) if self.regression else name + mean + " %"
+            stat = name + str(mean) if self.regression else name + str(mean) + " %"
             print(stat)
     
     def corruption_error(self, corruption=None, relative=False, nb_samples=100, save_path=None, helper=False):
@@ -149,7 +170,7 @@ class Robustness():
             if self.error_dict[corruption] :
                 error = self.error_dict[corruption]
             else:
-                error = [np.array([self._error_rate(s, corruption, nb_samples)*100 for s in self.severities])]
+                error = [np.array([self._error_rate(s, nb_samples, corruption)*100 for s in self.severities])]
                 self.error_dict[corruption] = error
         if relative:
             _, y_pred = self.model.predict(self.x, nb_samples)
@@ -188,7 +209,7 @@ class Robustness():
             if self.error_dict[corruption] :
                 error = self.error_dict[corruption]
             else:
-                error = [self._error_rate(s, corruption, nb_samples) for s in self.severities]
+                error = [self._error_rate(s, nb_samples, corruption) for s in self.severities]
                 self.error_dict[corruption] = error
         plt.bar(self.severities, error)
         plt.xlabel("Severity")
@@ -219,8 +240,7 @@ class Robustness():
             error = 1 - accuracy
         #print("Error rate for", corruption, ", with severity", severity, ":", error)
         return error
-    
-    
+
     # Image width and height must be at least 32 pixels
     def _corrupt(self, image, severity, corruption):
         if image.ndim == 2:
@@ -230,7 +250,7 @@ class Robustness():
         
         if channels == 1:
             image = np.stack((np.squeeze(image),)*3, axis=-1)
-        
+
         image_corrupted = self.corruption_dict[corruption](Image.fromarray(image), severity)
         
         return np.uint8(image_corrupted)
@@ -252,5 +272,3 @@ class Robustness():
         f = open(file_path, "w")
         f.write(str(content))
         f.close()
-    
-    

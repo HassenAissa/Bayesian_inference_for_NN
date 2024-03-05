@@ -92,7 +92,7 @@ class BayesianModel:
     def sample_model(self) -> tf.keras.Model:
         self._sample_weights()
         return tf.keras.models.clone_model(self._model)
-    def predict(self, x: tf.Tensor, nb_samples: int):
+    def predict(self, x: tf.Tensor, nb_samples: int, calculate_gradient=False, y_true=None, loss_func=None):
         """
         use monte carlo approxiamtion over nb_samples to predict the result for the input
 
@@ -106,14 +106,31 @@ class BayesianModel:
         """
         result = 0
         samples_results = []
+        gradient = tf.zeros(x.shape)
+        x = tf.cast(x, 'float32')
         for i in range(nb_samples):
             self._sample_weights()
-            prediction = self._model(x)
-            prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
-            result += prediction
-            samples_results.append(prediction)
+            if calculate_gradient:
+                with tf.GradientTape(persistent=True) as tape:
+                    tape.watch(x)
+                    prediction = self._model(x, training=True)
+                    prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+                    result += prediction
+                    samples_results.append(prediction)
+                    loss = loss_func(y_true, prediction)
+                x_gradient = tape.gradient(loss, x)
+                gradient += x_gradient
+            else:
+                prediction = self._model(x)
+                prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+                result += prediction
+                samples_results.append(prediction)
         result /= nb_samples
-        return samples_results, result
+        #gradient = tf.cast(gradient, "uint8")
+        if calculate_gradient:
+            return samples_results, result, gradient
+        else:
+            return samples_results, result
 
     @classmethod
     def load(cls, model_path: str, custom_distribution_register=None) -> 'BayesianModel':
