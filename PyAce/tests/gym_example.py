@@ -30,7 +30,7 @@ def runner():
     bayesian_model = tf.keras.models.Sequential()
     bayesian_model.add(layers.Dense(30, activation='relu', input_shape=(6,)))
     bayesian_model.add(layers.Dense(4, activation="linear"))
-    bayesion_hyperparams = HyperParameters(batch_size= 30, lr = 1e-1, k = 5, scale = 1, frequency = 1)
+    bayesion_hyperparams = HyperParameters(batch_size= 50, lr = 0.5, k = 5, scale = 0.2, frequency = 1)
     # bayesion_hyperparams = HyperParameters(lr=1e-2, alpha=0, batch_size=30)"prior": GaussianPrior(0.0,-3.0)
     env = gym.make("CartPole-v1")
     deep_pilco = DeepPilco(
@@ -50,7 +50,7 @@ def runner():
 
     deep_pilco.learn(1000)
 
-    env = gym.make('CartPole-v1', render_mode="human")  # Use "human" render mode for visualization
+    env = gym.make('CartPole-v1', "human")  # Use "human" render mode for visualization
     observation, info = env.reset()
     done = False
     rewards, total_reward = [], 0
@@ -71,7 +71,7 @@ def runner():
         if terminated or truncated:
             done = True
         # You can add a delay here if the visualization is too fast
-        time.sleep(0.02)
+        # time.sleep(0.02)
     print(rewards)
     print(actions)
 runner()

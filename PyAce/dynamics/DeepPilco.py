@@ -58,8 +58,7 @@ class DeepPilco:
             state = tf.reshape(state, (1, -1))
             action = self._policy(state)
             action_taken = tf.argmax(action, axis = 1)
-            state, reward, terminated, truncated, info = self._env.step(action_taken[0])
-            print(action_taken[0])
+            state, reward, terminated, truncated, info = self._env.step(action_taken[0].numpy())
             all_states.append(tf.convert_to_tensor(state))
             all_actions.append(action)
         
@@ -81,7 +80,7 @@ class DeepPilco:
                           train_proportion=1)
         return dataset
     
-    def _expected_reward(self, states):
+    def _expected_cost(self, states):
         reward = 0
         for s in states:
             s = tf.reshape(s, (-1,))
@@ -110,8 +109,7 @@ class DeepPilco:
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(self._policy.trainable_variables)
 
-            total_cost = -self._expected_reward(particles)
-            total_cost = -self._expected_reward(particles)
+            total_cost = self._expected_cost(particles)
             for t in range(self._horizon):
                 predictions = []
                 actions = self._policy(particles, training = True)
@@ -129,9 +127,9 @@ class DeepPilco:
                 ystd = tf.math.reduce_std(predictions, axis=0)
                 dtbn = tfp.distributions.Normal(ymean, ystd)
                 particles = self._generate_k_particles(dtbn)
-                total_cost += gamma * self._expected_reward(particles)
+                total_cost += gamma * self._expected_cost(particles)
                 gamma *= gamma
-        # print(total_reward)
+        print(total_cost)
         grad = tape.gradient(total_cost, self._policy.trainable_variables)
         if grad is not None:
             # print(self._policy.trainable_variables)
