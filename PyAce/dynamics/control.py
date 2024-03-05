@@ -2,8 +2,47 @@ import tensorflow as tf
 import gymnasium as gym
 import numpy as np
 from abc import ABC, abstractmethod
-from . import Policy
 
+def space_flat(orig_shape):
+    if orig_shape == ():
+        return (1,)
+    shape = 1
+    for s in orig_shape:
+        shape *= s
+    return (shape,)
+
+class Policy(ABC):  # Policy optimizer
+    def __init__(self):
+        self.dtype, self.range = None, None
+    def setup(self, env: gym.Env):
+        aspace = env.action_space
+        self.action_d = aspace.shape
+        self.action_fd = space_flat(aspace.shape)
+        if isinstance(aspace, gym.spaces.Discrete):
+            self.action_fd = (int(aspace.n),)
+            self.oact = "softmax"
+            self.range = (tf.convert_to_tensor(aspace.start), tf.convert_to_tensor(aspace.start+aspace.n-1))
+            self.dtype = tf.int32
+        elif isinstance(aspace, gym.spaces.Box):
+            low = None
+            if isinstance(aspace.low, np.ndarray):
+                low = min(aspace.low)
+            else:
+                low = aspace.low
+            if low >= 0:
+                self.oact = "relu"
+            else:
+                self.oact = "linear"
+            self.range = (tf.convert_to_tensor(aspace.low), tf.convert_to_tensor(aspace.high))
+            self.dtype = aspace.dtype
+
+    @abstractmethod
+    def optimize_step(self, **kwargs):
+        pass
+
+    @abstractmethod
+    def act(self, state):
+        pass
 
 class Control(ABC):
     # Reinforcement learning basics using gymnasium
@@ -53,7 +92,8 @@ class Control(ABC):
     def learn(self, nb_epochs, record):
         pass
     
-
+class PolicyOptimizer(ABC):
+    pass
 
 class NNPolicyOptimizer(PolicyOptimizer):
     pass
