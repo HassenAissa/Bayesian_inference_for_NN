@@ -19,11 +19,11 @@ class BSAM(Optimizer):
     Hyperparameters:
         batch_size: the size of the batch for one step
         lr: the learning rate
-        beta_1: mean learning rate
-        beta_2: second moment learning rate
+        beta_1: average weight between the old first moment value and its gradient. Should be between 0 and 1.
+        beta_2: average weight between the old second moment value and its gradient. Should be between 0 and 1.
         lam: precision parameter
-        rho: !!!!!!!!!!!!!!!!!
-        gam: !!!!!!!!!!!!!!!!!
+        rho: !!!!!!!!!!!!!!!!!.
+        gam: !!!!!!!!!!!!!!!!!. Should be set to 1e-8
         num_data: size of training data
     """
     def __init__(self):

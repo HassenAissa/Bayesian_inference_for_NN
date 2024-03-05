@@ -19,7 +19,9 @@ class BBB(Optimizer):
     Hyperparameters:
         batch_size: the size of the batch for one step
         lr: the learning rate
-        pi: A weight to average between the first and the second prior (only if we have a single prior for the network). If we have a single prior this hyperparameter is ignored. This value should be between 0 and 1.
+        pi: A weight to average between the first and the second prior (only if we have a single prior for the network). \
+            If we have a single prior this hyperparameter is ignored.\
+            This value should be between 0 and 1.
         alpha: the scale of the KL divergence in the loss function. It should be between 0 and 1
     """
 

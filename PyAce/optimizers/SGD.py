@@ -83,18 +83,6 @@ class SGD(Optimizer):
                     mean = theta #(mean * self._n + theta) / (self._n + 1.0)
                     self._mean[bayesian_layer_index] = mean
 
-                    # update the second moment
-                    #sq_mean = (sq_mean * self._n + theta ** 2) / (self._n + 1.0)
-                    #self._sq_mean[bayesian_layer_index] = sq_mean
-
-                    # update the deviation matrix
-                    #deviation_matrix = self._dev[bayesian_layer_index]
-                    #if deviation_matrix.shape[0] == self._hyperparameters.k:
-                    #    self._dev[bayesian_layer_index] = tf.concat(
-                    #        (deviation_matrix[:, :self._hyperparameters.k - 1], theta - mean), axis=1)
-                    #else:
-                    #    self._dev[bayesian_layer_index] = tf.concat(
-                    #        (deviation_matrix, theta - mean), axis=1)
                 bayesian_layer_index += 1
         self._n += 1 
         

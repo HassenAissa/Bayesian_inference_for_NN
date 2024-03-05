@@ -19,8 +19,8 @@ class ADAM(Optimizer):
     Hyperparameters:
         batch_size: the size of the batch for one step
         lr: the learning rate
-        beta_1: mean learning rate
-        beta_2: second moment learning rate
+        beta_1: average weight between the old first moment value and its gradient. Should be between 0 and 1.
+        beta_2: average weight between the old second moment value and its gradient. Should be between 0 and 1.
     """
     def __init__(self):
         super().__init__()
@@ -68,6 +68,9 @@ class ADAM(Optimizer):
             layer = self._base_model.layers[layer_idx]
             for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):
                     var_grad = tape.gradient(loss, sublayer)
+                    var_grad = var_grad ** 2
+                    var_grad = tf.reduce_mean(var_grad, axis = 0)
+            
                     self._m[layer_idx][sublayer_idx] = (self._beta_1 * self._m[layer_idx][sublayer_idx]
                                                        + (1 - self._beta_1) * var_grad)
                     self._v[layer_idx][sublayer_idx] = (self._beta_2 * self._v[layer_idx][sublayer_idx]

@@ -19,7 +19,7 @@ class SWAG(Optimizer):
     Hyperparameters:
         batch_size: the size of the batch for one step
         lr: the learning rate
-        k: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account only the last part of the training where we start converging.
+        k: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account only the last part of the training where we start converging. Should be at least 2.
         scale: the scale of the deviation matrix. It should be between 0 and 1
         frequency: moment update frequency. It could be left to 1 and increased for performance reasons.
     """

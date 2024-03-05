@@ -13,7 +13,20 @@ import copy
 
 
 class VADAM(Optimizer):
+    """
 
+    VADAM is a class that inherits from Optimizer. 
+    This inference methods is taken from the paper : "Fast and Scalable Bayesian Deep Learning by Weight-Perturbation in Adam"
+    https://arxiv.org/pdf/1806.04854.pdf
+    This inference methods takes the following hyperparameters:
+    Hyperparameters:
+        batch_size: the size of the batch for one step
+        lr: the learning rate
+        beta_1: average weight between the old first moment and its gradient
+        beta_2: average weight between the old second moment and its gradient
+        lam: precision parameter
+        num_data: size of training data
+    """
     def __init__(self):
         super().__init__()
         self._n = None
@@ -22,11 +35,7 @@ class VADAM(Optimizer):
         self._base_model_optimizer = None
         self._base_model: tf.keras.Model = None
         self._lr = None
-        self._frequency = None
-        self._k = None
         self._mean: list[tf.Tensor] = []
-        self._sq_mean: list[tf.Tensor] = []
-        self._dev: list[tf.Tensor] = []
         self._running_loss = 0
         self._seen_batches = 0
         self._total_batches = 0
@@ -119,9 +128,7 @@ class VADAM(Optimizer):
             Args:
                 starting_model: this is the starting model for the inference method. It could be a pretrained model.
         """
-        self._frequency = self._hyperparameters.frequency
         self._lr = self._hyperparameters.lr
-        self._scale = self._hyperparameters.scale
         self._batch_size = int(self._hyperparameters.batch_size)
         self._base_model = tf.keras.models.clone_model(kwargs["starting_model"])
         self._base_model.set_weights(kwargs["starting_model"].get_weights())
