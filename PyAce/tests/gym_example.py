@@ -1,5 +1,6 @@
 """Interactive demo of the Gym environment."""
 
+from PyAce.distributions import GaussianPrior
 import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,46 +10,48 @@ from PyAce.datasets import Dataset
 from PyAce.optimizers.hyperparameters import HyperParameters
 from PyAce.dynamics import DeepPilco
 from tensorflow.keras import models, layers
-from PyAce.optimizers import SWAG
+from PyAce.optimizers import SWAG, BBB
 import time
 
-def h2(state):
-    return state[0]*state[2] - state[1]*state[3]
 
-def ht_speed(state):
-    height = 4-state[0] - state[0]*2 - h2(state)
-    speed = pow(state[4], 2)
-    return -(height)
+
+def reward_fn(state):
+    res = (state[2]**2 + state[0]**2)
+    return res
+
 
 def runner():
+    initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=.5)
+
     policy = tf.keras.models.Sequential()
-    policy.add(layers.Dense(10, activation='relu', input_shape=(6,)))
-    policy.add(layers.Dense(3, activation=tf.keras.activations.softmax))
-    policy_hyperparams = HyperParameters(lr = 1e-3)
+    policy.add(layers.Dense(30, activation='relu', input_shape=(4,)))
+    policy.add(layers.Dense(2, activation=tf.keras.activations.softmax))
 
     bayesian_model = tf.keras.models.Sequential()
-    bayesian_model.add(layers.Dense(30, activation='relu', input_shape=(9,)))
-    bayesian_model.add(layers.Dense(6, activation="linear"))
-    bayesion_hyperparams = HyperParameters(batch_size= 10, lr = 1e-1, k = 30, scale = 1, frequency = 1)
-
-    env = gym.make("Acrobot")
+    bayesian_model.add(layers.Dense(30, activation='relu', input_shape=(6,)))
+    bayesian_model.add(layers.Dense(4, activation="linear"))
+    bayesion_hyperparams = HyperParameters(batch_size= 30, lr = 1e-1, k = 5, scale = 1, frequency = 1)
+    # bayesion_hyperparams = HyperParameters(lr=1e-2, alpha=0, batch_size=30)"prior": GaussianPrior(0.0,-3.0)
+    env = gym.make("CartPole-v1")
     deep_pilco = DeepPilco(
         env= env,
         policy= policy,
-        policy_optimizer= tf.keras.optimizers.Adam(learning_rate=1e-3),
+        policy_optimizer= tf.keras.optimizers.SGD(learning_rate=1e-1),
         bayesian_model_json= bayesian_model.to_json(),
         bayesian_optimizer= SWAG,
         bayesian_hyperparameters= bayesion_hyperparams,
-        n_optimizer_iterations= 1000,
+        n_optimizer_iterations= 100,
         extra_parameters_for_optimizer= {"starting_model": bayesian_model},
-        reward=ht_speed,
-        horizon=10
+        reward=reward_fn,
+        horizon = 50,
+        k_particles=30,
+        gamma=1.0
     )
 
-    deep_pilco.learn(10)
+    deep_pilco.learn(1000)
 
-    env = gym.make("Acrobot", render_mode="human")  # Use "human" render mode for visualization
-    observation, info = env.reset(seed=42)
+    env = gym.make('CartPole-v1', render_mode="human")  # Use "human" render mode for visualization
+    observation, info = env.reset()
     done = False
     rewards, total_reward = [], 0
     states = []
@@ -62,6 +65,7 @@ def runner():
         actions.append(action_taken[0])
         observation, reward, terminated, truncated, info = env.step(action_taken[0].numpy())
         # reward = ht_speed(observation)
+        print(reward)
         total_reward += reward  # Accumulate the reward
         rewards.append(total_reward)
         if terminated or truncated:

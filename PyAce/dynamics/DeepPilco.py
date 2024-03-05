@@ -56,9 +56,15 @@ class DeepPilco:
         all_states = [state]
         for t in range(self._horizon):
             state = tf.reshape(state, (1, -1))
-            action = self._policy(state, training = True)
+            action = self._policy(state)
             action_taken = tf.argmax(action, axis = 1)
-            state, reward, terminated, truncated, info = self._env.step(action_taken[0])
+            # print(action_taken)
+            # print(action_taken)
+            # print(state)
+            # print(action_taken[0])
+            state, reward, terminated, truncated, info = self._env.step(action_taken[0].numpy())
+            # print(reward, terminated, truncated)
+            # print(t, state)
             all_states.append(tf.convert_to_tensor(state))
             all_actions.append(action)
         
@@ -84,6 +90,7 @@ class DeepPilco:
         reward = 0
         for s in states:
             s = tf.reshape(s, (-1,))
+            # print(s, self._reward(s))
             reward += self._reward(s)
         reward = tf.math.divide(reward, len(states))
         return reward
@@ -108,7 +115,7 @@ class DeepPilco:
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(self._policy.trainable_variables)
 
-            total_cost = self._expected_reward(particles)
+            total_cost = -self._expected_reward(particles)
             for t in range(self._horizon):
                 predictions = []
                 actions = self._policy(particles, training = True)
@@ -117,7 +124,6 @@ class DeepPilco:
                     state = tf.reshape(state, (1,-1))
                     action = tf.reshape(tf.cast(actions[k], dtype = state.dtype), (1,-1))
                     state_and_action = tf.concat([state, action], axis = 1)
-
                     pred = models[k](state_and_action)  
                     pred = tf.reshape(pred, (-1,))
                     predictions.append(pred)
@@ -127,13 +133,14 @@ class DeepPilco:
                 ystd = tf.math.reduce_std(predictions, axis=0)
                 dtbn = tfp.distributions.Normal(ymean, ystd)
                 particles = self._generate_k_particles(dtbn)
-                total_cost -= gamma * self._expected_reward(particles)
+                total_cost += gamma * self._expected_reward(particles)
                 gamma *= gamma
         # print(total_reward)
         grad = tape.gradient(total_cost, self._policy.trainable_variables)
         print(total_cost)
         if grad is not None:
-            # print("hellooo")
+            # print(self._policy.trainable_variables)
+            
             self._policy_optimizer.apply_gradients(zip(grad, self._policy.trainable_variables))
         return True
 
