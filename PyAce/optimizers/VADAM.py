@@ -68,6 +68,8 @@ class VADAM(Optimizer):
         for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
             for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):
                 sublayer_grad = tape.gradient(loss, sublayer)
+                sublayer_grad = sublayer_grad ** 2
+                sublayer_grad = tf.reduce_mean(sublayer_grad, axis = 0)
                 if sublayer_grad is not None:
                     self._m[layer_idx][sublayer_idx] = self._beta_1 * self._m[layer_idx][sublayer_idx]
                     self._m[layer_idx][sublayer_idx] += (1 - self._beta_1) * (sublayer_grad + (self._lam * sublayer/self._num_data))
