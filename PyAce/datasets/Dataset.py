@@ -130,14 +130,14 @@ class Dataset:
         """
         return self.train_data
 
-    def loss(self):
+    def loss(self, reduction = tf.keras.losses_utils.ReductionV2.AUTO):
         """
         returns the loss function to be used on the dataset
 
         Returns:
             tf.keras.losses: the loss function
         """
-        return self._loss
+        return self._loss(reduction = reduction)
 
     def input_shape(self):
         """gives the input shape for the dataset
