@@ -1,5 +1,4 @@
 20
 default,Acrobot,
-qualify,Acrobot,reasonable performance with 5 epochs of training
 continue,Acrobot,
 mand,Acrobot,

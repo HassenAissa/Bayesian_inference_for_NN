@@ -1,1 +1,1 @@
-{"ipd": [6], "opd": [3], "oact": "softmax", "rbfu": 50, "rbfgamma": null}
+{"ipd": [6], "opd": [3], "oact": "softmax", "rbfu": 32, "rbfscale": null}

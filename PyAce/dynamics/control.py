@@ -43,19 +43,6 @@ class Policy(ABC):  # Policy optimizer
     @abstractmethod
     def act(self, state):
         pass
-    
-class PolicyOptimizer(ABC):
-    @abstractmethod
-    def compile(self, model, hyperparams):
-        pass
-
-    @abstractmethod
-    def train(self, dataset, epochs):
-        pass
-
-    @abstractmethod
-    def optimize(self, loss, check_convergence=True):
-        pass
 
 class Control(ABC):
     # Reinforcement learning basics using gymnasium
@@ -98,13 +85,16 @@ class Control(ABC):
             all_states.append(tf.convert_to_tensor(state))
             all_actions.append(actions[0])
             takes.append(action_takes[0].numpy())
-        print("First 3 states", all_states[:3], "\nLast 3 states", all_states[-3:], "\nactions", takes)
+        # print("First 3 states", all_states[:3], "\nLast 3 states", all_states[-3:], "\nactions", takes)
         return all_states, all_actions
     
     @abstractmethod
     def learn(self, nb_epochs, record):
         pass
     
+class PolicyOptimizer(ABC):
+    pass
+
 class NNPolicyOptimizer(PolicyOptimizer):
     pass
 '''

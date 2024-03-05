@@ -80,7 +80,7 @@ class Dataset:
     def _load_images_from_directory(self, dir):
         images = []
         for imagestr in sorted(os.listdir(dir)):
-            if imagestr.endswith('.png'):
+            if imagestr.endswith('.png') or imagestr.endswith('.jpg'):
                 image = Image.open(os.path.join(dir, imagestr)).convert('L')
                 images.append(np.asarray(image))
         return np.array(images)
