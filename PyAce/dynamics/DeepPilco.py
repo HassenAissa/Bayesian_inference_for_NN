@@ -13,11 +13,11 @@ class DeepPilco:
         bayesian_optimizer: Optimizer, bayesian_hyperparameters, 
         n_optimizer_iterations: int, extra_parameters_for_optimizer: dict,
         reward, max_iterations: int = 7,
-        horizon:int = 100, k_particles: int = 30, gamma: float = 1
+        T:int = 5, k_particles: int = 30, gamma: float = 1, horizon:int=500
     ):
         self._policy = policy
         self._env = env
-        self._horizon = horizon
+        self._T = T
         self._max_iterations = max_iterations
         self._k_particles = k_particles
         self._bayesian_optimizer = bayesian_optimizer
@@ -28,6 +28,7 @@ class DeepPilco:
         self._n_optimizer_iterations = n_optimizer_iterations
         self._reward = reward
         self._gamma = gamma
+        self._horizon = horizon
         self._total_targets = []
         self._total_features = []
 
@@ -36,7 +37,7 @@ class DeepPilco:
         samples = []
         if dtbn == None:
             for i in range(self._k_particles):
-                samples.append(self._env.reset()[0])
+                samples.append(self._env.reset(options = {"low": -0.5, "high":0.5})[0])
         else:
             for i in range(self._k_particles):
                 samples.append(dtbn.sample())
@@ -49,16 +50,24 @@ class DeepPilco:
             models.append(bnn.sample_model())
         return models
 
-    def _execute(self):
-        sample, info = self._env.reset()
+    def _execute(self, random = False):
+        sample, info = self._env.reset(options = {"low": -0.15, "high":0.15})
         state = tf.convert_to_tensor(sample)
         all_actions = []
         all_states = [state]
-        for t in range(self._horizon):
+        for h in range(self._horizon):
             state = tf.reshape(state, (1, -1))
-            action = self._policy(state)
-            action_taken = tf.argmax(action, axis = 1)
-            state, reward, terminated, truncated, info = self._env.step(action_taken[0].numpy())
+            if random:
+                action_taken = self._env.action_space.sample()
+                action = tf.one_hot(action_taken, 2)
+            else:
+                action = self._policy(state)
+                action_taken = tf.argmax(action, axis = 1)
+                action_taken = action_taken[0].numpy()
+            print(action)
+            state, reward, terminated, truncated, info = self._env.step(action_taken)
+            if terminated or truncated:
+                sample, info = self._env.reset(options = {"low": -0.1, "high":0.1})
             all_states.append(tf.convert_to_tensor(state))
             all_actions.append(action)
         
@@ -75,9 +84,9 @@ class DeepPilco:
         targets = tf.convert_to_tensor(self._total_targets)
 
         dataset = tf.data.Dataset.from_tensor_slices((features, targets))
-        dataset = Dataset(dataset, loss = tf.keras.losses.MeanSquaredError(),
+        dataset = Dataset(dataset, loss = tf.keras.losses.MeanSquaredError,
                           likelihoodModel= "Regression", target_dim = self._env.observation_space.shape,
-                          train_proportion=1)
+                          train_proportion=1, feature_normalisation=True)
         return dataset
     
     def _expected_cost(self, states):
@@ -94,12 +103,12 @@ class DeepPilco:
         print(">>Learning epoch", ep)
         # train dynamic model using transition dataset
         
-        new_dataset = self._execute()
+        new_dataset = self._execute(ep < 0)
 
         optimizer = self._bayesian_optimizer()
         optimizer.compile(self._bayesian_hyperparameters, self._bayesian_model_json,
                     new_dataset, **self._extra_parameters_for_optimizer)
-        optimizer.train(min(new_dataset.train_data.cardinality()*3, self._n_optimizer_iterations))
+        optimizer.train(min(new_dataset.train_data.cardinality()*100, self._n_optimizer_iterations))
         bayesian_model = optimizer.result()
 
         particles = self._generate_k_particles()
@@ -110,7 +119,7 @@ class DeepPilco:
             tape.watch(self._policy.trainable_variables)
 
             total_cost = self._expected_cost(particles)
-            for t in range(self._horizon):
+            for t in range(self._T):
                 predictions = []
                 actions = self._policy(particles, training = True)
                 for k in range(self._k_particles):
@@ -119,6 +128,8 @@ class DeepPilco:
                     action = tf.reshape(tf.cast(actions[k], dtype = state.dtype), (1,-1))
                     state_and_action = tf.concat([state, action], axis = 1)
                     pred = models[k](state_and_action)  
+                    # print(state_and_action)
+                    # print(pred)
                     pred = tf.reshape(pred, (-1,))
                     predictions.append(pred)
                     
