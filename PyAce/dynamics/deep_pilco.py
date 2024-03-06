@@ -127,9 +127,9 @@ class DynamicsTraining:
             self.start = True
         else:
             self.optimizer._dataset = train_dataset
-        nb_epochs = int(ep_fac * np.sqrt(len(self.features)))
-        print("Dyn training epochs", nb_epochs)
-        self.optimizer.train(nb_epochs)
+        # nb_epochs = int(ep_fac * np.sqrt(len(self.features)))
+        # print("Dyn training epochs", nb_epochs)
+        self.optimizer.train(ep_fac)
 
 class BayesianDynamics(Control):
     def __init__(
@@ -163,8 +163,8 @@ class BayesianDynamics(Control):
         target = tf.reshape(state1, self.state_fd)
         return target
         
-    def execute(self):
-        all_states, all_actions = super().execute()
+    def execute(self, use_policy=True):
+        all_states, all_actions = super().execute(use_policy=use_policy)
         features = []
         targets = []
         for s in range(len(all_states)-1):
@@ -216,8 +216,14 @@ class BayesianDynamics(Control):
         def step(ep, check_converge=False):
             print(">>Learning epoch", ep)
             # train dynamic model using transition dataset
-            xs, ys = self.execute()
+            use_policy = False
+            if ep > 10:
+                use_policy = True
+            xs, ys = self.execute(use_policy=use_policy)
             self.dyn_training.train(xs, ys, self.state_fd, self.dyntrain_ep)
+            if not use_policy:
+                return
+            
             # k sample inputs and k dynamic bnn
             states = self.k_particles()
             # predict trajectory and calculate gradient
