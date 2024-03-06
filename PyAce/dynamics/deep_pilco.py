@@ -44,6 +44,7 @@ class NNPolicy(Policy):
         self.network = network # template network consisting of inner layers
         self.hyperparams = hyperparams
         self.model_ready = False
+        self.optimizer= tf.keras.optimizers.Adam(learning_rate=1e-3)
 
     def setup(self, env: gym.Env, ipd):
         if self.model_ready:
@@ -55,13 +56,7 @@ class NNPolicy(Policy):
         self.model_ready = True
         
     def optimize_step(self, grad, check_converge=False):
-        weights = self.network.get_weights()
-        new_weights = []
-        for i in range(len(grad)):
-            wg = tf.math.multiply(grad[i], self.hyperparams.lr)
-            m = tf.math.add(weights[i-len(grad)], wg)
-            new_weights.append(m)
-        self.network.set_weights(weights[:-len(grad)]+new_weights)
+        self.optimizer.apply_gradients(zip(grad, self.network.trainable_variables))
 
         # To be implemented: check convergence
         if check_converge:
@@ -117,7 +112,7 @@ class DynamicsTraining:
         self.features += features
         self.targets += targets
         print("Dyn data size:", len(self.features))
-        data = tf.data.Dataset.from_tensor_slices((features, targets))
+        data = tf.data.Dataset.from_tensor_slices((self.features, self.targets))
         train_dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd[0],
                                 train_proportion=1.0, test_proportion=0.0, valid_proportion=0.0)
         # train_dataset = Dataset(
@@ -238,7 +233,7 @@ class BayesianDynamics(Control):
             # predict trajectory and calculate gradient
             with tf.GradientTape(persistent=True) as tape:
                 tape.watch(self.policy.network.trainable_variables)
-                tot_rew = self.t_reward(states, 0)
+                tot_rew = -self.t_reward(states, 0)
                 prev_tmark = 0
                 discount = 1
                 f = open(record_file, "a")
@@ -253,7 +248,7 @@ class BayesianDynamics(Control):
                     if t % freq == 0:
                         f.write(str([str(a.numpy())+"," for a in actions[:3]]))
                         discount *= self.gamma
-                        tot_rew += discount * self.t_reward(states, t)
+                        tot_rew -= discount * self.t_reward(states, t)
                         
             grad = tape.gradient(tot_rew, self.policy.network.trainable_variables)
             f.write("\nTotal reward: "+str(tot_rew)+"\n")
