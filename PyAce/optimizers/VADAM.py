@@ -72,11 +72,16 @@ class VADAM(Optimizer):
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(loss.numpy()))
-        
-
+        differentiation_variables = []
         for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
-            for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):
-                sublayer_grad = tape.jacobian(loss, sublayer)
+            sublayer_differentiation_variables = []
+            for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):   
+                sublayer_differentiation_variables.append(sublayer)
+            differentiation_variables.append(sublayer_differentiation_variables)
+        grad = tape.jacobian(loss, differentiation_variables)
+        for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
+            for sublayer, sublayer_idx, sublayer_grad in zip(layer.trainable_variables, range(len(layer.trainable_variables)), grad[layer_idx]):
+                 
                 sublayer_grad_squared = sublayer_grad ** 2
                 sublayer_grad_squared = tf.reduce_mean(sublayer_grad_squared, axis = 0)
                 sublayer_grad = tf.reduce_mean(sublayer_grad, axis = 0)
