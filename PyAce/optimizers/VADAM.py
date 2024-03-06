@@ -22,8 +22,8 @@ class VADAM(Optimizer):
     Hyperparameters:
         batch_size: the size of the batch for one step
         lr: the learning rate
-        beta_1: average weight between the old first moment and its gradient
-        beta_2: average weight between the old second moment and its gradient
+        beta_1: average weight between the old first moment value and its gradient. Should be between 0 and 1.
+        beta_2: average weight between the old second moment value and its gradient. Should be between 0 and 1.
         lam: precision parameter
         num_data: size of training data
     """
@@ -66,8 +66,8 @@ class VADAM(Optimizer):
             
         with tf.GradientTape(persistent=True) as tape:
             predictions = self._base_model(sample, training = True)
-            loss = self._dataset.loss(reduction= None)(label, predictions)
-            self._running_loss += loss
+            loss = self._dataset.loss(reduction= 'none')(label, predictions)
+            self._running_loss += tf.reduce_mean(loss)
             # save the loss if the path is specified
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
@@ -77,12 +77,13 @@ class VADAM(Optimizer):
         for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
             for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):
                 sublayer_grad = tape.gradient(loss, sublayer)
-                sublayer_grad = sublayer_grad ** 2
+                sublayer_grad_squared = sublayer_grad ** 2
+                sublayer_grad_squared = tf.reduce_mean(sublayer_grad_squared, axis = 0)
                 sublayer_grad = tf.reduce_mean(sublayer_grad, axis = 0)
                 if sublayer_grad is not None:
                     self._m[layer_idx][sublayer_idx] = self._beta_1 * self._m[layer_idx][sublayer_idx]
                     self._m[layer_idx][sublayer_idx] += (1 - self._beta_1) * (sublayer_grad + (self._lam * sublayer/self._num_data))
-                    self._v[layer_idx][sublayer_idx] = self._beta_2 * self._v[layer_idx][sublayer_idx] + (1 - self._beta_2) * sublayer_grad**2
+                    self._v[layer_idx][sublayer_idx] = self._beta_2 * self._v[layer_idx][sublayer_idx] + (1 - self._beta_2) * sublayer_grad_squared
                     self._m_hat[layer_idx][sublayer_idx] = self._m[layer_idx][sublayer_idx] /(1 - (self._beta_1**self._epoch_num))
                     self._v_hat[layer_idx][sublayer_idx] = self._v[layer_idx][sublayer_idx] /(1 - (self._beta_2**self._epoch_num))
                     sublayer.assign_sub(self._lr * self._m_hat[layer_idx][sublayer_idx]
