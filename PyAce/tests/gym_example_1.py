@@ -26,7 +26,7 @@ def runner():
     # dyntrain_nn.add(tf.keras.layers.Dense(128, activation='sigmoid'))
     # dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
     dyn_hyp = HyperParameters(lr=0.52, k=100, frequency=12, scale=1, batch_size=100)
-    dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
+    dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError, "likelihood": "Regression"},
         dyntrain_nn, dyn_hyp)
 
     env = gym.make("Acrobot")
@@ -40,7 +40,7 @@ def runner():
     )
     dyn_training.compile_more(extra={"starting_model":dyn_training.model})
 
-    bnn.learn(nb_epochs=15, record_file="static/results/learning.txt")
+    bnn.learn(nb_epochs=15,record_file="static/results/learning.txt")
 
     # Run an interactive demo of the trained policy
     # Create the environment
