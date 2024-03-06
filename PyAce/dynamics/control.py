@@ -22,7 +22,6 @@ class Policy(ABC):  # Policy optimizer
             self.action_fd = (int(aspace.n),)
             self.oact = "softmax"
             self.range = (tf.convert_to_tensor(aspace.start), tf.convert_to_tensor(aspace.start+aspace.n-1))
-            self.dtype = tf.int32
         elif isinstance(aspace, gym.spaces.Box):
             low = None
             if isinstance(aspace.low, np.ndarray):
@@ -34,7 +33,7 @@ class Policy(ABC):  # Policy optimizer
             else:
                 self.oact = "linear"
             self.range = (tf.convert_to_tensor(aspace.low), tf.convert_to_tensor(aspace.high))
-            self.dtype = aspace.dtype
+        self.dtype = aspace.dtype
 
     @abstractmethod
     def optimize_step(self, **kwargs):
@@ -72,20 +71,45 @@ class Control(ABC):
             tot_rew += discount * rew
             discount *= self.gamma
         return tot_rew
-
-    def execute(self):
+    
+    def random_action(self):
+        aspace = self.env.action_space
+        import random
+        if isinstance(aspace, gym.spaces.Discrete):
+            probs = []
+            for i in range(aspace.n):
+                probs.append(random.random())
+            probs.sort()
+            action = [probs[0]]
+            for i in range(1, aspace.n):
+                action.append(probs[i]-probs[i-1])
+            action = tf.convert_to_tensor(action)
+            action_take = tf.argmax([action], axis=1)
+            return action, action_take[0]
+        elif isinstance(aspace, gym.spaces.Box):
+            action = tf.convert_to_tensor(aspace.sample()) 
+            return tf.cast(action, self.env.observation_space.dtype), action
+    
+    def execute(self, use_policy=True):
         # take actions according to policy for n episodes, rest env every time for initial states
         state = self.sample_initial()
         print("Main trial initial state", state)
         all_states = [tf.convert_to_tensor(state)]
         all_actions,takes = [],[]
         for t in range(self.horizon):
-            actions, action_takes = self.policy.act(tf.reshape(state, (1,-1)))
-            state, reward, terminated, truncated, info = self.env.step(action_takes[0].numpy())
+            action, action_take = None, None
+            if use_policy:
+                actions, action_takes = self.policy.act(tf.reshape(state, (1,-1)))
+                action = actions[0]
+                action_take = action_takes[0]
+            else:
+                action, action_take = self.random_action()
+            state, reward, terminated, truncated, info = self.env.step(action_take.numpy())
             all_states.append(tf.convert_to_tensor(state))
-            all_actions.append(actions[0])
-            takes.append(action_takes[0].numpy())
+            all_actions.append(action)
+            takes.append(action_take.numpy())
         # print("First 3 states", all_states[:3], "\nLast 3 states", all_states[-3:], "\nactions", takes)
+        print(takes)
         return all_states, all_actions
     
     @abstractmethod
