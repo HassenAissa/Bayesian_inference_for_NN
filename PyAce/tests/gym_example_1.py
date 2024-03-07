@@ -20,26 +20,27 @@ def runner():
     policy = NNPolicy(policy_template, pol_hyp)
 
     dyntrain_nn = tf.keras.Sequential()
-    dyntrain_nn.add(tf.keras.layers.Dense(64, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
-    dyntrain_nn.add(tf.keras.layers.Dense(128, activation='sigmoid'))
-    dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
-    dyn_hyp = HyperParameters(lr=2e-2, k=100, frequency=12, scale=1, batch_size=20)
-    dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
+    dyntrain_nn.add(tf.keras.layers.Dense(512, activation='relu'))
+    dyntrain_nn.add(tf.keras.layers.Dense(256, activation='relu'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(256, activation='tanh'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(128, activation='sigmoid'))
+    # dyntrain_nn.add(tf.keras.layers.Dense(32, activation='tanh'))
+    dyn_hyp = HyperParameters(lr=0.52, k=100, frequency=12, scale=1, batch_size=100)
+    dyn_training = DynamicsTraining(SWAG(), {"loss":tf.keras.losses.MeanSquaredError, "likelihood": "Regression"},
         dyntrain_nn, dyn_hyp)
 
     env = gym.make("Acrobot")
-    bnn = DeepPilco(
+    bnn = BayesianDynamics(
         env=env,
         horizon=32,
         dyn_training=dyn_training,
         policy=policy,
         rew_name="Acb 2 factors", # reward function in static/rewards.py
-        learn_config=(50, 32, 0.95), # dynamic epochs factor, particle number, discount factor
+        learn_config=(1200, 32, 0.95), # dynamic epochs factor, particle number, discount factor
     )
     dyn_training.compile_more(extra={"starting_model":dyn_training.model})
 
-    bnn.learn(nb_epochs=20, record_file="static/results/learning.txt")
+    bnn.learn(nb_epochs=15,record_file="static/results/learning.txt")
 
     # Run an interactive demo of the trained policy
     # Create the environment

@@ -1,7 +1,7 @@
 from .control import gym, Policy, Control,np
 from PyAce.datasets import Dataset
 from PyAce.optimizers import Optimizer
-from static.rewards import all_rewards
+from static.custom import all_rewards
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy, json, pickle
@@ -46,22 +46,19 @@ class NNPolicy(Policy):
         self.model_ready = False
 
     def setup(self, env: gym.Env, ipd):
-        if self.model_ready:
-            return
-        print("Setup genral policy")
-        Policy.setup(self, env)
-        print("Setup NN policy")
-        self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
-        self.model_ready = True
+        learning_rate = 1e-3
+        if "lr" in self.hyperparams._params:
+            learning_rate = self.hyperparams._params["lr"]
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        if not self.model_ready:
+            print("Setup genral policy")
+            Policy.setup(self, env)
+            print("Setup NN policy")
+            self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
+            self.model_ready = True
         
     def optimize_step(self, grad, check_converge=False):
-        weights = self.network.get_weights()
-        new_weights = []
-        for i in range(len(grad)):
-            wg = tf.math.multiply(grad[i], self.hyperparams.lr)
-            m = tf.math.add(weights[i-len(grad)], wg)
-            new_weights.append(m)
-        self.network.set_weights(weights[:-len(grad)]+new_weights)
+        self.optimizer.apply_gradients(zip(grad, self.network.trainable_variables))
 
         # To be implemented: check convergence
         if check_converge:
@@ -117,7 +114,7 @@ class DynamicsTraining:
         self.features += features
         self.targets += targets
         print("Dyn data size:", len(self.features))
-        data = tf.data.Dataset.from_tensor_slices((features, targets))
+        data = tf.data.Dataset.from_tensor_slices((self.features, self.targets))
         train_dataset = Dataset(data, self.data_specs["loss"], self.data_specs["likelihood"], opd[0],
                                 train_proportion=1.0, test_proportion=0.0, valid_proportion=0.0)
         # train_dataset = Dataset(
@@ -132,9 +129,9 @@ class DynamicsTraining:
             self.start = True
         else:
             self.optimizer._dataset = train_dataset
-        nb_epochs = int(ep_fac * np.sqrt(len(self.features)))
-        print("Dyn training epochs", nb_epochs)
-        self.optimizer.train(nb_epochs)
+        # nb_epochs = int(ep_fac * np.sqrt(len(self.features)))
+        # print("Dyn training epochs", nb_epochs)
+        self.optimizer.train(ep_fac)
 
 class BayesianDynamics(Control):
     def __init__(
@@ -155,7 +152,7 @@ class BayesianDynamics(Control):
     
     def sample_initial(self):
         # default sampling method, return initial normalized states
-        options = {"low":-0.5, "high":0.5}
+        options = None  # {"low":-0.5, "high":0.5}
         sample, info = self.env.reset(options=options)  #{"low":-0.5, "high":0.5})
         return sample
 
@@ -168,8 +165,8 @@ class BayesianDynamics(Control):
         target = tf.reshape(state1, self.state_fd)
         return target
         
-    def execute(self):
-        all_states, all_actions = super().execute()
+    def execute(self, use_policy=True):
+        all_states, all_actions = super().execute(use_policy=use_policy)
         features = []
         targets = []
         for s in range(len(all_states)-1):
@@ -216,19 +213,29 @@ class BayesianDynamics(Control):
         exp_rew = k_rew / self.kp
         return exp_rew
 
-    def learn(self, nb_epochs, record_file):
+    def learn(self, nb_epochs, record_file, random_ep):
         freq = max(int(self.horizon / 25), 1)
+        if not random_ep:
+            random_ep = 5
+        else:
+            random_ep = int(random_ep)
         def step(ep, check_converge=False):
             print(">>Learning epoch", ep)
             # train dynamic model using transition dataset
-            xs, ys = self.execute()
+            use_policy = False
+            if ep > random_ep:
+                use_policy = True
+            xs, ys = self.execute(use_policy=use_policy)
             self.dyn_training.train(xs, ys, self.state_fd, self.dyntrain_ep)
+            if not use_policy:
+                return
+            
             # k sample inputs and k dynamic bnn
             states = self.k_particles()
             # predict trajectory and calculate gradient
             with tf.GradientTape(persistent=True) as tape:
                 tape.watch(self.policy.network.trainable_variables)
-                tot_rew = self.t_reward(states, 0)
+                tot_cost = -self.t_reward(states, 0)
                 prev_tmark = 0
                 discount = 1
                 f = open(record_file, "a")
@@ -243,10 +250,10 @@ class BayesianDynamics(Control):
                     if t % freq == 0:
                         f.write(str([str(a.numpy())+"," for a in actions[:3]]))
                         discount *= self.gamma
-                        tot_rew += discount * self.t_reward(states, t)
+                        tot_cost -= discount * self.t_reward(states, t)
                         
-            grad = tape.gradient(tot_rew, self.policy.network.trainable_variables)
-            f.write("\nTotal reward: "+str(tot_rew)+"\n")
+            grad = tape.gradient(tot_cost, self.policy.network.trainable_variables)
+            f.write("\nTotal cost: "+str(tot_cost)+"\n")
             if None in grad:
                 f.write("Invalid gradient!\n")
                 f.close()
@@ -297,14 +304,14 @@ for t in range(self.horizon):
                 prev_tmark = tmark
                 if not tot_grad:
                     tot_grad = grad
-                    tot_rew = rew
+                    tot_cost = rew
                 elif None not in grad: 
                     for g in range(len(grad)):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
-                    tot_rew += rew * discount
+                    tot_cost += rew * discount
                 discount *= self.gamma
                 states = new_states
-            f.write("\nTotal reward: "+str(tot_rew)+"\n")
+            f.write("\nTotal reward: "+str(tot_cost)+"\n")
             if None in tot_grad:
                 f.write("Invalid gradient!\n")
                 f.close()

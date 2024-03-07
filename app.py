@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from static.rewards import all_rewards
+from static.custom import all_rewards, all_plots
 from PyAce.datasets.Dataset import Dataset
 from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model, RBF
 import PyAce.datasets.utils as dsu, utils as apu
@@ -12,7 +12,7 @@ rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", "rbfu", #("or"
                 ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "optim", "reward"]
 rl_f2mand = ["envname", "session", ("if", "resume", "", ["envname", "lep"])]
 sl_opkeys = ["lcat", "loss", "optim"]
-rl_opkeys = ["optim", "reward"]
+rl_opkeys = ["optim", "reward", "plot"]
     
 class ModelInfo:
     def __init__(self):
@@ -31,6 +31,12 @@ class ModelInfo:
         self.form = json.load(f)
         f.close()
 
+    def pause(self):
+        pass
+
+    def restore(self):
+        pass
+
 class SLInfo(ModelInfo):
     def __init__(self):
         super().__init__()
@@ -48,6 +54,12 @@ class SLInfo(ModelInfo):
         self.ipd = layers[0]["config"]["batch_input_shape"]
         self.opd = layers[-1]["config"]["units"]
 
+    def pause(self, tot_epochs):
+        pass
+
+    def restore(self):
+        pass
+
 class RLInfo(ModelInfo):
     def __init__(self):
         super().__init__()
@@ -57,7 +69,8 @@ class RLInfo(ModelInfo):
         self.options = {"sessions": [[]]+apu.read_sessions("rl"),
                         "rmode": [""]+["human", "rgb_array"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
-                        "reward": [""]+list(all_rewards.keys())}
+                        "reward": [""]+list(all_rewards.keys()),
+                        "plot": [""]+list(all_plots.keys())}
         
     def pause(self, tot_epochs):
         pref = "static/sessions/rl/"+self.sname+"/"
@@ -74,7 +87,7 @@ class RLInfo(ModelInfo):
         f = open(pref+"policy_nn.pkl", "wb")
         pickle.dump(self.agent.policy.network.get_weights(), f)
         f.close()
-        self.agent.policy.network = None
+        self.agent.policy.network, self.agent.policy.optimizer = None, None
         f = open(pref+"policy.pkl", "wb")
         pickle.dump(self.agent.policy, f)
         f.close()
@@ -104,6 +117,7 @@ class RLInfo(ModelInfo):
         policy_weights = pickle.load(f)
         policy_nn.set_weights(policy_weights)
         policy.network = policy_nn
+        policy.setup(None, None)
         optim = apu.load_optim(pref)
         f = open(pref+"loss.pkl", "rb")
         loss = pickle.load(f)
@@ -144,7 +158,7 @@ def reinforce():
         if fm.get("resume"): 
             print(">> Learning resumed")
             nb_epochs = int(fm.get("lep"))
-            rl.agent.learn(nb_epochs, record_file=record_file)
+            rl.agent.learn(nb_epochs, record_file=record_file, random_ep=0)
             rl.pause(ep_count+nb_epochs)
         elif fm.get("render"):
             total_reward = 0
@@ -157,12 +171,12 @@ def reinforce():
             rl.real_task = True
             rewards = []
             states = []
-            actions = ([],[])
+            actions, takes = [],[]
             while not done:
                 states.append(observation)
                 a, at = policy.act(tf.reshape(tf.convert_to_tensor(observation), (1,-1)))
-                actions[0].append(a[0])
-                actions[1].append(at[0])
+                actions.append(a[0])
+                takes.append(at[0])
                 # action = action.numpy()
                 observation, reward, terminated, truncated, info = env.step(at[0].numpy())
                 total_reward += reward  # Accumulate the reward
@@ -171,7 +185,10 @@ def reinforce():
                     done = True
                 # You can add a delay here if the visualization is too fast
                 time.sleep(0.02)
-            apu.plot_acb(rewards, states, actions[1])
+            pmode = fm.get("pmode")
+            if not pmode:
+                pmode = "Reward only"
+            all_plots[pmode](rewards, states, takes)
             env.close()
             
         return render_template('reinforce.html', options=options, info=rl)
@@ -235,9 +252,9 @@ def reinforce():
     policy_hyp = apu.hyp_get(fm.get("phyp"))
     rbfu, rbfgamma = int(fm.get("rbfu")), fm.get("rbfgamma")
     if rbfgamma:
-        rbfgamma = int(rbfgamma)
+        rbfgamma = float(rbfgamma)
     else:
-        rbfgamma = None
+        rbfgamma = 0.5
     rl.policy_config = {"rbfu": rbfu, "rbfgamma": rbfgamma}
     policy_template = tf.keras.Sequential()
     policy_template.add(
@@ -246,7 +263,7 @@ def reinforce():
     policy = NNPolicy(policy_template, policy_hyp)
     dyn_hyp = apu.hyp_get(fm.get("dhyp"))
     optim, extra = apu.optim_select(options, fm)
-    dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
+    dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError, "likelihood": "Regression"},
         dyn_nn, dyn_hyp)
     rl.agent = BayesianDynamics(
         env=env,
@@ -263,7 +280,7 @@ def reinforce():
         extra["starting_model"] = dyn_training.model
     dyn_training.compile_more(extra)
     nb_epochs = int(fm.get("lep"))
-    rl.agent.learn(nb_epochs,record_file=record_file)
+    rl.agent.learn(nb_epochs,record_file=record_file, random_ep=fm.get("rep"))
     f = open(record_file, "r")
     rl.process =f.read() 
     f.close()
@@ -276,6 +293,13 @@ def index():
     print(fm,sl.model_ready)
     options = sl.options
     missing = []
+    if fm.get("f3"):
+        session, ite = fm.get("session"), fm.get("ite")
+        if not session or not ite:
+            sl.notice = ["session or learning epochs to continue"]
+            return render_template('index.html',options=options, info=sl)
+        sl.restore()
+        
     if fm and "session" not in fm:
         missing = apu.check_mandatory(fm, sl_mandatory, [])
     if not fm or "session" in fm or missing:
@@ -360,7 +384,9 @@ def index():
         if sl.dataset and sl.model_ready and oname:           
             optim = apu.optim_dataset(options, fm, fm.get("hyp"),
                                        model_config, sl.dataset)
-            optim.train(int(fm.get("ite")))
+            ite = int(fm.get("ite"))
+            optim.train(ite)
+            sl.pause(ite)
             
     return render_template('index.html', options=options, info=sl)
 

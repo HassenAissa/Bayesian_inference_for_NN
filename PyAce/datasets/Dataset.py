@@ -148,6 +148,9 @@ class Dataset:
         return next(iter(self.train_data))[0].shape
 
     def _normalise_feature(self, x, y, mean, std):
+        x = tf.cast(x, dtype = std.dtype)
+        y = tf.cast(y, dtype = std.dtype)
+        mean = tf.cast(mean, dtype = std.dtype)
         return ((x - mean) / std, y)
 
     def _normalise_label(self, x, y, mean, std):

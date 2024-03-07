@@ -235,31 +235,6 @@ def load_optim(pref):
     print(optim._frequency, optim._k)
     return optim
 
-def plot_rewards(rewards):
-    plt.clf()
-    pref = "static/results/"
-    ts = range(len(rewards))
-    plt.title("Rewards over time")
-    plt.plot(ts, rewards)
-    plt.savefig(pref+"reward.png")
-
-def plot_acb(rewards, states, actions):
-    pref = "static/results/"
-    ts = range(len(rewards))
-    fig, ax1 = plt.subplots()
-    ax1.set_xlabel('time step')
-    ax1.set_ylabel('angles and actions (black dots)')
-    for (c, s) in [('b', 0), ('r', 2)]:
-        ax1.plot(ts, [state[s] for state in states], color=c)
-    ax1.scatter(ts, actions, color='k')
-    
-    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    ax2.set_ylabel('speeds')
-    for (c, s) in [('g', 4), ('y', 5)]:
-        ax1.plot(ts, [state[s] for state in states], color=c)
-    plt.savefig(pref+"record.png")
-    plot_rewards(rewards)
-
 # def store_optim(optim, pref):
 #     arrays = []
 #     def check_arrtype(a):
@@ -332,4 +307,4 @@ def plot_acb(rewards, states, actions):
 # print(min(a))
 # print(tf.reshape(a, [1,-1]))
 # print(tf.math.maximum(tf.constant([1,2]), 2))
-from PyAce.tests.gym_example_1 import runner
+# from PyAce.tests.gym_example_1 import runner

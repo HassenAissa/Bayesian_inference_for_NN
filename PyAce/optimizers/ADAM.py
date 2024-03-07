@@ -57,24 +57,28 @@ class ADAM(Optimizer):
         with tf.GradientTape(persistent=True) as tape:
             predictions = self._base_model(sample, training = True)
             # get the loss
-            loss = self._dataset.loss()(label, predictions)
-            self._running_loss += loss
+            loss = self._dataset.loss(reduction= 'none')(label, predictions)
+            self._running_loss += tf.reduce_mean(loss)
             # save the loss if the path is specified
             if save_document_path != None:
                 with open(save_document_path, "a") as losses_file:
                     losses_file.write(str(loss.numpy()))
-        
         for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
             layer = self._base_model.layers[layer_idx]
             for sublayer, sublayer_idx in zip(layer.trainable_variables, range(len(layer.trainable_variables))):
-                    var_grad = tape.gradient(loss, sublayer)
-                    var_grad = var_grad ** 2
+                    var_grad = tape.jacobian(loss, sublayer)
+                    # print(var_grad.shape, "c'est moi")
+
+                    var_grad_squared = var_grad ** 2
+
+                    var_grad_squared = tf.reduce_mean(var_grad_squared, axis = 0)
                     var_grad = tf.reduce_mean(var_grad, axis = 0)
-            
+
+                    # print(var_grad)
                     self._m[layer_idx][sublayer_idx] = (self._beta_1 * self._m[layer_idx][sublayer_idx]
                                                        + (1 - self._beta_1) * var_grad)
                     self._v[layer_idx][sublayer_idx] = (self._beta_2 * self._v[layer_idx][sublayer_idx]
-                                                       + (1 - self._beta_2) * var_grad**2)
+                                                       + (1 - self._beta_2) * var_grad_squared)
                     self._m_hat[layer_idx][sublayer_idx] = (self._m[layer_idx][sublayer_idx] /
                                                           (1 - (self._beta_1**self._epoch_num)))
                     self._v_hat[layer_idx][sublayer_idx] = (self._v[layer_idx][sublayer_idx] /
