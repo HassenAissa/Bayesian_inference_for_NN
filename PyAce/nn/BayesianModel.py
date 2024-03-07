@@ -92,8 +92,30 @@ class BayesianModel:
                     take_from += size
 
     def sample_model(self) -> tf.keras.Model:
+        """
+        samples one model 
+
+        Returns:
+            tf.keras.Model: The sampled model
+        """
         self._sample_weights()
         return tf.keras.models.clone_model(self._model)
+    
+    def sample_n_models(self, n) -> list:
+        """
+        samples N model
+        Args:
+            n (int): number of models to be sampled
+        Returns:
+            list: list of n sampled models
+        """
+        res = []
+        for i in range(n):
+            res.append(self.sample_model)
+        return res
+
+
+
     def predict(self, x: tf.Tensor, nb_samples: int, calculate_gradient=False, y_true=None, loss_func=None):
         """
         use monte carlo approxiamtion over nb_samples to predict the result for the input
