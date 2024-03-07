@@ -24,7 +24,6 @@ class BSAM(Optimizer):
         lam: precision parameter
         rho: sharpness aware parameter
         gam: . Should be set to 1e-1
-        num_data: size of training data
     """
     def __init__(self):
         super().__init__()
@@ -38,7 +37,6 @@ class BSAM(Optimizer):
         self._mean: list[tf.Tensor] = []
         self._sq_mean: list[tf.Tensor] = []
         self._dev: list[tf.Tensor] = []
-        self._weight_layers_indices = []
         self._running_loss = 0
         self._seen_batches = 0
         self._total_batches = 0
@@ -171,18 +169,15 @@ class BSAM(Optimizer):
         #     print(x.shape)
         model = BayesianModel(self._model_config)
 
-        for layer, layer_idx in zip(self._base_model.layers, range(len(self._weight_layers_indices))):
+        for layer, layer_idx in zip(self._base_model.layers, range(len(self._base_model.layers))):
             if len(layer.trainable_variables) != 0:
                 mean = [tf.dtypes.cast(tf.reshape(w, (-1, 1)), dtype = tf.float32) for w in layer.trainable_variables]
                 mean = tf.reshape(tf.concat(mean, 0), (-1, 1))
                 var = [tf.cast(tf.reshape(1/(self._num_data*v), (-1, 1)), dtype=tf.float32) for v in self._v[layer_idx]]
-                var = tf.concat(tf.concat(var, 0), (-1, 1))
+                var = tf.reshape(tf.concat(var, 0), (-1, 1))
 
                 tf_dist = tfp.distributions.Normal(loc=tf.reshape(mean, (-1,)), scale=tf.reshape(var, (-1,)))
                 tf_dist = TensorflowProbabilityDistribution(tf_dist)
-                end_idx = len(self._base_model.layers) - 1
-                if layer_idx + 1 < len(self._weight_layers_indices):
-                    end_idx = self._weight_layers_indices[layer_idx + 1]
                 model.apply_distribution(tf_dist, layer_idx, layer_idx)
         return model
 
