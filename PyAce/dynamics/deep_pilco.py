@@ -1,7 +1,7 @@
 from .control import gym, Policy, Control,np
 from PyAce.datasets import Dataset
 from PyAce.optimizers import Optimizer
-from static.rewards import all_rewards
+from static.custom import all_rewards
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy, json, pickle
@@ -44,16 +44,18 @@ class NNPolicy(Policy):
         self.network = network # template network consisting of inner layers
         self.hyperparams = hyperparams
         self.model_ready = False
-        self.optimizer= tf.keras.optimizers.Adam(learning_rate=1e-3)
 
     def setup(self, env: gym.Env, ipd):
-        if self.model_ready:
-            return
-        print("Setup genral policy")
-        Policy.setup(self, env)
-        print("Setup NN policy")
-        self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
-        self.model_ready = True
+        learning_rate = 1e-3
+        if "lr" in self.hyperparams._params:
+            learning_rate = self.hyperparams._params["lr"]
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        if not self.model_ready:
+            print("Setup genral policy")
+            Policy.setup(self, env)
+            print("Setup NN policy")
+            self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
+            self.model_ready = True
         
     def optimize_step(self, grad, check_converge=False):
         self.optimizer.apply_gradients(zip(grad, self.network.trainable_variables))
@@ -233,7 +235,7 @@ class BayesianDynamics(Control):
             # predict trajectory and calculate gradient
             with tf.GradientTape(persistent=True) as tape:
                 tape.watch(self.policy.network.trainable_variables)
-                tot_rew = -self.t_reward(states, 0)
+                tot_cost = -self.t_reward(states, 0)
                 prev_tmark = 0
                 discount = 1
                 f = open(record_file, "a")
@@ -248,10 +250,10 @@ class BayesianDynamics(Control):
                     if t % freq == 0:
                         f.write(str([str(a.numpy())+"," for a in actions[:3]]))
                         discount *= self.gamma
-                        tot_rew -= discount * self.t_reward(states, t)
+                        tot_cost -= discount * self.t_reward(states, t)
                         
-            grad = tape.gradient(tot_rew, self.policy.network.trainable_variables)
-            f.write("\nTotal reward: "+str(tot_rew)+"\n")
+            grad = tape.gradient(tot_cost, self.policy.network.trainable_variables)
+            f.write("\nTotal cost: "+str(tot_cost)+"\n")
             if None in grad:
                 f.write("Invalid gradient!\n")
                 f.close()
@@ -302,14 +304,14 @@ for t in range(self.horizon):
                 prev_tmark = tmark
                 if not tot_grad:
                     tot_grad = grad
-                    tot_rew = rew
+                    tot_cost = rew
                 elif None not in grad: 
                     for g in range(len(grad)):
                         tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
-                    tot_rew += rew * discount
+                    tot_cost += rew * discount
                 discount *= self.gamma
                 states = new_states
-            f.write("\nTotal reward: "+str(tot_rew)+"\n")
+            f.write("\nTotal reward: "+str(tot_cost)+"\n")
             if None in tot_grad:
                 f.write("Invalid gradient!\n")
                 f.close()

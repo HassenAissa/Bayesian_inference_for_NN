@@ -13,7 +13,8 @@ class HyperParameters:
 
     def __init__(self,batch_size = 64, **kwargs):    
         self._params = copy.deepcopy(kwargs)
-        self._params["batch_size"] = batch_size
+        if "batch_size" not in kwargs:
+            self._params["batch_size"] = batch_size
         self.connectors = "._-"
 
     def __getattr__(self, item):

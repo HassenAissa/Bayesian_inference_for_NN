@@ -71,7 +71,12 @@
       {% if info.notice %}
         **Form information not complete -- missing: {{info.notice}} <br>
       {% endif %}
-      <h3>Training process and result analysis</h3>
+      <h3>Training process tracking </h3>
+      <form action="/" method="post">
+      Select a session to resume training: <select name="session">{% for c in options["sessions"] %}
+        {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>;
+        Number of additional epochs: <input type="number" name="ite">; <input type="submit" name="f3" value="Continue training >>"></form>
+      <h3>Result analysis</h3>
     </div>
     </div>
 </body>

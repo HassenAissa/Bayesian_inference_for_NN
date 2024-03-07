@@ -1,4 +1,4 @@
 20
-default,Acrobot,
-continue,Acrobot,
+default,CartPole,
+continue,CartPole,Test continue training
 mand,Acrobot,

@@ -83,13 +83,14 @@
         {% if info.agent %}
         <textarea readonly cols="70" rows="15">{{info.process}}</textarea>
         {% endif %}
-        <h3>Continue learning or start real task</h3>
+        <h3>Learning progress and real task deployment</h3>
         Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
-        Select a session to resume learning <select name="session">{% for c in options["sessions"] %}
+        Select a session to resume learning or deploy <select name="session">{% for c in options["sessions"] %}
           {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
-        epochs of learning: <input type="number" name="lep">
+        Additional epochs of learning: <input type="number" name="lep">
         <input type="submit" name="resume" value="Continue learning >>"><br><br><b>--Real task rendering and analysis--</b>
-          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select>
+          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select>;
+          Result plotting option: <select name="pmode">{% for p in options["plot"] %}<option value="{{p}}">{{p}}</option>{% endfor %}</select>;
           <input type="submit" name="render" value="Start real task >>">
         </form>
         {% if info.real_task %}
