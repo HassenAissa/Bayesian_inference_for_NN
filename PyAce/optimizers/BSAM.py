@@ -22,8 +22,8 @@ class BSAM(Optimizer):
         beta_1: average weight between the old first moment value and its gradient. Should be between 0 and 1.
         beta_2: average weight between the old second moment value and its gradient. Should be between 0 and 1.
         lam: precision parameter
-        rho: !!!!!!!!!!!!!!!!!.
-        gam: !!!!!!!!!!!!!!!!!. Should be set to 1e-8
+        rho: sharpness aware parameter
+        gam: . Should be set to 1e-1
         num_data: size of training data
     """
     def __init__(self):
@@ -164,6 +164,8 @@ class BSAM(Optimizer):
         model = BayesianModel(self._model_config)
         for layer_idx in range(len(self._base_model.layers)):
             layer = self._base_model.layers[layer_idx]; size = 0
+            init_val = 0
+            init_var = 0
             for w in layer.trainable_variables:
                 if(size == 0):
                     init_val = tf.dtypes.cast(tf.reshape(w, (-1)), dtype=tf.float32)
