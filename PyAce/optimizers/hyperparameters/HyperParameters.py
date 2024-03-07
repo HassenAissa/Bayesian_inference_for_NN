@@ -11,10 +11,10 @@ class HyperParameters:
             **kwargs: the hyperparameters of the Optimizer
     """
 
-    def __init__(self,batch_size = 64, **kwargs):    
+    def __init__(self, **kwargs):    
         self._params = copy.deepcopy(kwargs)
         if "batch_size" not in kwargs:
-            self._params["batch_size"] = batch_size
+            self._params["batch_size"] = 64
         self.connectors = "._-"
 
     def __getattr__(self, item):
