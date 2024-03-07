@@ -150,7 +150,7 @@ class BayesianDynamics(Control):
     
     def sample_initial(self):
         # default sampling method, return initial normalized states
-        options = None #{"low":-0.5, "high":0.5}
+        options = None  # {"low":-0.5, "high":0.5}
         sample, info = self.env.reset(options=options)  #{"low":-0.5, "high":0.5})
         return sample
 
@@ -211,13 +211,17 @@ class BayesianDynamics(Control):
         exp_rew = k_rew / self.kp
         return exp_rew
 
-    def learn(self, nb_epochs, record_file):
+    def learn(self, nb_epochs, record_file, random_ep):
         freq = max(int(self.horizon / 25), 1)
+        if not random_ep:
+            random_ep = 5
+        else:
+            random_ep = int(random_ep)
         def step(ep, check_converge=False):
             print(">>Learning epoch", ep)
             # train dynamic model using transition dataset
             use_policy = False
-            if ep > 10:
+            if ep > random_ep:
                 use_policy = True
             xs, ys = self.execute(use_policy=use_policy)
             self.dyn_training.train(xs, ys, self.state_fd, self.dyntrain_ep)

@@ -144,7 +144,7 @@ def reinforce():
         if fm.get("resume"): 
             print(">> Learning resumed")
             nb_epochs = int(fm.get("lep"))
-            rl.agent.learn(nb_epochs, record_file=record_file)
+            rl.agent.learn(nb_epochs, record_file=record_file, random_ep=0)
             rl.pause(ep_count+nb_epochs)
         elif fm.get("render"):
             total_reward = 0
@@ -235,9 +235,9 @@ def reinforce():
     policy_hyp = apu.hyp_get(fm.get("phyp"))
     rbfu, rbfgamma = int(fm.get("rbfu")), fm.get("rbfgamma")
     if rbfgamma:
-        rbfgamma = int(rbfgamma)
+        rbfgamma = float(rbfgamma)
     else:
-        rbfgamma = None
+        rbfgamma = 0.5
     rl.policy_config = {"rbfu": rbfu, "rbfgamma": rbfgamma}
     policy_template = tf.keras.Sequential()
     policy_template.add(
@@ -246,7 +246,7 @@ def reinforce():
     policy = NNPolicy(policy_template, policy_hyp)
     dyn_hyp = apu.hyp_get(fm.get("dhyp"))
     optim, extra = apu.optim_select(options, fm)
-    dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError(), "likelihood": "Regression"},
+    dyn_training = DynamicsTraining(optim, {"loss":tf.keras.losses.MeanSquaredError, "likelihood": "Regression"},
         dyn_nn, dyn_hyp)
     rl.agent = BayesianDynamics(
         env=env,
@@ -263,7 +263,7 @@ def reinforce():
         extra["starting_model"] = dyn_training.model
     dyn_training.compile_more(extra)
     nb_epochs = int(fm.get("lep"))
-    rl.agent.learn(nb_epochs,record_file=record_file)
+    rl.agent.learn(nb_epochs,record_file=record_file, random_ep=fm.get("rep"))
     f = open(record_file, "r")
     rl.process =f.read() 
     f.close()
