@@ -133,8 +133,8 @@ class BSAM(Optimizer):
                 m_hat_list = []
                 v_list = []
                 for var in layer.trainable_variables:
-                    m_list.append(tf.ones(var.shape, dtype=tf.float32))
-                    m_hat_list.append(tf.ones(var.shape, dtype=tf.float32))
+                    m_list.append(tf.zeros(var.shape, dtype=tf.float32))
+                    m_hat_list.append(tf.zeros(var.shape, dtype=tf.float32))
                     v_list.append(tf.ones(var.shape, dtype=tf.float32))
                 self._m.append(m_list)
                 self._v.append(v_list)
@@ -170,32 +170,6 @@ class BSAM(Optimizer):
         # for x in self._v:
         #     print(x.shape)
         model = BayesianModel(self._model_config)
-<<<<<<< HEAD
-        for layer_idx in range(len(self._base_model.layers)):
-            layer = self._base_model.layers[layer_idx]; size = 0
-            init_val = 0
-            init_var = 0
-            for w in layer.trainable_variables:
-                if(size == 0):
-                    init_val = tf.dtypes.cast(tf.reshape(w, (-1)), dtype=tf.float32)
-                    init_var = tf.dtypes.cast(tf.reshape(1/(self._num_data*self._v[2*layer_idx]), (-1)), dtype=tf.float32) 
-                else: 
-                    init_val = tf.concat((init_val, tf.dtypes.cast(tf.reshape(w, (-1)), dtype=tf.float32)), axis=0)
-                    init_var = tf.concat((init_var, tf.dtypes.cast(tf.reshape(1/(self._num_data*self._v[2*layer_idx + 1]), (-1)), dtype=tf.float32)), axis=0)
-                size += tf.size(w).numpy()
-            self._mean.append(tf.expand_dims(init_val, axis=-1))
-            self._var.append(tf.expand_dims(init_var, axis=-1))
-        idx = 0    
-        for mean, var, idx in zip(self._mean, self._var, range(len(self._weight_layers_indices))):
-            tf_dist = tfp.distributions.Normal(loc=tf.reshape(mean, (-1,)), scale=tf.reshape(var, (-1,)))
-            #tf_dist = TensorflowProbabilityDistribution(tf_dist)
-            start_idx = self._weight_layers_indices[idx]
-            end_idx = len(self._base_model.layers) - 1
-            if idx + 1 < len(self._weight_layers_indices):
-                end_idx = self._weight_layers_indices[idx + 1]
-            model.apply_distribution(tf_dist, start_idx, start_idx)
-            idx+=1
-=======
 
         for layer, layer_idx in zip(self._base_model.layers, range(len(self._weight_layers_indices))):
             if len(layer.trainable_variables) != 0:
@@ -210,7 +184,6 @@ class BSAM(Optimizer):
                 if layer_idx + 1 < len(self._weight_layers_indices):
                     end_idx = self._weight_layers_indices[layer_idx + 1]
                 model.apply_distribution(tf_dist, layer_idx, layer_idx)
->>>>>>> refs/remotes/origin/library_core_first_draft
         return model
 
     def update_parameters_step(self):
