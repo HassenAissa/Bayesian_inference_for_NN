@@ -1,5 +1,8 @@
 # Installation
 https://pypi.org/project/Pyesian/0.0.1/
+```
+pip install Pyesian
+```
 # Introduction
 Many successful pieces of software today involve machine learning, which is why many tools and libraries were created to make implementing machine learning models easier. The best examples are Tensorflow, PyTorch and Keras. We want good software to accelerate progress in ML. One area that has a lot of promise to accelerate progress is Bayesian deep learning.
 
