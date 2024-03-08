@@ -64,7 +64,7 @@ class Plotter:
         n_classes = tf.unique(y)[0].shape[0]
         colors = [(i / n_classes + 0.5 / n_classes) for i in range(n_classes)]
         for i in range(n_classes):
-            plt.scatter(x[y == i][:, 0], x[y == i][:, 1], marker='o', cmap=colors[i], label="Class " + str(i))
+            plt.scatter(x[y == i][:, 0], x[y == i][:, 1], marker='o', label="Class " + str(i))
         if predictions.shape[1] == 1:
             # in the very specific case of binary classification with one neuron output convert it to two output
             predictions = tf.stack([1 - predictions, predictions], axis=1)
