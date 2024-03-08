@@ -1,3 +1,8 @@
+# Installation
+https://pypi.org/project/Pyesian/0.0.1/
+```
+pip install Pyesian
+```
 # Introduction
 Many successful pieces of software today involve machine learning, which is why many tools and libraries were created to make implementing machine learning models easier. The best examples are Tensorflow, PyTorch and Keras. We want good software to accelerate progress in ML. One area that has a lot of promise to accelerate progress is Bayesian deep learning.
 
@@ -22,11 +27,104 @@ Our library builds on top of *Tensorflow Keras ©* to make the training of Bayes
 - [X] VADAM
 - [X] BSAM
 # External libraries integrated
-- [X] Support to all Kersa models architectures
+- [X] Support to all Keras models architectures
 - [X] Support to all Tensorflow probability distributions
 - [X] Support to Weights and Biases 
 - [X] Support to OpenAi Gym RL envirenment
 - [X] Tensorflow datasets easy loading
+# Example codes
+## Classification
+```python
+import sklearn
+import tensorflow as tf
+from Pyesian.datasets import Dataset
+from Pyesian.distributions import GaussianPrior
+from Pyesian.nn import BayesianModel
+from Pyesian.optimizers import BBB
+from Pyesian.optimizers.hyperparameters import HyperParameters
+from Pyesian.visualisations import Metrics, Plotter
+
+# Import dataset from sklearn
+x,y = sklearn.datasets.make_moons(n_samples=2000)
+# Wrap it in the Dataset class and indicate your loss
+dataset = Dataset(
+    tf.data.Dataset.from_tensor_slices((x, y)),
+    tf.keras.losses.SparseCategoricalCrossentropy,
+    "Classification"
+)
+
+# Create your tf.keras model
+model = tf.keras.Sequential()
+model.add(tf.keras.layers.Dense(50, activation='relu', input_shape=(2,)))
+model.add(tf.keras.layers.Dense(2, activation=tf.keras.activations.softmax))
+
+# Create the Prior distribution
+prior = GaussianPrior(0.0, -1.0)
+# Indicate your hyperparameters
+hyperparams = HyperParameters(lr=0.5, alpha=0.0, batch_size=1000)
+# Instantiate your optimizer
+optimizer = BBB()
+# Provide the optimizer with the training data and training parameters
+optimizer.compile(hyperparams, model.to_json(), dataset, prior=prior)
+optimizer.train(600)
+# You're done ! Here is your trained BayesianModel !
+bayesian_model: BayesianModel = optimizer.result()
+
+# See your metrics and performance
+metrics = Metrics(bayesian_model, dataset)
+metrics.summary()
+# Save your model to a folder
+bayesian_model.store("bbb-saved")
+
+# Visualize your results
+plotter = Plotter(bayesian_model, dataset)
+# Plot some distribution boundaries sampled from your posterior
+plotter.plot_decision_boundaries(n_samples=100)
+# Plot the uncertainty area of your model
+plotter.plot_uncertainty_area(uncertainty_threshold=0.9)
+```
+## Regression
+```python
+import tensorflow as tf
+
+from Pyesian.datasets import Dataset
+from Pyesian.distributions import GaussianPrior
+from Pyesian.optimizers import BBB, SGD
+from Pyesian.optimizers.hyperparameters import HyperParameters
+from Pyesian.nn import BayesianModel
+from Pyesian.visualisations import Metrics
+
+# Create a dummy dataset
+x = tf.random.uniform(shape=(600,1), minval=1, maxval=20, dtype=tf.float32)
+y = 2*x+2
+# Wrap it in the Dataset class and indicate your loss
+dataset = Dataset(
+    tf.data.Dataset.from_tensor_slices((x, y)),
+    tf.keras.losses.MeanSquaredError,
+    "Regression"
+)
+
+# Create your tf.keras model
+model = tf.keras.models.Sequential()
+model.add(tf.keras.layers.Dense(1, activation='linear', input_shape=(1,)))
+
+# Indicate your hyperparameters
+hyperparams = HyperParameters(lr=1e-3, frequency=1)
+# Instantiate your optimizer
+optimizer = SGD()
+# Compile the optimizer with your data and the training parameters
+optimizer.compile(hyperparams, model.to_json(), dataset, starting_model=model)
+optimizer.train(2000)
+# You are done! Here is your BayesianModel
+bayesian_model: BayesianModel = optimizer.result()
+
+# See your metrics and performance
+metrics = Metrics(bayesian_model, dataset)
+metrics.summary()
+# Save your model to a folder
+bayesian_model.store("sgd-saved")
+```
+
 # References 
 - Tensorflow: https://www.tensorflow.org/
 - Tensorflow probability: https://www.tensorflow.org/probability
