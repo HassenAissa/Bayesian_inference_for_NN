@@ -68,7 +68,7 @@ class Dataset:
             self._init_from_tf_dataset(dataset)
         else:
             raise Exception("Unsupported dataset format")
-        self.train_data= self.train_data.cache()
+        self.train_data = self.train_data.cache()
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
         self.train_data = self.train_data.prefetch(tf.data.AUTOTUNE)
 
@@ -130,14 +130,14 @@ class Dataset:
         """
         return self.train_data
 
-    def loss(self, reduction = 'auto'):
+    def loss(self, reduction='auto'):
         """
         returns the loss function to be used on the dataset
 
         Returns:
             tf.keras.losses: the loss function
         """
-        return self._loss(reduction = reduction)
+        return self._loss(reduction=reduction)
 
     def input_shape(self):
         """gives the input shape for the dataset
@@ -148,9 +148,9 @@ class Dataset:
         return next(iter(self.train_data))[0].shape
 
     def _normalise_feature(self, x, y, mean, std):
-        x = tf.cast(x, dtype = std.dtype)
-        y = tf.cast(y, dtype = std.dtype)
-        mean = tf.cast(mean, dtype = std.dtype)
+        x = tf.cast(x, dtype=std.dtype)
+        y = tf.cast(y, dtype=std.dtype)
+        mean = tf.cast(mean, dtype=std.dtype)
         return ((x - mean) / std, y)
 
     def _normalise_label(self, x, y, mean, std):
@@ -165,11 +165,14 @@ class Dataset:
             self._label_mean = tf.reduce_mean(label)
             self._label_std = tf.math.reduce_std(tf.cast(label, dtype=tf.float64))
             self.train_data = self.train_data.map(
-                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8),
+                num_parallel_calls=tf.data.AUTOTUNE)
             self.valid_data = self.valid_data.map(
-                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8),
+                num_parallel_calls=tf.data.AUTOTUNE)
             self.test_data = self.test_data.map(
-                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
+                lambda x, y: self._normalise_label(x, y, self._label_mean, self._label_std + 1e-8),
+                num_parallel_calls=tf.data.AUTOTUNE)
 
     def feature_normalisation(self):
         """
@@ -179,10 +182,17 @@ class Dataset:
             input, label = next(iter(self.train_data.batch(self.train_data.cardinality().numpy())))
             mean = tf.reduce_mean(input, axis=0)
             std = tf.math.reduce_std(tf.cast(input, dtype=tf.float64), axis=0)
-            self.train_data = self.train_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
-            self.valid_data = self.valid_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
-            self.test_data = self.test_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8), num_parallel_calls=tf.data.AUTOTUNE)
+            self.train_data = self.train_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8),
+                                                  num_parallel_calls=tf.data.AUTOTUNE)
+            self.valid_data = self.valid_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8),
+                                                  num_parallel_calls=tf.data.AUTOTUNE)
+            self.test_data = self.test_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8),
+                                                num_parallel_calls=tf.data.AUTOTUNE)
         else:
-            self.train_data = self.train_data.map(lambda x, y: (x / 255, y), num_parallel_calls=tf.data.AUTOTUNE)
-            self.valid_data = self.valid_data.map(lambda x, y: (x / 255, y), num_parallel_calls=tf.data.AUTOTUNE)
-            self.test_data = self.test_data.map(lambda x, y: (x / 255, y), num_parallel_calls=tf.data.AUTOTUNE)
+            print("classssss")
+            self.train_data = self.train_data.map(lambda x, y: (tf.math.divide(tf.cast(x,tf.float32), 255), y),
+                                                  num_parallel_calls=tf.data.AUTOTUNE)
+            self.valid_data = self.valid_data.map(lambda x, y: (tf.math.divide(tf.cast(x,tf.float32), 255), y),
+                                                  num_parallel_calls=tf.data.AUTOTUNE)
+            self.test_data = self.test_data.map(lambda x, y: (tf.math.divide(tf.cast(x,tf.float32), 255), y),
+                                                num_parallel_calls=tf.data.AUTOTUNE)

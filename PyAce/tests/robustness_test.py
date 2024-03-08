@@ -123,27 +123,30 @@ def runner_classification():
     dataset = Dataset(
         "mnist",
         tf.keras.losses.SparseCategoricalCrossentropy,
-        "Classification"    
+        "Classification", feature_normalisation=True
     )
     initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
-    base_model = tf.keras.Sequential()
 
-    base_model.add(tf.keras.layers.Conv2D(16, 3, activation='relu', input_shape=(28, 28, 1)))
-    base_model.add(tf.keras.layers.MaxPooling2D(2))
-    base_model.add(tf.keras.layers.Conv2D(32, 3, activation='relu'))
-    base_model.add(tf.keras.layers.MaxPooling2D(2))
-    base_model.add(tf.keras.layers.Conv2D(64, 3, activation='relu'))
-    base_model.add(tf.keras.layers.MaxPooling2D(2))
-    base_model.add(tf.keras.layers.Flatten())
-    base_model.add(tf.keras.layers.Dense(120, activation='relu'))
-    base_model.add(tf.keras.layers.Dense(84, activation='relu'))
-    base_model.add(tf.keras.layers.Dense(62, activation=tf.keras.activations.softmax))
-    
+    base_model = tf.keras.models.Sequential()
+    base_model.add(tf.keras.layers.Flatten(input_shape=(28, 28, 1)))
+    base_model.add(layers.Dense(256, activation='relu'))
+    base_model.add(layers.Dense(256, activation='relu'))
+    base_model.add(layers.Dense(10, activation=tf.keras.activations.softmax))
+
+    hyperparams = HyperParameters(
+        lr=1e-1, k=100, frequency=1,
+        scale=1,
+        batch_size=128)
+    optimizer = SWAG()
+    optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model)
+    optimizer.train(1000)
+    bayesian_model = optimizer.result()
+
     #bayesian_model: BayesianModel = SWAG_test(dataset, base_model)
     #save_path = "Models/HMC/Boston"
     #bayesian_model.store(save_path)
-    path = "/Users/rosa/Downloads/Testing SWAG"
-    bayesian_model = BayesianModel.load(path)
+    path = "../../Testing SWAG"
+    #bayesian_model = BayesianModel.load(path)
     print("Starting robustness analysis")
     
     robustness_builder = Robustness.Robustness(bayesian_model, dataset)
@@ -155,7 +158,7 @@ def runner_classification():
     
     # robustness_builder.mean_corruption_error()
     # robustness_builder.mean_corruption_error(relative=True)
-    robustness_builder.adversarial_robustness()
+    robustness_builder.adversarial_robustness(nb_samples=100, epsilon=0.1)
     
 #runner_regression()
 runner_classification()

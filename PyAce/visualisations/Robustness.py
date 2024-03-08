@@ -108,7 +108,10 @@ class Robustness():
         self.severities = np.arange(1, 6)
         self.dataset = dataset
         self.x, self.y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
-        
+        #self.x = tf.cast(self.x, tf.float32)
+
+
+
     def adversarial_robustness(self, epsilon=0.1, nb_samples=100, save_path=None):
         """
         computes the adversarial robustness of the model using a FGSM gradient attack
@@ -118,10 +121,21 @@ class Robustness():
             nb_samples (int, optional): Defaults to 100.
             save_path (_type_, optional): Defaults to None.
         """
-        _,_, gradient = self.model.predict(self.x, nb_samples, calculate_gradient=True, y_true=self.y_true, loss_func=self.dataset.loss())
-        x_perturbated = self.x + epsilon * np.asarray(np.sign(gradient))
-        
-        _, predicted = self.model.predict(x_perturbated, nb_samples)
+        x_grad = 0
+        for i in range(nb_samples):
+            sample_model = self.model.sample_model()
+            with tf.GradientTape(persistent=True) as tape:
+                tape.watch(self.x)
+                #print(self.x.shape)
+                prediction = sample_model(self.x, training=True)
+                prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+                loss = self.dataset.loss()(self.y_true, prediction)
+                #print(met.accuracy_score(self.y_true, tf.argmax(prediction, axis = 1)) * 100)
+            x_temp_grad = tape.gradient(loss, self.x)
+            x_grad += x_temp_grad
+        x_perturbated = self.x + epsilon * np.sign(x_grad)
+        #print((epsilon * np.sign(x_grad))[0])
+        sample_preds, predicted = self.model.predict(x_perturbated, nb_samples)
         if self.regression:
             robustness = met.root_mean_squared_error(self.y_true, predicted)
             stat = "Adversarial Robustness: " + str(robustness)
@@ -129,7 +143,8 @@ class Robustness():
             robustness = met.accuracy_score(self.y_true, tf.argmax(predicted, axis = 1)) * 100
             stat = "Adversarial Robustness: " + str(robustness) + "%"
         self._save_data(save_path, "adversarial_robustness", robustness) if save_path else print(stat)
-                
+
+
     def mean_corruption_error(self, relative=False, nb_samples=100, save_path=None):
         """
         Computes de mean corruption error and realtive corruption error across all corruptions and severities

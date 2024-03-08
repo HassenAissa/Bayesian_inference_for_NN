@@ -91,7 +91,7 @@ class BayesianModel:
                     w.assign(tf.reshape(vector_weights[take_from:take_from + size], w.shape))
                     take_from += size
 
-    def sample_model(self) -> tf.keras.Model:
+    def sample_model(self, ) -> tf.keras.Model:
         """
         samples one model 
 
@@ -99,7 +99,9 @@ class BayesianModel:
             tf.keras.Model: The sampled model
         """
         self._sample_weights()
-        return tf.keras.models.clone_model(self._model)
+        model =  tf.keras.models.clone_model(self._model)
+        model.set_weights(self._model.get_weights())
+        return model
     
     def sample_n_models(self, n) -> list:
         """
@@ -111,18 +113,18 @@ class BayesianModel:
         """
         res = []
         for i in range(n):
-            res.append(self.sample_model)
+            res.append(self.sample_model())
         return res
 
 
 
-    def predict(self, x: tf.Tensor, nb_samples: int, calculate_gradient=False, y_true=None, loss_func=None):
+    def predict(self, x: tf.Tensor, nb_samples: int, y_true=None, loss_func=None):
         """
         use monte carlo approxiamtion over nb_samples to predict the result for the input
 
 
         Args:
-            x (tf.Tensor): the inuput
+            x (tf.Tensor): the input
             nb_samples (int): number of samples for monte carlo approximation
 
         Returns:
@@ -134,27 +136,12 @@ class BayesianModel:
         x = tf.cast(x, 'float32')
         for i in range(nb_samples):
             self._sample_weights()
-            if calculate_gradient:
-                with tf.GradientTape(persistent=True) as tape:
-                    tape.watch(x)
-                    prediction = self._model(x, training=True)
-                    prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
-                    result += prediction
-                    samples_results.append(prediction)
-                    loss = loss_func(y_true, prediction)
-                x_gradient = tape.gradient(loss, x)
-                gradient += x_gradient
-            else:
-                prediction = self._model(x)
-                prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
-                result += prediction
-                samples_results.append(prediction)
+            prediction = self._model(x)
+            prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+            result += prediction
+            samples_results.append(prediction)
         result /= nb_samples
-        #gradient = tf.cast(gradient, "uint8")
-        if calculate_gradient:
-            return samples_results, result, gradient
-        else:
-            return samples_results, result
+        return samples_results, result
 
     @classmethod
     def load(cls, model_path: str, custom_distribution_register=None) -> 'BayesianModel':

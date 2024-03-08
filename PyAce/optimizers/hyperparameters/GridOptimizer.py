@@ -10,6 +10,17 @@ class GridOptimizer(HyperparameterOptimizer):
     """A grid optimizer inheriting from HyperparametersOptimizer. It performs a grid search over the given hyperparameter \
     possibilities.
 
+    compile should be called with additional argument n.
+    Optimizer will test n combinations along each axis.
+
+    Example :
+    grid_optimizer.compile(Real(0,1,"lr"), Integer(0,100, "k"), n = 10)
+
+    To specify the values to search on one axis use the specify argument. key is the name of the parameters and the
+    value should be a list on all the possible values along the axis.
+    Example :
+    grid_optimizer.compile(Real(0,1,"lr"), Integer(0,100, "k"),specify={"lr":[1e-3,1e-2,1e-1]}, n = 10)
+
     """
     def __init__(self):
         super().__init__()
@@ -45,11 +56,8 @@ class GridOptimizer(HyperparameterOptimizer):
                             points = [int(round(i * epsilon + arg.lower_bound)) for i in range(n)]
                             self._axes.append(sorted(list(set(points))))
 
-    def optimize(self, nb_processes: int):
-        """performs the grid search
-
-        Args:
-            nb_processes (int): The maximum number of processes
+    def optimize(self):
+        """Performs the grid search on the specified hyperparameters in compile.
         """
         self._results = {}
 

@@ -17,9 +17,9 @@ class HMC(Optimizer):
     https://www.mcmchandbook.net/HandbookChapter5.pdf
     It takes the following hyperparameters:
     Hyperparameters:
-        m:
-        L:
-        epsilon:
+        m: m is the mass of the puck
+        L: Number of leapfrog updates to do in one run
+        epsilon: step size for leapfrog step
         
     """
     def __init__(self):

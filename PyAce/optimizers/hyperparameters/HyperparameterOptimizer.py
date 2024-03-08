@@ -6,7 +6,7 @@ import multiprocessing
 
 class HyperparameterOptimizer(ABC):
     """
-    An abstarct class that represents a hyperparameter optimizer
+    An abstract class that represents a hyperparameter optimizer
 
     """
     def __init__(self):
@@ -26,7 +26,7 @@ class HyperparameterOptimizer(ABC):
         pass
 
     @abstractmethod
-    def optimize(self, n_processes: int):
+    def optimize(self):
         """
         This function should define the optimization policy in inheritant classes.
 

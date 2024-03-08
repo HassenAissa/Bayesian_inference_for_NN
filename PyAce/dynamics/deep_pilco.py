@@ -182,8 +182,7 @@ class BayesianDynamics(Control):
         samples = []
         bnn = self.dyn_training.optimizer.result()
         for i in range(self.kp):
-            bnn._sample_weights()
-            self.models.append(copy.deepcopy(bnn._model))
+            self.models.append(bnn.sample_model())
             samples.append(self.sample_initial())
         samples = tf.convert_to_tensor(samples) 
         return samples

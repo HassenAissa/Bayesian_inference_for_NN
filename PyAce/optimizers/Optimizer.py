@@ -39,9 +39,8 @@ class Optimizer(ABC):
                             .shuffle(self._training_dataset_cardinality)
                             .batch(self._batch_size))
         self._data_iterator = iter(self._dataloader)
-        
 
-    def compile(self, hyperparameters: HyperParameters, model_config: str, dataset, verbose=True,**kwargs):
+    def compile(self, hyperparameters: HyperParameters, model_config: str, dataset, verbose=True, **kwargs):
         """compile the model
 
         Args:
@@ -89,11 +88,11 @@ class Optimizer(ABC):
 
     def train_with_weights_and_biases(self, nb_iterations, project_name, weights_and_biases_config):
         wandb.login()
-        run = wandb.init(project= project_name, config=weights_and_biases_config)
-        self.train(nb_iterations, weights_and_biases_log = True)
+        run = wandb.init(project=project_name, config=weights_and_biases_config)
+        self.train(nb_iterations, weights_and_biases_log=True)
 
     def train(self, nb_iterations: int, loss_save_document_path: str = None, model_save_frequency: int = None,
-              model_save_path: str = None, weights_and_biases_log = False):
+              model_save_path: str = None, weights_and_biases_log=False):
         """
         trains the model and saved the training metrics and model status
 
@@ -116,8 +115,7 @@ class Optimizer(ABC):
             os.remove(loss_save_document_path)
 
         if model_save_path != None:
-            self._empty_folder(model_save_path)            
-
+            self._empty_folder(model_save_path)
 
         saved_model_nbr = 0
         for i in range(nb_iterations):
@@ -135,7 +133,8 @@ class Optimizer(ABC):
                 bayesian_model.store(os.path.join(model_save_path, "model" + str(saved_model_nbr)))
                 saved_model_nbr += 1
 
-        print()
+        if self._verbose:
+            print()
 
     @abstractmethod
     def result(self) -> BayesianModel:
