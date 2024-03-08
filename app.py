@@ -12,7 +12,7 @@ rl_mandatory = ["envname", "hor", "dynep", "npar", "disc", "lep", "rbfu", #("or"
                 ("or", ("or","dnnjson", "dnnjsons"), ["dmname", "dhidden", "dactivations"]), "optim", "reward"]
 rl_f2mand = ["envname", "session", ("if", "resume", "", ["envname", "lep"])]
 sl_opkeys = ["lcat", "loss", "optim"]
-rl_opkeys = ["optim", "reward", "plot"]
+rl_opkeys = ["optim", "reward"]
     
 class ModelInfo:
     def __init__(self):
@@ -70,7 +70,7 @@ class RLInfo(ModelInfo):
                         "rmode": [""]+["human", "rgb_array"],
                         "optim": [""]+["BBB", "FSVI", "HMC", "SGLD", "SWAG"],
                         "reward": [""]+list(all_rewards.keys()),
-                        "plot": [""]+list(all_plots.keys())}
+                        "pmode": [""]+list(all_plots.keys())}
         
     def pause(self, tot_epochs):
         pref = "static/sessions/rl/"+self.sname+"/"

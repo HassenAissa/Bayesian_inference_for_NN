@@ -1,10 +1,10 @@
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
+'''Reward functions'''
+
 def h2(state):
     return state[0]*state[2] - state[1]*state[3]
-
-'''Reward functions'''
 
 def ht_speed(state, t):
     height = 4-state[0] - state[0]*2 - h2(state)

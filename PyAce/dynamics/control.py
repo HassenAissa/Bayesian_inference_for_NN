@@ -3,12 +3,7 @@ import gymnasium as gym
 import numpy as np
 from abc import ABC, abstractmethod
 
-def space_flat(orig_shape):
-    '''
-    Flatten the observation/action space to one dimension
-    Args:
-        orig_shape (tuple): original space dimansion
-    '''
+def _space_flat(orig_shape):
     if orig_shape == ():
         return (1,)
     shape = 1
@@ -18,19 +13,21 @@ def space_flat(orig_shape):
 
 class Policy(ABC):  # Policy optimizer
     '''
-    Base class representing policy for any reinforcement learning algorithm
+    Base class representing policy for any reinforcement learning algorithm.
+    User defines the specific form of policy model (e.g., neural networks) by inheritance.
     '''
     def __init__(self):
         self.dtype, self.range = None, None
     def setup(self, env: gym.Env):
         '''
-        Given gym environment, find the action space and acceptable range, and determine output structure
-        If action is discrete, use softmax for every value; 
-        otherwise, use relu or linear depending on whether negative number is taken
+        Complete the class after initialization: find action range and shape information.
+        Args:
+            env: Gym environment
+            ipd: input dimension
         '''
         aspace = env.action_space
         self.action_d = aspace.shape
-        self.action_fd = space_flat(aspace.shape)
+        self.action_fd = _space_flat(aspace.shape)
         if isinstance(aspace, gym.spaces.Discrete):
             self.action_fd = (int(aspace.n),)
             self.oact = "softmax"
@@ -49,45 +46,41 @@ class Policy(ABC):  # Policy optimizer
         self.dtype = aspace.dtype
 
     @abstractmethod
-    def optimize_step(self, **kwargs):
-        '''
-        Take one step to optimize policy
-        '''
+    def _optimize_step(self, **kwargs):
         pass
 
     @abstractmethod
     def act(self, states):
         '''
-        Determine the actions given states
+        Determine the actions given a set of states
+        Args:
+            states (list(tensors))
         '''
         pass
 
 class Control(ABC):
     '''
-    Reinforcement learning basic class using Gym
+    Reinforcement learning controller base class using Gym
     inputs:
-        environment, time horizon, policy model
+        environment: gym environment after "make"
+        horizon (int): time horizon
+        policy: the policy model for learning
     '''
     def __init__(self, env:gym.Env, horizon:int, policy:Policy):
         self.env = env
         self.state_d = env.observation_space.shape
-        self.state_fd = space_flat(self.state_d)
+        self.state_fd = _space_flat(self.state_d)
         self.horizon = horizon
         self.policy = policy
         # self.policy.setup(env)
 
     @abstractmethod
-    def sample_initial(self):
-        '''
-        sample a set of initial states representing probability distribution
-        '''
+    def _sample_initial(self):
+
         pass
 
     @abstractmethod
-    def t_reward(self, **kwargs):
-        '''
-        Expected reward of a time step
-        '''
+    def _t_reward(self, **kwargs):
         pass
 
     def reward(self, **kwargs):
@@ -97,15 +90,12 @@ class Control(ABC):
         discount = 1
         tot_rew = 0
         for t in self.horizon:
-            rew = self.t_reward()
+            rew = self._t_reward()
             tot_rew += discount * rew
             discount *= self.gamma
         return tot_rew
     
-    def random_action(self):
-        '''
-        Use random number generator to generate a list of random actions
-        '''
+    def _random_action(self):
         aspace = self.env.action_space
         import random
         if isinstance(aspace, gym.spaces.Discrete):
@@ -123,11 +113,8 @@ class Control(ABC):
             action = tf.convert_to_tensor(aspace.sample()) 
             return tf.cast(action, self.env.observation_space.dtype), action
     
-    def execute(self, use_policy=True):
-        '''
-        Take actions according to policy for time horizon, resett env every time for initial states
-        '''
-        state = self.sample_initial()
+    def _execute(self, use_policy=True):
+        state = self._sample_initial()
         print("Main trial initial state", state)
         all_states = [tf.convert_to_tensor(state)]
         all_actions,takes = [],[]
@@ -138,7 +125,7 @@ class Control(ABC):
                 action = actions[0]
                 action_take = action_takes[0]
             else:
-                action, action_take = self.random_action()
+                action, action_take = self._random_action()
             state, reward, terminated, truncated, info = self.env.step(action_take.numpy())
             all_states.append(tf.convert_to_tensor(state))
             all_actions.append(action)
@@ -148,7 +135,12 @@ class Control(ABC):
         return all_states, all_actions
     
     @abstractmethod
-    def learn(self, nb_epochs, record):
+    def learn(self, nb_epochs, **kwargs):
+        '''
+        The main procedure of reinforcement learning algorithm
+        Args:
+            nb_epochs (int): the number of iterations to run the algorithm
+        '''
         pass
     
 class PolicyOptimizer(ABC):
