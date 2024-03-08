@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from static.custom import all_rewards, all_plots
+from PyAce.dynamics.custom import all_rewards, all_plots
 from PyAce.datasets.Dataset import Dataset
 from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model, RBF
 import PyAce.datasets.utils as dsu, utils as apu
