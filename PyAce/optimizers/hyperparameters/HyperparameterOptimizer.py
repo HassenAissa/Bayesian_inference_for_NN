@@ -19,7 +19,7 @@ class HyperparameterOptimizer(ABC):
         Args:
             *args (list[Number]): list of hyperparameters of the model with name and range.
             **kwargs: additional arguments for child classes
-            f (_type_): the cost function to optimize. You can train and evaluate your model on the hyperparameters here
+            f (function): the cost function to optimize. You can train and evaluate your model on the hyperparameters here
         """
         self._f = f
         self._compile_extra_components(*args, **kwargs)

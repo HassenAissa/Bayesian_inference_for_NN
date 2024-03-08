@@ -15,17 +15,17 @@ import copy
 class VADAM(Optimizer):
     """
 
-    VADAM is a class that inherits from Optimizer. 
-    This inference methods is taken from the paper : "Fast and Scalable Bayesian Deep Learning by Weight-Perturbation in Adam"
-    https://arxiv.org/pdf/1806.04854.pdf
+    VADAM is a class that inherits from Optimizer. \n
+    This inference methods is taken from the paper : "Fast and Scalable Bayesian Deep Learning by Weight-Perturbation in Adam". \n
+    https://arxiv.org/pdf/1806.04854.pdf \n
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one step
-        lr: the learning rate
-        beta_1: average weight between the old first moment value and its gradient. Should be between 0 and 1.
-        beta_2: average weight between the old second moment value and its gradient. Should be between 0 and 1.
-        lam: precision parameter
-        num_data: size of training data
+        `batch_size`: the size of the batch for one step. Defaults to 128. \n
+        `lr`: the learning rate \n
+        `beta_1`: average weight between the old first moment value and its gradient. Should be between 0 and 1. \n
+        `beta_2`: average weight between the old second moment value and its gradient. Should be between 0 and 1. \n
+        `lam`: precision parameter \n
+        `num_data`: size of training data \n
     """
     def __init__(self):
         super().__init__()

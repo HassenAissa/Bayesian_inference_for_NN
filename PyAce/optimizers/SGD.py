@@ -12,14 +12,14 @@ import copy
 
 class SGD(Optimizer):
     """
-    SGD is a class that inherits from Optimizer. 
-    This simple inference methods is taken from the paper : "Simple and Scalable Predictive Uncertainty Estimation using Deep Ensemble"
-    https://arxiv.org/pdf/1612.01474.pdf
+    SGD is a class that inherits from Optimizer. \n
+    This simple inference methods is taken from the paper : "Simple and Scalable Predictive Uncertainty Estimation using Deep Ensemble". \n
+    https://arxiv.org/pdf/1612.01474.pdf \n
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one step
-        lr: the learning rate
-        frequency: moment update frequency. It could be left to 1 and increased for performance reasons.
+        `batch_size`: the size of the batch for one step. Defaults to 128. \n
+        `lr`: the learning rate \n
+        `frequency`: moment update frequency. It could be left to 1 and increased for performance reasons. \n
     """
     def __init__(self):
         super().__init__()

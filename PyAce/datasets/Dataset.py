@@ -42,8 +42,16 @@ class Dataset:
             normalise (bool, optional): nomalise the data or not. Defaults to True.
 
         Raises:
-            Exception: _description_
+            ValueError: When the split propostions don't sum up to 1
+            ValueError: When an unsupported dataset type is passed. We support the following: \n 
+            tf datasets with "image" and "label"\n
+            tf.data.Dataset \n
+            pd.Dataframe \n
+            csv files \n
+            folder with subfolder "images" and csv file "labels"
         """
+        if(train_proportion + test_proportion + valid_proportion != 1):
+            raise ValueError("Dataset split test_proportions must sum up to 1")
         self._train_proportion = train_proportion
         self._test_proportion = test_proportion
         self._valid_proportion = valid_proportion
@@ -67,7 +75,7 @@ class Dataset:
             dataset = tf.data.Dataset.from_tensor_slices((input, label))
             self._init_from_tf_dataset(dataset)
         else:
-            raise Exception("Unsupported dataset format")
+            raise ValueError("Unsupported dataset format")
         self.train_data = self.train_data.cache()
         self.train_data = self.train_data.shuffle(self.train_data.cardinality())
         self.train_data = self.train_data.prefetch(tf.data.AUTOTUNE)

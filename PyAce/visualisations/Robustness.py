@@ -119,7 +119,7 @@ class Robustness():
         Args:
             epsilon (float, optional): Severity of the attack. Defaults to 0.1.
             nb_samples (int, optional): Defaults to 100.
-            save_path (_type_, optional): Defaults to None.
+            save_path (str, optional): Defaults to None.
         """
         x_grad = 0
         for i in range(nb_samples):
@@ -154,7 +154,7 @@ class Robustness():
         Args:
             relative (bool, optional): computes relative error if set to True. Defaults to False.
             nb_samples (int, optional): Defaults to 100.
-            save_path (_type_, optional): pass in path to save value on file. Defaults to None.
+            save_path (str, optional): pass in path to save value on file. Defaults to None.
         """
         if self.regression:
             ce = np.array([self.corruption_error(helper=True, relative=relative)])
@@ -169,27 +169,27 @@ class Robustness():
             stat = name + str(mean) if self.regression else name + str(mean) + " %"
             print(stat)
     
-    def corruption_error(self, corruption=None, relative=False, nb_samples=100, save_path=None, helper=False):
+    def corruption_error(self, corruption=None, relative=False, nb_boundaries=100, save_path=None, helper=False):
         """
         Computes the corruption error across all severities for a specific corruption
 
         Args:
             corruption (String): corruption 
             relative (bool, optional): if set to True, computes relative corruption error. Defaults to False.
-            nb_samples (int, optional): _description_. Defaults to 100.
-            save_path (_type_, optional): _description_. Defaults to None.
+            nb_boundaries (int, optional): The number of Monte Carlo samples for the prediction. Defaults to 100.
+            save_path (str, optional): The saving path. Defaults to None.
             helper (bool, optional): set to True only when used internally as a helper method. Defaults to False.
         """
         if self.regression:
-            error = [np.array([self._error_rate(s, nb_samples) for s in self.severities])]
+            error = [np.array([self._error_rate(s, nb_boundaries) for s in self.severities])]
         else:    
             if self.error_dict[corruption] :
                 error = self.error_dict[corruption]
             else:
-                error = [np.array([self._error_rate(s, nb_samples, corruption)*100 for s in self.severities])]
+                error = [np.array([self._error_rate(s, nb_boundaries, corruption)*100 for s in self.severities])]
                 self.error_dict[corruption] = error
         if relative:
-            _, y_pred = self.model.predict(self.x, nb_samples)
+            _, y_pred = self.model.predict(self.x, nb_boundaries)
             clean_error = met.root_mean_squared_error(self.y_true, y_pred) if self.regression else 1 - met.accuracy_score(self.y_true, tf.argmax(y_pred, axis = 1))
             ce = np.sum([x-clean_error for x in error]) / len(self.severities)
         else:
@@ -207,7 +207,7 @@ class Robustness():
         """
         Plots corruption error as a bar graph giving the robustness score for each corruption.
         """
-        ce = np.array([self.corruption_error(c, nb_samples=nb_samples, helper=True) for c in self.corruption_dict.keys()])
+        ce = np.array([self.corruption_error(c, nb_boundaries=nb_samples, helper=True) for c in self.corruption_dict.keys()])
         plt.bar(self.corruptions_dict.keys(), ce)
         plt.xlabel("Corruption")
         label = "Corruption Error" if self.regression else "Corruption Error (%)"

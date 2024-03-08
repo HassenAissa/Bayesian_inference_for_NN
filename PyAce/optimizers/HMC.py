@@ -12,14 +12,14 @@ from PyAce.distributions import Sampled
 
 class HMC(Optimizer):
     """
-    HMC is an class that inherits from Optimizer
-    This powerful inference method is taken from: "MCMC Using Hamiltonian Dynamics"
-    https://www.mcmchandbook.net/HandbookChapter5.pdf
+    HMC is an class that inherits from Optimizer. \n
+    This powerful inference method is taken from: "MCMC Using Hamiltonian Dynamics". \n
+    https://www.mcmchandbook.net/HandbookChapter5.pdf  \n
     It takes the following hyperparameters:
     Hyperparameters:
-        m: m is the mass of the puck
-        L: Number of leapfrog updates to do in one run
-        epsilon: step size for leapfrog step
+        `m`: m is the mass of the puck \n
+        `L`: Number of leapfrog updates to do in one run \n
+        `epsilon`: step size for leapfrog step \n
         
     """
     def __init__(self):

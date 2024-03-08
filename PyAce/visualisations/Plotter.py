@@ -146,7 +146,7 @@ class Plotter:
             raise ValueError("ROC can only be plotted for Classification")  
         x,y_true = self._get_x_y(n_samples, data_type)
         y_samples, y_pred, y_true, x = self._get_predictions(x, n_boundaries, y_true, data_type)
-        one_hot_y_true = sk.preprocessing.LabelBinarizer().fit_transform(y_true)
+        one_hot_y_true = tf.one_hot(y_true, y_pred.shape[1])
         display = sk.metrics.RocCurveDisplay.from_predictions(
             one_hot_y_true[:, label_of_interest],
             y_pred[:, label_of_interest],
@@ -168,7 +168,7 @@ class Plotter:
 
         Args:
             dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
-            granularity (_type_, optional): _description_. Defaults to 1e-2.
+            granularity (int, optional): The precision of the plot. Defaults to 1e-2.
             n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
             n_samples (int, optional): number of samples from the dataset. Defaults to 100.
             data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
@@ -184,7 +184,7 @@ class Plotter:
         x, y, base_matrix = self._extract_x_y_from_dataset(dimension=dimension, n_samples=n_samples,
                                                            data_type=data_type)
         if dimension == 2:
-            self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity=1e-2, 
+            self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity= granularity, 
                                             n_boundaries=10, un_zoom_level=un_zoom_level)
             self._save(save_path, "decision_boundaries") if save_path else plt.show()
 
@@ -199,7 +199,7 @@ class Plotter:
 
         Args:
             dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
-            granularity (float, optional): _description_. Defaults to 1e-2.
+            granularity (float, optional): The precision of the plot. Defaults to 1e-2.
             n_samples (int, optional): number of samples from the dataset. Defaults to 100.
             data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
             uncertainty_threshold (float, optional): the threshold below which we consider the prediction uncertain. Defaults to 0.8.

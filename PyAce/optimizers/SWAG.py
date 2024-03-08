@@ -12,16 +12,17 @@ import copy
 
 class SWAG(Optimizer):
     """
-    SWAG is a class that inherits from Optimizer. 
-    This simple inference methods is taken from the paper : "A simple baseline for Bayesian uncertianty in deep learning"
-    https://arxiv.org/pdf/1902.02476.pdf
+    SWAG is a class that inherits from Optimizer. \n
+    This simple inference methods is taken from the paper : "A simple baseline for Bayesian uncertianty in deep learning". \n
+    https://arxiv.org/pdf/1902.02476.pdf  \n
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one step
-        lr: the learning rate
-        k: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account only the last part of the training where we start converging. Should be at least 2.
-        scale: the scale of the deviation matrix. It should be between 0 and 1
-        frequency: moment update frequency. It could be left to 1 and increased for performance reasons.
+        `batch_size`: the size of the batch for one step. Defaults to 128. \n
+        `lr`: the learning rate \n
+        `k`: maximum number of columns in the deviation matrix. It should not be very big so that it takes into account 
+        only the last part of the training where we start converging. Should be at least 2. \n
+        `scale`: the scale of the deviation matrix. It should be between 0 and 1 \n
+        `frequency`: moment update frequency. It could be left to 1 and increased for performance reasons. \n
     """
 
     def __init__(self):

@@ -25,7 +25,7 @@ class Optimizer(ABC):
         Performs one step of the training
 
         Args:
-            save_document_path (_type_, optional): The path to save the losses during the training. Defaults to None.
+            save_document_path (str, optional): The path to save the losses during the training. Defaults to None.
 
         Returns:
             float: the loss value after the step
@@ -46,7 +46,7 @@ class Optimizer(ABC):
         Args:
             hyperparameters (HyperParameters): the model hyperparameters
             model_config (dict): the configuration of the model
-            dataset (_type_): the dataset of the model
+            dataset (Dataset): the dataset of the model
 
         Raises:
             Exception: raises error if the model is already compiled

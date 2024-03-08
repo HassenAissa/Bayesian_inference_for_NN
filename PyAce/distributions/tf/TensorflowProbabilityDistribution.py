@@ -31,7 +31,7 @@ class TensorflowProbabilityDistribution(Distribution):
         from PyAce.distributions.tf.BaseSerializer import BaseSerializer
         return BaseSerializer()
 
-    def store(self, path: str) -> str:
+    def store(self, path: str):
         distribution_type = type(self._tf_distribution).__name__
         data = ""
         if distribution_type in self.__DISTRIBUTION_SERIALIZER_REGISTER().keys():

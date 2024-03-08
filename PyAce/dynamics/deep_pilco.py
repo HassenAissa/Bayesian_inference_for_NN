@@ -289,33 +289,3 @@ class BayesianDynamics(Control):
         f = open(pref+"agent.json", "w")
         json.dump(info, f)
         f.close()
-'''
-for t in range(self.horizon):
-                with tf.GradientTape(persistent=True) as tape:
-                    tape.watch(self.policy.network.trainable_variables)
-                    ys, actions, new_states = self.forward(states)
-                    rew = self.t_reward(ys, actions, t)
-                    f.write(str([str(a.numpy()[0])+"," for a in actions[:5]]))
-                grad = tape.gradient(rew, self.policy.network.trainable_variables)
-                tmark = int(10*t/self.horizon)
-                if tmark > prev_tmark and tmark % 2 == 0:
-                    print("Time step: "+str(t)+"/"+str(self.horizon))
-                prev_tmark = tmark
-                if not tot_grad:
-                    tot_grad = grad
-                    tot_cost = rew
-                elif None not in grad: 
-                    for g in range(len(grad)):
-                        tot_grad[g] = tf.math.add(tot_grad[g], tf.math.multiply(grad[g], discount)) 
-                    tot_cost += rew * discount
-                discount *= self.gamma
-                states = new_states
-            f.write("\nTotal reward: "+str(tot_cost)+"\n")
-            if None in tot_grad:
-                f.write("Invalid gradient!\n")
-                f.close()
-                return 
-            f.write("Gradient sample: "+str(tot_grad[-1])+"\n")
-            f.close()
-            return self.policy.optimize_step(tot_grad, check_converge=check_converge)
-'''
