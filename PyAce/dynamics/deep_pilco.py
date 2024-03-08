@@ -14,7 +14,6 @@ def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
         template: tensorflow sequential nn with only hidden layers
         ipd (tuple): input dimension
         opd (tuple): output dimension
-
     Returns:
         tf.Sequential: complete nn
     """
@@ -83,10 +82,7 @@ class NNPolicy(Policy):
             self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
             self.model_ready = True
         
-    def optimize_step(self, grad, check_converge=False):
-        '''
-        take one step of gradient descent
-        '''
+    def _optimize_step(self, grad, check_converge=False):
         self.optimizer.apply_gradients(zip(grad, self.network.trainable_variables))
 
         # To be implemented: check convergence
@@ -97,6 +93,9 @@ class NNPolicy(Policy):
     def act(self, states, take=True):
         '''
         Determine the actions given a set of states
+        Args:
+            states (list(Tonsor)): the set of vectors representing environment state
+            take (bool): if set to true, also return "action_takes"; otherwise return this term as empty list
         Return:
             actions (list(Tensor)): direct action values returned by policy network
             action_takes (list(Tensor)): actions converted in a format acceptable by gym for interaction
@@ -124,10 +123,10 @@ class NNPolicy(Policy):
                 
 class DynamicsTraining:
     '''
-    Learn transition model f(state, action) => new state
+    The class to learn transition model f(state, action) => new state
     inputs:
-        optimizer: Bayesian optimizers (SWAG, BBB, HMC...)
-        data_specs: should include {loss=..., likelidood=...}, as per Dataset class
+        optimizer (Optimizer): Bayesian optimizer (SWAG, BBB, HMC...) for learning
+        data_specs (dict): should include {loss=..., likelidood=...}, as per Dataset class
         template (tf.Sequential): similar to policy, a sequential nn with only hidden layers
         hyperparams (HyperParameters): typically include {lr=..., batch_size=...} and specifics of optimizer
     '''
@@ -140,27 +139,21 @@ class DynamicsTraining:
         self.start = False   
         self.model_ready = (template is None)
 
-    def create_model(self, ipd, opd):
-        '''
-        complete the model template by taking input/output dimension and final layer activation
-        '''
+    def _create_model(self, ipd, opd):
         if self.model_ready:
             return
         model = complete_model(self.template, ipd, opd, out_activation="linear") 
         self.model = model   
 
     def compile_more(self, extra):
+        '''
+        Provide additional parameters for bayesian model
+        Args:
+            extra (dict): all names and values
+        '''
         self.rems = extra
 
-    def train(self, features, targets, opd, n_epochs):
-        '''
-        Training function for learning transition dynamics
-        Args:
-            features (list(Tensor)): state + action
-            targets (list(Tensor)): new state
-            opd (tuple): output dimension
-            n_epochs (int): number of epochs to train the model
-        '''
+    def _train(self, features, targets, opd, n_epochs):
         if len(self.features)/len(features) > 50:
             self.targets = self.targets[len(self.features):]
             self.features = self.features[len(self.features):]
@@ -188,13 +181,14 @@ class DynamicsTraining:
 
 class BayesianDynamics(Control):
     '''
-    Main class for Deep Pilco Bayesian reinforcement learning
+    Main class for Deep Pilco Bayesian reinforcement learning algorithm
     inputs:
+        env: gym environment
         horizon: time steps to run the algorithm at each iteration
         dyn_training: the class to learn transition dynamics
         policy: the model for policy
         rew_name (str): the name of reward function (as in user defined in "custom.py")
-        learn_config: (dynamic training epoch number (int), particle number (int), discount factor (float))
+        learn_config: tuple(dynamic training epoch number (int), particle number (int), discount factor (float))
     '''
     def __init__(
         self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
@@ -204,7 +198,7 @@ class BayesianDynamics(Control):
         self.policy.setup(self.env, self.state_d)
         ipd = (self.state_fd[0] + policy.action_fd[0],)
         opd = (self.state_fd[0],)
-        dyn_training.create_model(ipd, opd)
+        dyn_training._create_model(ipd, opd)
         self.dyn_training = dyn_training
         self.rew_name = rew_name    
         self.state_reward = all_rewards[rew_name]
@@ -212,71 +206,49 @@ class BayesianDynamics(Control):
             self.dyntrain_ep, self.kp, self.gamma = learn_config
         # self.policy_optimizer = policy_optimizer
     
-    def sample_initial(self):
-        '''
-        Sample an initial set of states using gym reset funciton
-        '''
+    def _sample_initial(self):
         # default sampling method, return initial normalized states
         options = None  # {"low":-0.5, "high":0.5}
         sample, info = self.env.reset(options=options)  #{"low":-0.5, "high":0.5})
         return sample
 
-    def dyn_feature(self, state0, action0):
-        '''
-        Combine a list of states and actions to a feature tensor for training
-        '''
+    def _dyn_feature(self, state0, action0):
         s0 = tf.reshape(state0, self.state_fd)
         feature = tf.concat([s0, action0], axis=0)
         return feature
     
-    def dyn_target(self, state1):
-        '''
-        Concert a list of states to target tenfor for training
-        '''
+    def _dyn_target(self, state1):
+
         target = tf.reshape(state1, self.state_fd)
         return target
         
-    def execute(self, use_policy=True):
-        '''
-        Execute the policy for time horizon and create transition dataset
-        '''
-        all_states, all_actions = super().execute(use_policy=use_policy)
+    def _execute(self, use_policy=True):
+        all_states, all_actions = super()._execute(use_policy=use_policy)
         features = []
         targets = []
         for s in range(len(all_states)-1):
-            feature = self.dyn_feature(all_states[s], all_actions[s])
-            target = self.dyn_target(all_states[s+1])
+            feature = self._dyn_feature(all_states[s], all_actions[s])
+            target = self._dyn_target(all_states[s+1])
             features.append(feature)
             targets.append(target)
         return features, targets
 
-    def k_particles(self):
-        '''
-        Generate k random initial states and sample k model weights from bayesian model
-        '''
+    def _k_particles(self):
         # create k random bnn weights and k random inputs
         self.models = []
         samples = []
         bnn = self.dyn_training.optimizer.result()
         for i in range(self.kp):
             self.models.append(bnn.sample_model())
-            samples.append(self.sample_initial())
+            samples.append(self._sample_initial())
         samples = tf.convert_to_tensor(samples) 
         return samples
     
-    def forward(self, samples):  
-        '''
-        The procedure for predicting state trajectory
-        Args:
-            samples (Tensor): a set of current states
-        Return:
-            actions (Tensor): the corresponding actions the policy makes for each sample state
-            new_states (Tensor): after predicting the states, resample new states using normal distribution
-        '''
+    def _forward(self, samples):  
         ys = []      
         actions, action_takes = self.policy.act(samples, take=False)
         for i in range(self.kp):
-            feature = self.dyn_feature(samples[i], actions[i])
+            feature = self._dyn_feature(samples[i], actions[i])
             y = self.models[i](tf.reshape(feature, shape=(1,-1))) # normalized new state
             ys.append(y[0])
         ys = tf.convert_to_tensor(ys)
@@ -289,10 +261,7 @@ class BayesianDynamics(Control):
             new_states.append(x)
         return actions, tf.convert_to_tensor(new_states)  
         
-    def t_reward(self, states, t):
-        '''
-        Expected reward for a time step, given states districution and time
-        '''
+    def _t_reward(self, states, t):
         k_rew = 0
         for i in range(self.kp):
             # if calculating cost, use negative state reward
@@ -319,23 +288,23 @@ class BayesianDynamics(Control):
             use_policy = False
             if ep > random_ep:
                 use_policy = True
-            xs, ys = self.execute(use_policy=use_policy)
-            self.dyn_training.train(xs, ys, self.state_fd, self.dyntrain_ep)
+            xs, ys = self._execute(use_policy=use_policy)
+            self.dyn_training._train(xs, ys, self.state_fd, self.dyntrain_ep)
             if not use_policy:
                 return
             
             # k sample inputs and k dynamic bnn
-            states = self.k_particles()
+            states = self._k_particles()
             # predict trajectory and calculate gradient
             with tf.GradientTape(persistent=True) as tape:
                 tape.watch(self.policy.network.trainable_variables)
-                tot_cost = -self.t_reward(states, 0)
+                tot_cost = -self._t_reward(states, 0)
                 prev_tmark = 0
                 discount = 1
                 f = open(record_file, "a")
                 f.write("Learning epoch "+str(ep)+"\n; Actions hor: ")
                 for t in range(1,self.horizon+1):
-                    actions, new_states = self.forward(states)
+                    actions, new_states = self._forward(states)
                     tmark = int(10*t/self.horizon)
                     if tmark > prev_tmark and tmark % 2 == 0:
                         print("Time step: "+str(t)+"/"+str(self.horizon))
@@ -344,7 +313,7 @@ class BayesianDynamics(Control):
                     if t % freq == 0:
                         f.write(str([str(a.numpy())+"," for a in actions[:3]]))
                         discount *= self.gamma
-                        tot_cost -= discount * self.t_reward(states, t)
+                        tot_cost -= discount * self._t_reward(states, t)
                         
             grad = tape.gradient(tot_cost, self.policy.network.trainable_variables)
             f.write("\nTotal cost: "+str(tot_cost)+"\n")
@@ -354,7 +323,7 @@ class BayesianDynamics(Control):
                 return 
             f.write("Gradient sample: "+str(grad[-1])+", length "+str(len(grad))+"\n")
             f.close()
-            return self.policy.optimize_step(grad, check_converge=check_converge)
+            return self.policy._optimize_step(grad, check_converge=check_converge)
         
         f = open(record_file, "w")
         f.write("")
@@ -374,6 +343,9 @@ class BayesianDynamics(Control):
     def store(self, pref, tot_epochs):
         '''
         Store training session information in json file
+        Args:
+            pref (str): directory name prefix (like "static/sessions/")
+            tot_epochs (int): the current epoch number of training
         '''
         f = open(pref+"loss.pkl", "wb")
         pickle.dump(self.dyn_training.data_specs["loss"], f)

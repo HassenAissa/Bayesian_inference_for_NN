@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gymnasium as gym
 import tensorflow as tf
 import tensorflow_probability as tfp
 import copy, json, pickle
