@@ -11,3 +11,30 @@ There exists many inference methods to approximate
 posterior distribution (HMC, SGLD, SWAG, BBB...), each with its pros and cons (runtime, accuracy of approximation...). 
 
 Our library builds on top of *Tensorflow Keras ©* to make the training of Bayesian Neural Networks simple. It groups together a wide range of inference methods in one easy-to-use framework to enable Bayes in ordinary NNs with minimum efforts on the user-side as well as many other features listed below.
+# Inference Methods implemented
+- [x] SWAG
+- [X] Bayes by Backprop (BBB)
+- [X] SGLD
+- [X] HMC
+- [X] SGD
+- [X] SGLD
+- [X] ADAM
+- [X] VADAM
+- [X] BSAM
+# External libraries integrated
+- [X] Support to all Kersa models architectures
+- [X] Support to all Tensorflow probability distributions
+- [X] Support to Weights and Biases 
+- [X] Support to OpenAi Gym RL envirenment
+- [X] Tensorflow datasets easy loading
+# References 
+- Weights and Biases - The AI developer platform : https://wandb.ai/site
+- Improving PILCO with Bayesian Neural Network Dynamics Models: https://www.cs.ox.ac.uk/people/yarin.gal/website/PDFs/DeepPILCO.pdf
+- MCMC Using Hamiltonian Dynamics: https://www.mcmchandbook.net/HandbookChapter5.pdf
+- Bayesian Learning via Stochastic Gradient Langevin Dynamics: https://www.stats.ox.ac.uk/ teh/research/compstat-s/WelTeh2011a.pdf
+- A simple baseline for Bayesian uncertianty in deep learning https://arxiv.org/pdf/1902.02476.pdf
+- Weight Uncertainty in Neural Networks https://arxiv.org/pdf/1505.05424.pdf
+- Simple and Scalable Predictive Uncertainty Estimation using Deep Ensemble https://arxiv.org/pdf/1612.01474.pdf
+- Fast and Scalable Bayesian Deep Learning by Weight-Perturbation in Adam: https://arxiv.org/pdf/1806.04854.pdf
+- Sam as an optimal relaxation of Bayes: https://arxiv.org/pdf/2210.01620.pdf
+
