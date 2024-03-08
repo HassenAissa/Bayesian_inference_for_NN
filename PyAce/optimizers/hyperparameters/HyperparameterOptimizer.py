@@ -13,10 +13,13 @@ class HyperparameterOptimizer(ABC):
         self._f = None
 
     def compile(self, f, *args, **kwargs):
-        """compiles the HyperparametersOptimizer instance with its specific extra components.
+        """Provide the optimizer with the search space for the hyperparameters.
+        compile should be called before calling optimize.
 
         Args:
-            f (_type_): _description_ TODO
+            *args (list[Number]): list of hyperparameters of the model with name and range.
+            **kwargs: additional arguments for child classes
+            f (_type_): the cost function to optimize. You can train and evaluate your model on the hyperparameters here
         """
         self._f = f
         self._compile_extra_components(*args, **kwargs)

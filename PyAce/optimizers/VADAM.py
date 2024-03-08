@@ -145,7 +145,7 @@ class VADAM(Optimizer):
         self._data_iterator = iter(self._dataloader)
         self._n = 0
         self._lam = getattr(self._hyperparameters, 'lam', None) if hasattr(self._hyperparameters, 'lam') else self._lam
-        self._num_data = self._hyperparameters.num_data
+        self._num_data = self._dataset.train_data.cardinality()
         self._beta_1 = self._hyperparameters.beta_1
         self._beta_2 = self._hyperparameters.beta_2
 

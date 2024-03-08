@@ -140,6 +140,7 @@ class Robustness():
             robustness = met.root_mean_squared_error(self.y_true, predicted)
             stat = "Adversarial Robustness: " + str(robustness)
         else:
+            #print(self.dataset.loss()(self.y_true, predicted))
             robustness = met.accuracy_score(self.y_true, tf.argmax(predicted, axis = 1)) * 100
             stat = "Adversarial Robustness: " + str(robustness) + "%"
         self._save_data(save_path, "adversarial_robustness", robustness) if save_path else print(stat)

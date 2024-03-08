@@ -22,8 +22,6 @@ class BayesianModel:
         self._model: tf.keras.Model = model
 
 
-    # intended implementation: dtbn intervals takes the form like [[0,2],[3,4],[5,5],[6,6],[7,12]...]
-    # interval may be single (equal) or double (unequal); distribution list each element correspond to an interval
     def apply_distribution(self, distribution: Distribution, start_layer: int, end_layer: int):
         """
             set the distributions of the given layers to the one provided
@@ -48,21 +46,7 @@ class BayesianModel:
                     interval] + self._layers_dtbn_intervals[i + 1:]
                 self._distributions = self._distributions[:i + 1] + [distribution] + self._distributions[i + 1:]
                 break
-        """
-        TODO: Implement this without errors
-        if start_layer > end_layer:
-            raise ValueError('starting_layer must be less than end_layer')
-        elif start_layer < 0 or end_layer >= self._n_layers:
-            raise ValueError('out of bounds')
-        start_index = bisect.bisect_right(self._layers_dtbn_intervals, start_layer)
-        if self._layers_dtbn_intervals[start_index - 1] != start_layer:
-            self._layers_dtbn_intervals.insert(start_index, start_layer)
-        else:
-            start_index -= 1
-        end_index = bisect.bisect_right(end_layer)
-        if self._layers_dtbn_intervals[end_index]:
-            pass
-        """
+
 
 
     def apply_distributions_layers(self, layer_list, dtbn_list):
