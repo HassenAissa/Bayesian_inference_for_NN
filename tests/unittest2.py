@@ -1,17 +1,17 @@
-from PyAce.visualisations import Plotter
-from PyAce.optimizers.SGLD import SGLD
-from PyAce.distributions.GaussianPrior import GaussianPrior
-from PyAce.optimizers import ADAM, BBB, BSAM, SGD
+from Pyesian.visualisations import Plotter
+from Pyesian.optimizers.SGLD import SGLD
+from Pyesian.distributions.GaussianPrior import GaussianPrior
+from Pyesian.optimizers import ADAM, BBB, BSAM, SGD
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from PyAce.datasets import Dataset
-from PyAce.nn import BayesianModel
-from PyAce.optimizers import HMC
-from PyAce.optimizers.VADAM import VADAM
-from PyAce.optimizers.hyperparameters import HyperParameters
-from PyAce.optimizers import SWAG
-from PyAce.visualisations.Metrics import Metrics
+from Pyesian.datasets import Dataset
+from Pyesian.nn import BayesianModel
+from Pyesian.optimizers import HMC
+from Pyesian.optimizers.VADAM import VADAM
+from Pyesian.optimizers.hyperparameters import HyperParameters
+from Pyesian.optimizers import SWAG
+from Pyesian.visualisations.Metrics import Metrics
 import tensorflow_datasets as tfds
 import sklearn
 import tensorflow_probability as tfp
@@ -109,7 +109,7 @@ def ADAM_test(dataset, base_model):
     optimizer = ADAM()
     optimizer.compile(hyperparams, base_model.to_json(),
                       dataset, starting_model=base_model)
-    optimizer.train(1000)
+    optimizer.train(10)
     bayesian_model: BayesianModel = optimizer.result()
     return bayesian_model
 
@@ -252,6 +252,8 @@ def runner():
         # print("finished storing")
         # print("start metrics")
         analytics_builder = Metrics(bayesian_model, dataset)
+        plotter = Plotter(bayesian_model, dataset)
+        plotter.roc_one_vs_rest()
         analytics_builder.summary(n_boundaries=50, save_path=None)
 
 runner()

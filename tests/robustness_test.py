@@ -1,12 +1,12 @@
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from PyAce.datasets import Dataset
-from PyAce.nn import BayesianModel
-from PyAce.optimizers.hyperparameters import HyperParameters
-from PyAce.optimizers import BBB, SWAG, HMC, SGLD, VADAM, ADAM
-from PyAce.distributions import GaussianPrior
-from PyAce.visualisations import Robustness, Metrics
+from Pyesian.datasets import Dataset
+from Pyesian.nn import BayesianModel
+from Pyesian.optimizers.hyperparameters import HyperParameters
+from Pyesian.optimizers import BBB, SWAG, HMC, SGLD, VADAM, ADAM
+from Pyesian.distributions import GaussianPrior
+from Pyesian.visualisations import Robustness, Metrics
 import tensorflow_datasets as tfds
 import sys
 
@@ -111,7 +111,7 @@ def runner_regression():
     #bayesian_model.store(save_path)
     #bayesian_model = BayesianModel.load(save_path)
     print("Starting robustness analysis")
-    # path = "PyAce/tests"
+    # path = "Pyesian/tests"
     robustness_builder = Robustness.Robustness(bayesian_model, dataset)
     
     robustness_builder.mean_corruption_error()
@@ -121,11 +121,11 @@ def runner_regression():
     
 def runner_classification():
     dataset = Dataset(
-        "mnist",
+        "fashion_mnist",
         tf.keras.losses.SparseCategoricalCrossentropy,
         "Classification", feature_normalisation=True
     )
-    initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
+    # initializer = tf.keras.initializers.RandomNormal(mean=0., stddev=1.)
 
     base_model = tf.keras.models.Sequential()
     base_model.add(tf.keras.layers.Flatten(input_shape=(28, 28, 1)))
@@ -134,19 +134,25 @@ def runner_classification():
     base_model.add(layers.Dense(10, activation=tf.keras.activations.softmax))
 
     hyperparams = HyperParameters(
-        lr=1e-1, k=100, frequency=1,
-        scale=1,
-        batch_size=128)
+        lr=1e-1, k=10, frequency=1,
+        scale=0.01,
+        batch_size=5000)    # instantiate your optimizer
     optimizer = SWAG()
-    optimizer.compile(hyperparams, base_model.to_json(), dataset, starting_model=base_model)
+    optimizer.compile(hyperparams, base_model.to_json(),
+                      dataset, starting_model=base_model)
     optimizer.train(1000)
+
+    # optimizer = ADAM()
+    # optimizer.compile(hyperparams, base_model.to_json(),
+    #                   dataset, starting_model=base_model)
+    # optimizer.train(500)
     bayesian_model = optimizer.result()
 
     #bayesian_model: BayesianModel = SWAG_test(dataset, base_model)
     #save_path = "Models/HMC/Boston"
     #bayesian_model.store(save_path)
-    path = "../../Testing SWAG"
-    #bayesian_model = BayesianModel.load(path)
+    # path = "C:/Users/hasse/Downloads/fashion_mnist/fashion_mnist/Testing SWAG"
+    # bayesian_model = BayesianModel.load(path)
     print("Starting robustness analysis")
     
     robustness_builder = Robustness.Robustness(bayesian_model, dataset)
@@ -158,7 +164,7 @@ def runner_classification():
     
     # robustness_builder.mean_corruption_error()
     # robustness_builder.mean_corruption_error(relative=True)
-    robustness_builder.adversarial_robustness(nb_samples=100, epsilon=0.1)
+    robustness_builder.adversarial_robustness(nb_samples=1, epsilon=0.1)
     
 #runner_regression()
 runner_classification()

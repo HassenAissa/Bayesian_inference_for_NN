@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request
-from PyAce.dynamics.custom import all_rewards, all_plots
-from PyAce.datasets.Dataset import Dataset
-from PyAce.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model, RBF
-import PyAce.datasets.utils as dsu, utils as apu
+from Pyesian.dynamics.custom import all_rewards, all_plots
+from Pyesian.datasets.Dataset import Dataset
+from Pyesian.dynamics.deep_pilco import gym, DynamicsTraining, NNPolicy, BayesianDynamics, complete_model, RBF
+import Pyesian.datasets.utils as dsu, utils as apu
 import tensorflow as tf
 import os, json, pickle, time
 

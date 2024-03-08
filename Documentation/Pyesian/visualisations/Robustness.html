@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>Pyesian.visualisations.Robustness API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>Pyesian.visualisations.Robustness</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import sklearn.metrics as met
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+import skimage as sk
+import os
+
+# //////// Corruptions ////////
+def gaussian_noise(x, severity=1):
+    c = [.08, .12, 0.18, 0.26, 0.38][severity - 1]
+
+    x = np.array(x) / 255.
+    return np.clip(x + np.random.normal(size=x.shape, scale=c), 0, 1) * 255
+
+def gaussian_noise_regression(x_col, severity=1):
+    c = [.08, .12, 0.18, 0.26, 0.38][severity - 1]
+    
+    return np.array(x_col) + np.random.normal(loc=0, scale=c, size=x_col.shape)
+
+def shot_noise(x, severity=1):
+    c = [60, 25, 12, 5, 3][severity - 1]
+
+    x = np.array(x) / 255.
+    return np.clip(np.random.poisson(x * c) / float(c), 0, 1) * 255
+
+
+def impulse_noise(x, severity=1):
+    c = [.03, .06, .09, 0.17, 0.27][severity - 1]
+
+    x = sk.util.random_noise(np.array(x) / 255., mode=&#39;s&amp;p&#39;, amount=c)
+    return np.clip(x, 0, 1) * 255
+
+def speckle_noise(x, severity=1):
+    c = [.15, .2, 0.35, 0.45, 0.6][severity - 1]
+
+    x = np.array(x) / 255.
+    return np.clip(x + x * np.random.normal(size=x.shape, scale=c), 0, 1) * 255
+
+def gaussian_blur(x, severity=1):
+    c = [1, 2, 3, 4, 6][severity - 1]
+
+    x = sk.filters.gaussian(np.array(x) / 255., sigma=c, channel_axis=-1)
+    return np.clip(x, 0, 1) * 255
+
+def contrast(x, severity=1):
+    c = [0.4, .3, .2, .1, .05][severity - 1]
+
+    x = np.array(x) / 255.
+    means = np.mean(x, axis=(0, 1), keepdims=True)
+    return np.clip((x - means) * c + means, 0, 1) * 255
+
+def brightness(x, severity=1):
+    c = [.1, .2, .3, .4, .5][severity - 1]
+
+    x = np.array(x) / 255.
+
+    if len(x.shape) &lt; 3 or x.shape[2] &lt; 3:
+        x = np.clip(x + c, 0, 1)
+    else:
+        x = sk.color.rgb2hsv(x)
+        x[:, :, 2] = np.clip(x[:, :, 2] + c, 0, 1)
+        x = sk.color.hsv2rgb(x)
+
+    return np.clip(x, 0, 1) * 255
+
+def saturate(x, severity=1):
+    c = [(0.3, 0), (0.1, 0), (2, 0), (5, 0.1), (20, 0.2)][severity - 1]
+
+    x = np.array(x) / 255.
+
+    gray_scale = False
+    if len(x.shape) &lt; 3 or x.shape[2] &lt; 3:
+        x = np.array([x, x, x]).transpose((1, 2, 0))
+        gray_scale = True
+    x = sk.color.rgb2hsv(x)
+    x[:, :, 1] = np.clip(x[:, :, 1] * c[0] + c[1], 0, 1)
+    x = sk.color.hsv2rgb(x)
+    if gray_scale:
+        x = x[:, :, 0]
+
+    return np.clip(x, 0, 1) * 255
+
+def pixelate(x, severity=1):
+    c = [0.6, 0.5, 0.4, 0.3, 0.25][severity - 1]
+
+    x_shape = np.array(x).shape
+
+    x = x.resize((int(x_shape[1] * c), int(x_shape[0] * c)), Image.BOX)
+
+    x = x.resize((x_shape[1], x_shape[0]), Image.NEAREST)
+
+    return x
+
+class Robustness():
+    &#34;&#34;&#34;
+        a class representing the robustness analysis of a model
+        stores the errors for different corruptions and severities as it computes them to save computations
+    &#34;&#34;&#34;
+    def __init__(self, model, dataset):
+        self.model = model
+        self.regression = dataset.likelihood_model == &#34;Regression&#34;
+        self.corruptions = (gaussian_noise, shot_noise, impulse_noise, speckle_noise,
+                            gaussian_blur, contrast, brightness, saturate, pixelate)
+        self.corruption_dict = {corr_func.__name__: corr_func for corr_func in self.corruptions}
+        self.error_dict = {c: None for c in self.corruption_dict.keys()}
+        self.n = len(self.corruptions)
+        self.severities = np.arange(1, 6)
+        self.dataset = dataset
+        self.x, self.y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
+        self.x = tf.cast(self.x, tf.float64)
+
+
+
+    def adversarial_robustness(self, epsilon=0.1, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        computes the adversarial robustness of the model using a FGSM gradient attack
+
+        Args:
+            epsilon (float, optional): Severity of the attack. Defaults to 0.1.
+            nb_samples (int, optional): Defaults to 100.
+            save_path (str, optional): Defaults to None.
+        &#34;&#34;&#34;
+        x_grad = 0
+        for i in range(nb_samples):
+            sample_model = self.model.sample_model()
+            with tf.GradientTape(persistent=True) as tape:
+                tape.watch(self.x)
+                prediction = sample_model(self.x, training=True)
+                prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+                loss = self.dataset.loss()(self.y_true, prediction)
+            x_temp_grad = tape.gradient(loss, self.x)
+            x_grad += x_temp_grad
+        x_perturbated = self.x + epsilon * np.sign(x_grad)
+        #print((epsilon * np.sign(x_grad))[0])
+        sample_preds, predicted = self.model.predict(x_perturbated, nb_samples)
+        if self.regression:
+            robustness = met.root_mean_squared_error(self.y_true, predicted)
+            stat = &#34;Adversarial Robustness: &#34; + str(robustness)
+        else:
+            #print(self.dataset.loss()(self.y_true, predicted))
+            robustness = met.accuracy_score(self.y_true, tf.argmax(predicted, axis = 1)) * 100
+            stat = &#34;Adversarial Robustness: &#34; + str(robustness) + &#34;%&#34;
+        self._save_data(save_path, &#34;adversarial_robustness&#34;, robustness) if save_path else print(stat)
+
+
+    def mean_corruption_error(self, relative=False, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        Computes de mean corruption error and realtive corruption error across all corruptions and severities
+        Prints value or saves it if save_path param given
+
+        Args:
+            relative (bool, optional): computes relative error if set to True. Defaults to False.
+            nb_samples (int, optional): Defaults to 100.
+            save_path (str, optional): pass in path to save value on file. Defaults to None.
+        &#34;&#34;&#34;
+        if self.regression:
+            ce = np.array([self.corruption_error(helper=True, relative=relative)])
+        else:
+            ce = np.array([self.corruption_error(c, helper=True, relative=relative) for c in self.corruption_dict.keys()])
+        mean = np.mean(ce)
+        if save_path:
+            name = &#34;mean_relative_error&#34; if relative else &#34;mean_corruption_error&#34;
+            self._save_data(save_path, name, mean)
+        else:
+            name = &#34;Mean Relative Error: &#34; if relative else &#34;Mean Corruption Error: &#34;
+            stat = name + str(mean) if self.regression else name + str(mean) + &#34; %&#34;
+            print(stat)
+    
+    def corruption_error(self, corruption=None, relative=False, nb_boundaries=100, save_path=None, helper=False):
+        &#34;&#34;&#34;
+        Computes the corruption error across all severities for a specific corruption
+
+        Args:
+            corruption (String): corruption 
+            relative (bool, optional): if set to True, computes relative corruption error. Defaults to False.
+            nb_boundaries (int, optional): The number of Monte Carlo samples for the prediction. Defaults to 100.
+            save_path (str, optional): The saving path. Defaults to None.
+            helper (bool, optional): set to True only when used internally as a helper method. Defaults to False.
+        &#34;&#34;&#34;
+        if self.regression:
+            error = [np.array([self._error_rate(s, nb_boundaries) for s in self.severities])]
+        else:    
+            if self.error_dict[corruption] :
+                error = self.error_dict[corruption]
+            else:
+                error = [np.array([self._error_rate(s, nb_boundaries, corruption)*100 for s in self.severities])]
+                self.error_dict[corruption] = error
+        if relative:
+            _, y_pred = self.model.predict(self.x, nb_boundaries)
+            clean_error = met.root_mean_squared_error(self.y_true, y_pred) if self.regression else 1 - met.accuracy_score(self.y_true, tf.argmax(y_pred, axis = 1))
+            ce = np.sum([x-clean_error for x in error]) / len(self.severities)
+        else:
+            ce = np.sum(error) / len(self.severities)
+        if helper:
+            return ce
+        if save_path:
+            name_file = &#34;relative_error_&#34; if relative else &#34;corruption_error_&#34;
+            self._save_data(save_path, name_file + corruption, ce)
+        else:
+            print_stat = &#34;Relative Error for {}: {}%&#34; if relative else &#34;Corruption Error for {}: {}%&#34;
+            print(print_stat.format(corruption, ce))
+       
+    def robustness_by_corruption(self, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        Plots corruption error as a bar graph giving the robustness score for each corruption.
+        &#34;&#34;&#34;
+        ce = np.array([self.corruption_error(c, nb_boundaries=nb_samples, helper=True) for c in self.corruption_dict.keys()])
+        plt.bar(self.corruptions_dict.keys(), ce)
+        plt.xlabel(&#34;Corruption&#34;)
+        label = &#34;Corruption Error&#34; if self.regression else &#34;Corruption Error (%)&#34;
+        plt.ylabel(label)
+        plt.title(&#34;Corruption Error by Corruption&#34;)
+        self._save_figure(save_path, &#34;robustness_by_corruption&#34;) if save_path else plt.show()
+        
+    def corruption_robustness_by_severity(self, corruption=None, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        Plots corruption error for given corruption as a function of the severity
+        &#34;&#34;&#34;
+        if self.regression:
+            error = [self._error_rate(s, nb_samples) for s in self.severities]
+        else:
+            if self.error_dict[corruption] :
+                error = self.error_dict[corruption]
+            else:
+                error = [self._error_rate(s, nb_samples, corruption) for s in self.severities]
+                self.error_dict[corruption] = error
+        plt.bar(self.severities, error)
+        plt.xlabel(&#34;Severity&#34;)
+        label = &#34;Error Rate&#34; if self.regression else &#34;Error Rate (%)&#34;
+        plt.ylabel(label)
+        plt.title(&#34;Error Rate by Severity for {}&#34;.format(&#34;noise&#34; if self.regression else corruption))
+        self._save_figure(save_path, &#34;corruption_robustness_by_severity&#34;) if save_path else plt.show()
+    
+    def _error_rate(self, severity, nb_samples, corruption=None):
+        input = self.x.numpy()
+        if self.regression:
+            corrupted_inputs = [self._corrupt_regression(x, severity) for x in input]
+        else:
+            colour_scale = np.shape(input)[-1]
+            #_, width, length, _ = np.shape(x_array)
+            #resized = [cv2.resize(image, (224, 224)) for image in x_array]
+            corrupted_inputs = [self._corrupt(image, severity, corruption) for image in input]
+            #corrupted_images = [cv2.resize(image, (width, length)) for image in corrupted_images_resized]
+            if colour_scale == 1:
+                corrupted_inputs = np.stack([np.mean(image, axis=-1, keepdims=True) for image in corrupted_inputs])
+        corrupted_inputs = tf.convert_to_tensor(corrupted_inputs)
+        corrupted_inputs = tf.concat(corrupted_inputs, axis=1)
+        _, c_predicted = self.model.predict(corrupted_inputs, nb_samples)
+        if self.regression:
+            error = met.root_mean_squared_error(self.y_true, c_predicted)
+        else:
+            accuracy = met.accuracy_score(self.y_true, tf.argmax(c_predicted, axis = 1))
+            error = 1 - accuracy
+        #print(&#34;Error rate for&#34;, corruption, &#34;, with severity&#34;, severity, &#34;:&#34;, error)
+        return error
+
+    # Image width and height must be at least 32 pixels
+    def _corrupt(self, image, severity, corruption):
+        if image.ndim == 2:
+            image = np.stack((image,)*3, axis=-1) 
+        
+        height, width, channels = image.shape
+        
+        if channels == 1:
+            image = np.stack((np.squeeze(image),)*3, axis=-1)
+
+        image_corrupted = self.corruption_dict[corruption](Image.fromarray(image), severity)
+        
+        return np.uint8(image_corrupted)
+    
+    def _corrupt_regression(self, x, severity):
+        return np.array([gaussian_noise_regression(col, severity) for col in x])
+    
+    def _save_figure(self, path, name):
+        directory = path + &#34;/report/robustness&#34;
+        figures = directory + &#34;/figures&#34;
+        os.makedirs(directory, exist_ok=True)
+        os.makedirs(figures, exist_ok=True)
+        plt.savefig(figures + &#34;/&#34; + name + &#34;.png&#34;)
+        
+    def _save_data(self, path, name, content):
+        directory = path + &#34;/report/robustness&#34;
+        os.makedirs(directory, exist_ok=True)
+        file_path = directory + &#34;/&#34; + name + &#34;.txt&#34;
+        f = open(file_path, &#34;w&#34;)
+        f.write(str(content))
+        f.close()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="Pyesian.visualisations.Robustness.brightness"><code class="name flex">
+<span>def <span class="ident">brightness</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def brightness(x, severity=1):
+    c = [.1, .2, .3, .4, .5][severity - 1]
+
+    x = np.array(x) / 255.
+
+    if len(x.shape) &lt; 3 or x.shape[2] &lt; 3:
+        x = np.clip(x + c, 0, 1)
+    else:
+        x = sk.color.rgb2hsv(x)
+        x[:, :, 2] = np.clip(x[:, :, 2] + c, 0, 1)
+        x = sk.color.hsv2rgb(x)
+
+    return np.clip(x, 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.contrast"><code class="name flex">
+<span>def <span class="ident">contrast</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def contrast(x, severity=1):
+    c = [0.4, .3, .2, .1, .05][severity - 1]
+
+    x = np.array(x) / 255.
+    means = np.mean(x, axis=(0, 1), keepdims=True)
+    return np.clip((x - means) * c + means, 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.gaussian_blur"><code class="name flex">
+<span>def <span class="ident">gaussian_blur</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gaussian_blur(x, severity=1):
+    c = [1, 2, 3, 4, 6][severity - 1]
+
+    x = sk.filters.gaussian(np.array(x) / 255., sigma=c, channel_axis=-1)
+    return np.clip(x, 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.gaussian_noise"><code class="name flex">
+<span>def <span class="ident">gaussian_noise</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gaussian_noise(x, severity=1):
+    c = [.08, .12, 0.18, 0.26, 0.38][severity - 1]
+
+    x = np.array(x) / 255.
+    return np.clip(x + np.random.normal(size=x.shape, scale=c), 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.gaussian_noise_regression"><code class="name flex">
+<span>def <span class="ident">gaussian_noise_regression</span></span>(<span>x_col, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gaussian_noise_regression(x_col, severity=1):
+    c = [.08, .12, 0.18, 0.26, 0.38][severity - 1]
+    
+    return np.array(x_col) + np.random.normal(loc=0, scale=c, size=x_col.shape)</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.impulse_noise"><code class="name flex">
+<span>def <span class="ident">impulse_noise</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def impulse_noise(x, severity=1):
+    c = [.03, .06, .09, 0.17, 0.27][severity - 1]
+
+    x = sk.util.random_noise(np.array(x) / 255., mode=&#39;s&amp;p&#39;, amount=c)
+    return np.clip(x, 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.pixelate"><code class="name flex">
+<span>def <span class="ident">pixelate</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pixelate(x, severity=1):
+    c = [0.6, 0.5, 0.4, 0.3, 0.25][severity - 1]
+
+    x_shape = np.array(x).shape
+
+    x = x.resize((int(x_shape[1] * c), int(x_shape[0] * c)), Image.BOX)
+
+    x = x.resize((x_shape[1], x_shape[0]), Image.NEAREST)
+
+    return x</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.saturate"><code class="name flex">
+<span>def <span class="ident">saturate</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def saturate(x, severity=1):
+    c = [(0.3, 0), (0.1, 0), (2, 0), (5, 0.1), (20, 0.2)][severity - 1]
+
+    x = np.array(x) / 255.
+
+    gray_scale = False
+    if len(x.shape) &lt; 3 or x.shape[2] &lt; 3:
+        x = np.array([x, x, x]).transpose((1, 2, 0))
+        gray_scale = True
+    x = sk.color.rgb2hsv(x)
+    x[:, :, 1] = np.clip(x[:, :, 1] * c[0] + c[1], 0, 1)
+    x = sk.color.hsv2rgb(x)
+    if gray_scale:
+        x = x[:, :, 0]
+
+    return np.clip(x, 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.shot_noise"><code class="name flex">
+<span>def <span class="ident">shot_noise</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shot_noise(x, severity=1):
+    c = [60, 25, 12, 5, 3][severity - 1]
+
+    x = np.array(x) / 255.
+    return np.clip(np.random.poisson(x * c) / float(c), 0, 1) * 255</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.speckle_noise"><code class="name flex">
+<span>def <span class="ident">speckle_noise</span></span>(<span>x, severity=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def speckle_noise(x, severity=1):
+    c = [.15, .2, 0.35, 0.45, 0.6][severity - 1]
+
+    x = np.array(x) / 255.
+    return np.clip(x + x * np.random.normal(size=x.shape, scale=c), 0, 1) * 255</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="Pyesian.visualisations.Robustness.Robustness"><code class="flex name class">
+<span>class <span class="ident">Robustness</span></span>
+<span>(</span><span>model, dataset)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class representing the robustness analysis of a model
+stores the errors for different corruptions and severities as it computes them to save computations</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Robustness():
+    &#34;&#34;&#34;
+        a class representing the robustness analysis of a model
+        stores the errors for different corruptions and severities as it computes them to save computations
+    &#34;&#34;&#34;
+    def __init__(self, model, dataset):
+        self.model = model
+        self.regression = dataset.likelihood_model == &#34;Regression&#34;
+        self.corruptions = (gaussian_noise, shot_noise, impulse_noise, speckle_noise,
+                            gaussian_blur, contrast, brightness, saturate, pixelate)
+        self.corruption_dict = {corr_func.__name__: corr_func for corr_func in self.corruptions}
+        self.error_dict = {c: None for c in self.corruption_dict.keys()}
+        self.n = len(self.corruptions)
+        self.severities = np.arange(1, 6)
+        self.dataset = dataset
+        self.x, self.y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
+        self.x = tf.cast(self.x, tf.float64)
+
+
+
+    def adversarial_robustness(self, epsilon=0.1, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        computes the adversarial robustness of the model using a FGSM gradient attack
+
+        Args:
+            epsilon (float, optional): Severity of the attack. Defaults to 0.1.
+            nb_samples (int, optional): Defaults to 100.
+            save_path (str, optional): Defaults to None.
+        &#34;&#34;&#34;
+        x_grad = 0
+        for i in range(nb_samples):
+            sample_model = self.model.sample_model()
+            with tf.GradientTape(persistent=True) as tape:
+                tape.watch(self.x)
+                prediction = sample_model(self.x, training=True)
+                prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+                loss = self.dataset.loss()(self.y_true, prediction)
+            x_temp_grad = tape.gradient(loss, self.x)
+            x_grad += x_temp_grad
+        x_perturbated = self.x + epsilon * np.sign(x_grad)
+        #print((epsilon * np.sign(x_grad))[0])
+        sample_preds, predicted = self.model.predict(x_perturbated, nb_samples)
+        if self.regression:
+            robustness = met.root_mean_squared_error(self.y_true, predicted)
+            stat = &#34;Adversarial Robustness: &#34; + str(robustness)
+        else:
+            #print(self.dataset.loss()(self.y_true, predicted))
+            robustness = met.accuracy_score(self.y_true, tf.argmax(predicted, axis = 1)) * 100
+            stat = &#34;Adversarial Robustness: &#34; + str(robustness) + &#34;%&#34;
+        self._save_data(save_path, &#34;adversarial_robustness&#34;, robustness) if save_path else print(stat)
+
+
+    def mean_corruption_error(self, relative=False, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        Computes de mean corruption error and realtive corruption error across all corruptions and severities
+        Prints value or saves it if save_path param given
+
+        Args:
+            relative (bool, optional): computes relative error if set to True. Defaults to False.
+            nb_samples (int, optional): Defaults to 100.
+            save_path (str, optional): pass in path to save value on file. Defaults to None.
+        &#34;&#34;&#34;
+        if self.regression:
+            ce = np.array([self.corruption_error(helper=True, relative=relative)])
+        else:
+            ce = np.array([self.corruption_error(c, helper=True, relative=relative) for c in self.corruption_dict.keys()])
+        mean = np.mean(ce)
+        if save_path:
+            name = &#34;mean_relative_error&#34; if relative else &#34;mean_corruption_error&#34;
+            self._save_data(save_path, name, mean)
+        else:
+            name = &#34;Mean Relative Error: &#34; if relative else &#34;Mean Corruption Error: &#34;
+            stat = name + str(mean) if self.regression else name + str(mean) + &#34; %&#34;
+            print(stat)
+    
+    def corruption_error(self, corruption=None, relative=False, nb_boundaries=100, save_path=None, helper=False):
+        &#34;&#34;&#34;
+        Computes the corruption error across all severities for a specific corruption
+
+        Args:
+            corruption (String): corruption 
+            relative (bool, optional): if set to True, computes relative corruption error. Defaults to False.
+            nb_boundaries (int, optional): The number of Monte Carlo samples for the prediction. Defaults to 100.
+            save_path (str, optional): The saving path. Defaults to None.
+            helper (bool, optional): set to True only when used internally as a helper method. Defaults to False.
+        &#34;&#34;&#34;
+        if self.regression:
+            error = [np.array([self._error_rate(s, nb_boundaries) for s in self.severities])]
+        else:    
+            if self.error_dict[corruption] :
+                error = self.error_dict[corruption]
+            else:
+                error = [np.array([self._error_rate(s, nb_boundaries, corruption)*100 for s in self.severities])]
+                self.error_dict[corruption] = error
+        if relative:
+            _, y_pred = self.model.predict(self.x, nb_boundaries)
+            clean_error = met.root_mean_squared_error(self.y_true, y_pred) if self.regression else 1 - met.accuracy_score(self.y_true, tf.argmax(y_pred, axis = 1))
+            ce = np.sum([x-clean_error for x in error]) / len(self.severities)
+        else:
+            ce = np.sum(error) / len(self.severities)
+        if helper:
+            return ce
+        if save_path:
+            name_file = &#34;relative_error_&#34; if relative else &#34;corruption_error_&#34;
+            self._save_data(save_path, name_file + corruption, ce)
+        else:
+            print_stat = &#34;Relative Error for {}: {}%&#34; if relative else &#34;Corruption Error for {}: {}%&#34;
+            print(print_stat.format(corruption, ce))
+       
+    def robustness_by_corruption(self, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        Plots corruption error as a bar graph giving the robustness score for each corruption.
+        &#34;&#34;&#34;
+        ce = np.array([self.corruption_error(c, nb_boundaries=nb_samples, helper=True) for c in self.corruption_dict.keys()])
+        plt.bar(self.corruptions_dict.keys(), ce)
+        plt.xlabel(&#34;Corruption&#34;)
+        label = &#34;Corruption Error&#34; if self.regression else &#34;Corruption Error (%)&#34;
+        plt.ylabel(label)
+        plt.title(&#34;Corruption Error by Corruption&#34;)
+        self._save_figure(save_path, &#34;robustness_by_corruption&#34;) if save_path else plt.show()
+        
+    def corruption_robustness_by_severity(self, corruption=None, nb_samples=100, save_path=None):
+        &#34;&#34;&#34;
+        Plots corruption error for given corruption as a function of the severity
+        &#34;&#34;&#34;
+        if self.regression:
+            error = [self._error_rate(s, nb_samples) for s in self.severities]
+        else:
+            if self.error_dict[corruption] :
+                error = self.error_dict[corruption]
+            else:
+                error = [self._error_rate(s, nb_samples, corruption) for s in self.severities]
+                self.error_dict[corruption] = error
+        plt.bar(self.severities, error)
+        plt.xlabel(&#34;Severity&#34;)
+        label = &#34;Error Rate&#34; if self.regression else &#34;Error Rate (%)&#34;
+        plt.ylabel(label)
+        plt.title(&#34;Error Rate by Severity for {}&#34;.format(&#34;noise&#34; if self.regression else corruption))
+        self._save_figure(save_path, &#34;corruption_robustness_by_severity&#34;) if save_path else plt.show()
+    
+    def _error_rate(self, severity, nb_samples, corruption=None):
+        input = self.x.numpy()
+        if self.regression:
+            corrupted_inputs = [self._corrupt_regression(x, severity) for x in input]
+        else:
+            colour_scale = np.shape(input)[-1]
+            #_, width, length, _ = np.shape(x_array)
+            #resized = [cv2.resize(image, (224, 224)) for image in x_array]
+            corrupted_inputs = [self._corrupt(image, severity, corruption) for image in input]
+            #corrupted_images = [cv2.resize(image, (width, length)) for image in corrupted_images_resized]
+            if colour_scale == 1:
+                corrupted_inputs = np.stack([np.mean(image, axis=-1, keepdims=True) for image in corrupted_inputs])
+        corrupted_inputs = tf.convert_to_tensor(corrupted_inputs)
+        corrupted_inputs = tf.concat(corrupted_inputs, axis=1)
+        _, c_predicted = self.model.predict(corrupted_inputs, nb_samples)
+        if self.regression:
+            error = met.root_mean_squared_error(self.y_true, c_predicted)
+        else:
+            accuracy = met.accuracy_score(self.y_true, tf.argmax(c_predicted, axis = 1))
+            error = 1 - accuracy
+        #print(&#34;Error rate for&#34;, corruption, &#34;, with severity&#34;, severity, &#34;:&#34;, error)
+        return error
+
+    # Image width and height must be at least 32 pixels
+    def _corrupt(self, image, severity, corruption):
+        if image.ndim == 2:
+            image = np.stack((image,)*3, axis=-1) 
+        
+        height, width, channels = image.shape
+        
+        if channels == 1:
+            image = np.stack((np.squeeze(image),)*3, axis=-1)
+
+        image_corrupted = self.corruption_dict[corruption](Image.fromarray(image), severity)
+        
+        return np.uint8(image_corrupted)
+    
+    def _corrupt_regression(self, x, severity):
+        return np.array([gaussian_noise_regression(col, severity) for col in x])
+    
+    def _save_figure(self, path, name):
+        directory = path + &#34;/report/robustness&#34;
+        figures = directory + &#34;/figures&#34;
+        os.makedirs(directory, exist_ok=True)
+        os.makedirs(figures, exist_ok=True)
+        plt.savefig(figures + &#34;/&#34; + name + &#34;.png&#34;)
+        
+    def _save_data(self, path, name, content):
+        directory = path + &#34;/report/robustness&#34;
+        os.makedirs(directory, exist_ok=True)
+        file_path = directory + &#34;/&#34; + name + &#34;.txt&#34;
+        f = open(file_path, &#34;w&#34;)
+        f.write(str(content))
+        f.close()</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.visualisations.Robustness.Robustness.adversarial_robustness"><code class="name flex">
+<span>def <span class="ident">adversarial_robustness</span></span>(<span>self, epsilon=0.1, nb_samples=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>computes the adversarial robustness of the model using a FGSM gradient attack</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>epsilon</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Severity of the attack. Defaults to 0.1.</dd>
+<dt><strong><code>nb_samples</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Defaults to 100.</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def adversarial_robustness(self, epsilon=0.1, nb_samples=100, save_path=None):
+    &#34;&#34;&#34;
+    computes the adversarial robustness of the model using a FGSM gradient attack
+
+    Args:
+        epsilon (float, optional): Severity of the attack. Defaults to 0.1.
+        nb_samples (int, optional): Defaults to 100.
+        save_path (str, optional): Defaults to None.
+    &#34;&#34;&#34;
+    x_grad = 0
+    for i in range(nb_samples):
+        sample_model = self.model.sample_model()
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(self.x)
+            prediction = sample_model(self.x, training=True)
+            prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
+            loss = self.dataset.loss()(self.y_true, prediction)
+        x_temp_grad = tape.gradient(loss, self.x)
+        x_grad += x_temp_grad
+    x_perturbated = self.x + epsilon * np.sign(x_grad)
+    #print((epsilon * np.sign(x_grad))[0])
+    sample_preds, predicted = self.model.predict(x_perturbated, nb_samples)
+    if self.regression:
+        robustness = met.root_mean_squared_error(self.y_true, predicted)
+        stat = &#34;Adversarial Robustness: &#34; + str(robustness)
+    else:
+        #print(self.dataset.loss()(self.y_true, predicted))
+        robustness = met.accuracy_score(self.y_true, tf.argmax(predicted, axis = 1)) * 100
+        stat = &#34;Adversarial Robustness: &#34; + str(robustness) + &#34;%&#34;
+    self._save_data(save_path, &#34;adversarial_robustness&#34;, robustness) if save_path else print(stat)</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.Robustness.corruption_error"><code class="name flex">
+<span>def <span class="ident">corruption_error</span></span>(<span>self, corruption=None, relative=False, nb_boundaries=100, save_path=None, helper=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the corruption error across all severities for a specific corruption</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>corruption</code></strong> :&ensp;<code>String</code></dt>
+<dd>corruption </dd>
+<dt><strong><code>relative</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>if set to True, computes relative corruption error. Defaults to False.</dd>
+<dt><strong><code>nb_boundaries</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>The number of Monte Carlo samples for the prediction. Defaults to 100.</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The saving path. Defaults to None.</dd>
+<dt><strong><code>helper</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>set to True only when used internally as a helper method. Defaults to False.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def corruption_error(self, corruption=None, relative=False, nb_boundaries=100, save_path=None, helper=False):
+    &#34;&#34;&#34;
+    Computes the corruption error across all severities for a specific corruption
+
+    Args:
+        corruption (String): corruption 
+        relative (bool, optional): if set to True, computes relative corruption error. Defaults to False.
+        nb_boundaries (int, optional): The number of Monte Carlo samples for the prediction. Defaults to 100.
+        save_path (str, optional): The saving path. Defaults to None.
+        helper (bool, optional): set to True only when used internally as a helper method. Defaults to False.
+    &#34;&#34;&#34;
+    if self.regression:
+        error = [np.array([self._error_rate(s, nb_boundaries) for s in self.severities])]
+    else:    
+        if self.error_dict[corruption] :
+            error = self.error_dict[corruption]
+        else:
+            error = [np.array([self._error_rate(s, nb_boundaries, corruption)*100 for s in self.severities])]
+            self.error_dict[corruption] = error
+    if relative:
+        _, y_pred = self.model.predict(self.x, nb_boundaries)
+        clean_error = met.root_mean_squared_error(self.y_true, y_pred) if self.regression else 1 - met.accuracy_score(self.y_true, tf.argmax(y_pred, axis = 1))
+        ce = np.sum([x-clean_error for x in error]) / len(self.severities)
+    else:
+        ce = np.sum(error) / len(self.severities)
+    if helper:
+        return ce
+    if save_path:
+        name_file = &#34;relative_error_&#34; if relative else &#34;corruption_error_&#34;
+        self._save_data(save_path, name_file + corruption, ce)
+    else:
+        print_stat = &#34;Relative Error for {}: {}%&#34; if relative else &#34;Corruption Error for {}: {}%&#34;
+        print(print_stat.format(corruption, ce))</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.Robustness.corruption_robustness_by_severity"><code class="name flex">
+<span>def <span class="ident">corruption_robustness_by_severity</span></span>(<span>self, corruption=None, nb_samples=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots corruption error for given corruption as a function of the severity</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def corruption_robustness_by_severity(self, corruption=None, nb_samples=100, save_path=None):
+    &#34;&#34;&#34;
+    Plots corruption error for given corruption as a function of the severity
+    &#34;&#34;&#34;
+    if self.regression:
+        error = [self._error_rate(s, nb_samples) for s in self.severities]
+    else:
+        if self.error_dict[corruption] :
+            error = self.error_dict[corruption]
+        else:
+            error = [self._error_rate(s, nb_samples, corruption) for s in self.severities]
+            self.error_dict[corruption] = error
+    plt.bar(self.severities, error)
+    plt.xlabel(&#34;Severity&#34;)
+    label = &#34;Error Rate&#34; if self.regression else &#34;Error Rate (%)&#34;
+    plt.ylabel(label)
+    plt.title(&#34;Error Rate by Severity for {}&#34;.format(&#34;noise&#34; if self.regression else corruption))
+    self._save_figure(save_path, &#34;corruption_robustness_by_severity&#34;) if save_path else plt.show()</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.Robustness.mean_corruption_error"><code class="name flex">
+<span>def <span class="ident">mean_corruption_error</span></span>(<span>self, relative=False, nb_samples=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes de mean corruption error and realtive corruption error across all corruptions and severities
+Prints value or saves it if save_path param given</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>relative</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>computes relative error if set to True. Defaults to False.</dd>
+<dt><strong><code>nb_samples</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Defaults to 100.</dd>
+<dt><strong><code>save_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>pass in path to save value on file. Defaults to None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mean_corruption_error(self, relative=False, nb_samples=100, save_path=None):
+    &#34;&#34;&#34;
+    Computes de mean corruption error and realtive corruption error across all corruptions and severities
+    Prints value or saves it if save_path param given
+
+    Args:
+        relative (bool, optional): computes relative error if set to True. Defaults to False.
+        nb_samples (int, optional): Defaults to 100.
+        save_path (str, optional): pass in path to save value on file. Defaults to None.
+    &#34;&#34;&#34;
+    if self.regression:
+        ce = np.array([self.corruption_error(helper=True, relative=relative)])
+    else:
+        ce = np.array([self.corruption_error(c, helper=True, relative=relative) for c in self.corruption_dict.keys()])
+    mean = np.mean(ce)
+    if save_path:
+        name = &#34;mean_relative_error&#34; if relative else &#34;mean_corruption_error&#34;
+        self._save_data(save_path, name, mean)
+    else:
+        name = &#34;Mean Relative Error: &#34; if relative else &#34;Mean Corruption Error: &#34;
+        stat = name + str(mean) if self.regression else name + str(mean) + &#34; %&#34;
+        print(stat)</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.visualisations.Robustness.Robustness.robustness_by_corruption"><code class="name flex">
+<span>def <span class="ident">robustness_by_corruption</span></span>(<span>self, nb_samples=100, save_path=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots corruption error as a bar graph giving the robustness score for each corruption.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def robustness_by_corruption(self, nb_samples=100, save_path=None):
+    &#34;&#34;&#34;
+    Plots corruption error as a bar graph giving the robustness score for each corruption.
+    &#34;&#34;&#34;
+    ce = np.array([self.corruption_error(c, nb_boundaries=nb_samples, helper=True) for c in self.corruption_dict.keys()])
+    plt.bar(self.corruptions_dict.keys(), ce)
+    plt.xlabel(&#34;Corruption&#34;)
+    label = &#34;Corruption Error&#34; if self.regression else &#34;Corruption Error (%)&#34;
+    plt.ylabel(label)
+    plt.title(&#34;Corruption Error by Corruption&#34;)
+    self._save_figure(save_path, &#34;robustness_by_corruption&#34;) if save_path else plt.show()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="Pyesian.visualisations" href="index.html">Pyesian.visualisations</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="Pyesian.visualisations.Robustness.brightness" href="#Pyesian.visualisations.Robustness.brightness">brightness</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.contrast" href="#Pyesian.visualisations.Robustness.contrast">contrast</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.gaussian_blur" href="#Pyesian.visualisations.Robustness.gaussian_blur">gaussian_blur</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.gaussian_noise" href="#Pyesian.visualisations.Robustness.gaussian_noise">gaussian_noise</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.gaussian_noise_regression" href="#Pyesian.visualisations.Robustness.gaussian_noise_regression">gaussian_noise_regression</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.impulse_noise" href="#Pyesian.visualisations.Robustness.impulse_noise">impulse_noise</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.pixelate" href="#Pyesian.visualisations.Robustness.pixelate">pixelate</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.saturate" href="#Pyesian.visualisations.Robustness.saturate">saturate</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.shot_noise" href="#Pyesian.visualisations.Robustness.shot_noise">shot_noise</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.speckle_noise" href="#Pyesian.visualisations.Robustness.speckle_noise">speckle_noise</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="Pyesian.visualisations.Robustness.Robustness" href="#Pyesian.visualisations.Robustness.Robustness">Robustness</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.visualisations.Robustness.Robustness.adversarial_robustness" href="#Pyesian.visualisations.Robustness.Robustness.adversarial_robustness">adversarial_robustness</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.Robustness.corruption_error" href="#Pyesian.visualisations.Robustness.Robustness.corruption_error">corruption_error</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.Robustness.corruption_robustness_by_severity" href="#Pyesian.visualisations.Robustness.Robustness.corruption_robustness_by_severity">corruption_robustness_by_severity</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.Robustness.mean_corruption_error" href="#Pyesian.visualisations.Robustness.Robustness.mean_corruption_error">mean_corruption_error</a></code></li>
+<li><code><a title="Pyesian.visualisations.Robustness.Robustness.robustness_by_corruption" href="#Pyesian.visualisations.Robustness.Robustness.robustness_by_corruption">robustness_by_corruption</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

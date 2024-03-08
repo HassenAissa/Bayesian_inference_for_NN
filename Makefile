@@ -1,18 +1,18 @@
 test:
-	python3 PyAce/test_runner.py
+	python3 Pyesian/test_runner.py
 venv:
 	python3 -m venv venv
 install:
 	pip install -r requirements.txt
 
 pdoc:
-	pydoc --html PyAce
+	pydoc --html Pyesian
 
 vis:
 	python3 visualize.py
 
 test1:
-	python3 PyAce/tests/unittest1.py
+	python3 Pyesian/tests/unittest1.py
 
 test2:
-	python3 PyAce/tests/unittest2.py
+	python3 Pyesian/tests/unittest2.py

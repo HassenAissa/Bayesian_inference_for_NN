@@ -1,15 +1,15 @@
-from PyAce.optimizers import SGLD
-from PyAce.distributions import GaussianPrior
-from PyAce.optimizers import BBB
+from Pyesian.optimizers import SGLD
+from Pyesian.distributions import GaussianPrior
+from Pyesian.optimizers import BBB
 import tensorflow as tf
 from tensorflow.keras import models, layers
 
-from PyAce.datasets import Dataset
-from PyAce.nn import BayesianModel
-from PyAce.optimizers import HMC
-from PyAce.optimizers.hyperparameters import HyperParameters
-from PyAce.optimizers import SWAG
-from PyAce.visualisations import Metrics, Plotter
+from Pyesian.datasets import Dataset
+from Pyesian.nn import BayesianModel
+from Pyesian.optimizers import HMC
+from Pyesian.optimizers.hyperparameters import HyperParameters
+from Pyesian.optimizers import SWAG
+from Pyesian.visualisations import Metrics, Plotter
 import tensorflow_datasets as tfds
 import sklearn
 import tensorflow_probability as tfp
@@ -49,17 +49,18 @@ def runner():
 
 
 
-    optimizer.train(100)
+    optimizer.train(2)
     bayesian_model: BayesianModel = optimizer.result()
 
     # bayesian_model.store("testmodel")
 
     # bayesian_model = BayesianModel.load("testmodel1sample")
     plotter = Plotter(bayesian_model, dataset)
-    plotter.plot_decision_boundaries(granularity=0.0001, un_zoom_level=1)
-    plotter.plot_uncertainty_area(uncertainty_threshold=0.9, un_zoom_level=1)
-    plotter.compare_prediction_to_target()
-    plotter.confusion_matrix()
+    plotter.roc_one_vs_rest(label_of_interest=1)
+    # plotter.plot_decision_boundaries(granularity=0.0001, un_zoom_level=1)
+    # plotter.plot_uncertainty_area(uncertainty_threshold=0.9, un_zoom_level=1)
+    # plotter.compare_prediction_to_target()
+    # plotter.confusion_matrix()
     metrics = Metrics(bayesian_model, dataset)
     metrics.summary(100)
     # play and compate with one NN.

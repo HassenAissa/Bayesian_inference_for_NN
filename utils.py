@@ -1,7 +1,7 @@
-import PyAce.optimizers as om
+import Pyesian.optimizers as om
 import tensorflow as tf, numpy as np
-from PyAce.distributions import GaussianPrior
-from PyAce.optimizers.hyperparameters import HyperParameters
+from Pyesian.distributions import GaussianPrior
+from Pyesian.optimizers.hyperparameters import HyperParameters
 from matplotlib import pyplot as plt
 import json, os, shutil, pickle
 
@@ -307,4 +307,4 @@ def load_optim(pref):
 # print(min(a))
 # print(tf.reshape(a, [1,-1]))
 # print(tf.math.maximum(tf.constant([1,2]), 2))
-# from PyAce.tests.gym_example_1 import runner
+# from Pyesian.tests.gym_example_1 import runner

@@ -4,9 +4,9 @@ import gymnasium as gym, time, pickle, json
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-from PyAce.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining, RBF
-from PyAce.optimizers import SWAG
-from PyAce.optimizers.hyperparameters import HyperParameters
+from Pyesian.dynamics.deep_pilco import BayesianDynamics, NNPolicy, DynamicsTraining, RBF
+from Pyesian.optimizers import SWAG
+from Pyesian.optimizers.hyperparameters import HyperParameters
 
 def runner():
     

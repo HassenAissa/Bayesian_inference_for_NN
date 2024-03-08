@@ -3,12 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 # from tensorflow.keras import models, layers
 import tensorflow as tf
-from PyAce.nn import BayesianModel
-from PyAce.datasets import Dataset
-from PyAce.distributions.GaussianPrior import GaussianPrior
-from PyAce.optimizers import HyperParameters
-from PyAce.optimizers import SWAG, BBB
-from PyAce.visualisations.Visualisation import Visualisation
+from Pyesian.nn import BayesianModel
+from Pyesian.datasets import Dataset
+from Pyesian.distributions.GaussianPrior import GaussianPrior
+from Pyesian.optimizers import HyperParameters
+from Pyesian.optimizers import SWAG, BBB
+from Pyesian.visualisations.Visualisation import Visualisation
 from matplotlib.widgets import Button
 
 
