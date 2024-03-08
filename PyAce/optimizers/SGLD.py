@@ -13,15 +13,15 @@ import numpy as np
 # lr_func kwarg represents the learning rate for each step
 class SGLD(Optimizer):
     """
-    SGLD is a class that inherits from Optimizer. 
-    This inference methods is taken from the paper : "Bayesian Learning via Stochastic Gradient Langevin Dynamics"
-    https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf
+    SGLD is a class that inherits from Optimizer. \n
+    This inference methods is taken from the paper : "Bayesian Learning via Stochastic Gradient Langevin Dynamics". \n
+    https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf \n
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one step
-        lr_upper: the learning rate at step 0
-        lr_lower: the learning rate at the last step
-        lr_gamma: controls rate of change of learning rate [0.5, 1.0)
+        `batch_size`: the size of the batch for one step. Defaults to 128. \n
+        `lr_upper`: the learning rate at step 0 \n
+        `lr_lower`: the learning rate at the last step \n
+        `lr_gamma`: controls rate of change of learning rate [0.5, 1.0) \n
     """
 
 

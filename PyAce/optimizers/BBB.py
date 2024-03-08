@@ -12,17 +12,17 @@ import tensorflow_probability as tfp
 class BBB(Optimizer):
 
     """
-    BBB is a class that inherits from Optimizer. 
-    This inference method is taken from the paper : "Weight Uncertainty in Neural Networks"
-    https://arxiv.org/pdf/1505.05424.pdf
+    BBB is a class that inherits from Optimizer.\n
+    This inference method is taken from the paper : "Weight Uncertainty in Neural Networks". \n
+    https://arxiv.org/pdf/1505.05424.pdf. \n
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one step
-        lr: the learning rate
-        pi: A weight to average between the first and the second prior (only if we have a single prior for the network). \
-            If we have a single prior this hyperparameter is ignored.\
-            This value should be between 0 and 1.
-        alpha: the scale of the KL divergence in the loss function. It should be between 0 and 1
+        `batch_size`: the size of the batch for one step. Defaults to 128 \n
+        `lr`: the learning rate \n
+        `pi`: A weight to average between the first and the second prior (only if we have a single prior for the network).
+            If we have a single prior this hyperparameter is ignored. 
+            This value should be between 0 and 1. \n
+        `alpha`: the scale of the KL divergence in the loss function. It should be between 0 and 1 \n
     """
 
     def __init__(self):

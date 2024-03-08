@@ -54,8 +54,8 @@ class BayesianModel:
         DEPRECATED
         set the correlated layers and their distributions
         Args:
-            layer_list (_type_): _description_
-            dtbn_list (_type_): _description_
+            layer_list (list): The list of layers to which the distributions are assigned
+            dtbn_list (list): The assigned distributions
         """
         self._layers_dtbn_intervals = layer_list
         self._distributions = dtbn_list

@@ -12,18 +12,18 @@ import copy
 
 class BSAM(Optimizer):
     """
-    ADAM is a class that inherits from Optimizer. 
-    This inference methods is taken from the paper : "SAM AS AN OPTIMAL RELAXATION OF BAYES"
-    https://arxiv.org/pdf/2210.01620.pdf
+    ADAM is a class that inherits from Optimizer. \n
+    This inference methods is taken from the paper : "SAM AS AN OPTIMAL RELAXATION OF BAYES". \n
+    https://arxiv.org/pdf/2210.01620.pdf \n
     This inference methods takes the following hyperparameters:
     Hyperparameters:
-        batch_size: the size of the batch for one step
-        lr: the learning rate
-        beta_1: average weight between the old first moment value and its gradient. Should be between 0 and 1.
-        beta_2: average weight between the old second moment value and its gradient. Should be between 0 and 1.
-        lam: precision parameter
-        rho: sharpness aware parameter
-        gam: . Should be set to 1e-1
+        `batch_size`: the size of the batch for one step. Defaults to 128. \n
+        `lr`: the learning rate \n
+        `beta_1`: average weight between the old first moment value and its gradient. Should be between 0 and 1. \n
+        `beta_2`: average weight between the old second moment value and its gradient. Should be between 0 and 1. \n
+        `lam`: precision parameter \n
+        `rho`: sharpness aware parameter. Set to 0.01 or less \n
+        `gam`: . Should be set to 1e-1 \n
     """
     def __init__(self):
         super().__init__()

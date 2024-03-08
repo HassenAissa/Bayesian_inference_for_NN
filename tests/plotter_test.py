@@ -19,7 +19,7 @@ def runner():
     x,y = sklearn.datasets.make_moons(n_samples=2000)
     dataset = Dataset(
         tf.data.Dataset.from_tensor_slices((x, y)),
-        tf.keras.losses.BinaryCrossentropy(),
+        tf.keras.losses.BinaryCrossentropy,
         "Classification"
     )
 
@@ -36,10 +36,10 @@ def runner():
     # optimizer.compile(hyperparams, base_model.get_config(), dataset, starting_model=base_model)
 
 
-    hyperparams = HyperParameters(lr=5, alpha = 0.00, pi = 1, batch_size = 100)
+    hyperparams = HyperParameters(lr=3, alpha = 0.00, pi = 1, batch_size = 1000)
     # instantiate your optimizer
     optimizer = BBB()
-    prior = GaussianPrior(.0,-2.0)
+    prior = GaussianPrior(.0,-3.0)
 
 
     # prior = GuassianPrior(0.0,2.01)
