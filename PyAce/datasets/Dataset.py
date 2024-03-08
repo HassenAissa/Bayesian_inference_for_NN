@@ -197,7 +197,6 @@ class Dataset:
             self.test_data = self.test_data.map(lambda x, y: self._normalise_feature(x, y, mean, std + 1e-8),
                                                 num_parallel_calls=tf.data.AUTOTUNE)
         else:
-            print("classssss")
             self.train_data = self.train_data.map(lambda x, y: (tf.math.divide(tf.cast(x,tf.float32), 255), y),
                                                   num_parallel_calls=tf.data.AUTOTUNE)
             self.valid_data = self.valid_data.map(lambda x, y: (tf.math.divide(tf.cast(x,tf.float32), 255), y),
