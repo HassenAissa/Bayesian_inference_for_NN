@@ -42,20 +42,21 @@
           Name the current session: <input type="text" name="sname">; Gym environment: <input type="text" name="envname" value="{{info.form["envname"]}}">; 
           Descriptions: <textarea name="sdesc" cols="70" rows="1"></textarea><br> 
           <b>--Learning specifications--</b> <br>
-          Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic model epochs: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="999">
+          Time horizon: <input type="number" name="hor" value="{{info.form["hor"]}}" min="1" max="999">; Dynamic epoch factor: <input type="number" name="dynep" value="{{info.form["dynep"]}}" min="1" max="9999">
           Number of particles: <input type="number" name="npar" value="{{info.form["npar"]}}" min="1" max="999">; Discount factor: <input type="number" name="disc" value="{{info.form["disc"]}}" min="0.001" max="1.000" step="0.001">;
-          Learn epochs: <input type="number" name="lep" value="{{info.form["lep"]}}" min="1" max="999">; Reward function: <select name="reward">{% for r in options["reward"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
+          Learn epochs: <input type="number" name="lep" value="{{info.form["lep"]}}" min="1" max="999">; Random epochs: <input type="number" name="rep" value="{{info.form["rep"]}}" min="1" max="999">; Reward function: 
+          <select name="reward">{% for r in options["reward"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
           <b>--Policy model--</b> <br>
-          Output activation function : <select name="poact">{% for a in options["poact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select>; 
-          Hyperparameters: <input type="file" name="phypf">; or write details here: <textarea name="phyp" cols="70" rows="1">{{info.form["phyp"]}}</textarea><br>
-          <b>Upload .json model</b> (use current <b>{{info.form["pnnjson"]}}</b>) <input type="checkbox" name="pnnjsons" value="{{info.form["pnnjson"]}}">); <input type="file" name="pnnjson"> | Or create manually: <br>
+          Hyperparameters: <textarea name="phyp" cols="70" rows="1">{{info.form["phyp"]}}</textarea><br>
+          Radial basis function hidden units: <input type="number" name="rbfu" value="{{info.form["rbfu"]}}">; gamma: <input type="number" step="0.01" name="rbfgamma" value="{{info.form["rbfgamma"]}}">
+          <!-- <b>Upload .json model</b> (use current <b>{{info.form["pnnjson"]}}</b>) <input type="checkbox" name="pnnjsons" value="{{info.form["pnnjson"]}}">); <input type="file" name="pnnjson"> | Or create manually: <br>
           Model name: <input type="text" name="pmname" value="{{info.form["pmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="pkernel" min="1" max="999" value="{{info.form["pkernel"]}}">; 
           filters list: <br><textarea name="pfilters" cols="70" rows="1">{{info.form["pfilters"]}}</textarea>) <br>
           (All neural networks) <br>
           dimensions of densely connected layers: <br><textarea name="phidden" cols="70" rows="1">{{info.form["phidden"]}}</textarea> <br>
-          all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br>
-        <b>--Dynamic model--</b> <br>
+          all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="pactivations" cols="70" rows="1">{{info.form["pactivations"]}}</textarea><br> -->
+        <b>--Dynamic model (using bayesian inference)--</b> <br>
           <b>Upload .json model</b> (use current: <b>{{info.form["dnnjson"]}}</b> </b><input type="checkbox" name="dnnjsons" value="{{info.form["dnnjson"]}}">); <input type="file" name="dnnjson"> | Or create manually:<br>
           Model name: <input type="text" name="dmname" value="{{info.form["dmname"]}}">; <br>
           (Convolutional neural networks specific -- kernel size: <input type="number" name="dkernel" min="1" max="999" value="{{info.form["dkernel"]}}">; 
@@ -64,33 +65,38 @@
           dimensions of densely connected layers: <br><textarea name="dhidden" cols="70" rows="1">{{info.form["dhidden"]}}</textarea> <br>
           all activation functions (<b>sg</b>--sigmoid, <b>r</b>--relu, <b>t</b>--tanh, <b>sm</b>--softmax): <br><textarea name="dactivations" cols="70" rows="1">{{info.form["dactivations"]}}</textarea><br>
           <b>--Optimizer for dynamic model--</b> Select optimizer class: <select name="optim">{% for c in options["optim"] %}<option value="{{c}}">{{c}}</option>{% endfor %}</select> <br>
-          Output activation function : <select name="doact">{% for a in options["doact"] %}<option value="{{a}}">{{a}}</option>{% endfor %}</select> <br>
-          start model (for SWAG): <input type="radio" name="mstart"> same as dynamic model | or <input type="file" name="startjson"> <br>
+          start model (for SWAG): <input type="hidden" name="mstart" value="{{info.form["mstart"]}}"> Default same as dynamic model | or <input type="file" name="startjson"> <br>
           prior 1: Gaussian (mean: <input type="number" name="pri1m" value=" value="{{info.form["pri1m"]}}" min="-999", max="999" step="0.01">, 
             standard deviation: <input type="number" name="pri1s" value=" value="{{info.form["pri1s"]}}" min="-999", max="999" step="0.01">) <br>
           prior 2: Gaussian (mean: <input type="number" name="pri2m" value=" value="{{info.form["pri2m"]}}" min="-999", max="999" step="0.01">, 
             standard deviation: <input type="number" name="pri2s" value=" value="{{info.form["pri2s"]}}" min="-999", max="999" step="0.01">)
-          Hyperparameters: <input type="file" name="dhypf">; or write details here: <textarea name="dhyp" cols="70" rows="1">{{info.form["dhyp"]}}</textarea><br>
-          <input type="submit" name="f2" value="Start learning >>">
+          Hyperparameters: <textarea name="dhyp" cols="70" rows="1">{{info.form["dhyp"]}}</textarea><br>
+          <input type="submit" name="f1" value="Start learning >>">
         </form>
       </div>
       <div class="column">
         {% if info.notice %}
         **Form information not complete -- missing: {{info.notice}} <br>
         {% endif %}
-        <h3>Continue learning policy and dynamics</h3>
-        <h3>Learning process and result analysis</h3>
+      <form action="/reinforce" method="post">
+        <h3>Learning results</h3>
         {% if info.agent %}
         <textarea readonly cols="70" rows="15">{{info.process}}</textarea>
         {% endif %}
-        <form action="/reinforce" method="post">
-          Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
-          Select a policy of session <select name="policy">{% for c in options["sessions"] %}
-            {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
-          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select><br>
+        <h3>Learning progress and real task deployment</h3>
+        Enter environment name: <input type="text" name="envname" value="{{info.envname}}">
+        Select a session to resume learning or deploy <select name="session">{% for c in options["sessions"] %}
+          {%if c%}<option value="{{c[0]}}"><b>{{c[0]}}</b> ({{c[1]}}): {{c[2]}}</option>{%else%}<option value=""></option>{%endif%}{% endfor %}</select>
+        Additional epochs of learning: <input type="number" name="lep">
+        <input type="submit" name="resume" value="Continue learning >>"><br><br><b>--Real task rendering and analysis--</b>
+          Render mode: <select name="rmode">{% for r in options["rmode"] %}<option value="{{r}}">{{r}}</option>{% endfor %}</select>;
+          Result plotting option: <select name="pmode">{% for p in options["plot"] %}<option value="{{p}}">{{p}}</option>{% endfor %}</select>;
           <input type="submit" name="render" value="Start real task >>">
         </form>
-        {% if info.real_task %}<img src="static/results/rewards.png" alt="rewards">{% endif %}
+        {% if info.real_task %}
+        <img src="static/results/reward.png" alt="rewards">
+        <img src="static/results/record.png" alt="rewards">
+        {% endif %}
       </div>
     </div>
 </body>

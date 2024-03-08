@@ -1,6 +1,6 @@
 [project]
-name = "PyAce"
-version = "0.1.0"
+name = "Pyesian"
+version = "0.0.1"
 description = "A framework for Bayesian Neural Nets"
 
 [build-system]

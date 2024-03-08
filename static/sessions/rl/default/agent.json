@@ -1,0 +1,1 @@
+{"learn_config": [1000, 32, 0.97], "rew_name": "Cart", "horizon": 25, "likelihood": "Regression", "tot_epochs": 4}
