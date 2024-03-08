@@ -87,7 +87,7 @@ class Plotter:
     def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type="test") -> (tf.Tensor, tf.Tensor):
         x, y = self._get_x_y(n_samples, data_type)
 
-        if x.shape[1] > dimension: #TODO: does not take images into account
+        if x.shape[1] > dimension:
             print("Dimension ", len(x.shape[1]), " is not right.")
             print("Will apply PCA to reduce to dimension ", dimension)
             base_matrix = tf.pca(x, dimension, dtype=x.dtype)
@@ -109,7 +109,7 @@ class Plotter:
         plt.scatter(x[y == 0][:, 0], x[y == 0][:, 1], marker='o', c="blue", label="Class 0")
         plt.scatter(x[y == 1][:, 0], x[y == 1][:, 1], marker='x', c="red", label="Class 1")
         for pred in prediction_samples:
-            pred = tf.reshape(pred, dim1.shape)
+            pred = tf.reshape(pred[:, 0], dim1.shape)
             plt.contour(dim1, dim2, pred, [0.5], colors=["red"])
         plt.legend()
         plt.title("Multiple Decision Boundaries N=" + str(n_boundaries))
@@ -168,7 +168,7 @@ class Plotter:
 
         Args:
             dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
-            granularity (int, optional): The precision of the plot. Defaults to 1e-2.
+            granularity (int, optional): The precision of the plot.
             n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
             n_samples (int, optional): number of samples from the dataset. Defaults to 100.
             data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to "test".
@@ -187,6 +187,8 @@ class Plotter:
             self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity= granularity, 
                                             n_boundaries=10, un_zoom_level=un_zoom_level)
             self._save(save_path, "decision_boundaries") if save_path else plt.show()
+        else:
+            raise ValueError("Decision boundary can only be plotted in 2 dimensions")
 
 
     def plot_uncertainty_area(self,
