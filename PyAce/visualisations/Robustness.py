@@ -108,7 +108,7 @@ class Robustness():
         self.severities = np.arange(1, 6)
         self.dataset = dataset
         self.x, self.y_true = next(iter(self.dataset.valid_data.batch(self.dataset.valid_data.cardinality())))
-        #self.x = tf.cast(self.x, tf.float32)
+        self.x = tf.cast(self.x, tf.float64)
 
 
 
@@ -126,11 +126,9 @@ class Robustness():
             sample_model = self.model.sample_model()
             with tf.GradientTape(persistent=True) as tape:
                 tape.watch(self.x)
-                #print(self.x.shape)
                 prediction = sample_model(self.x, training=True)
                 prediction = tf.where(tf.math.is_nan(prediction), tf.zeros_like(prediction), prediction)
                 loss = self.dataset.loss()(self.y_true, prediction)
-                #print(met.accuracy_score(self.y_true, tf.argmax(prediction, axis = 1)) * 100)
             x_temp_grad = tape.gradient(loss, self.x)
             x_grad += x_temp_grad
         x_perturbated = self.x + epsilon * np.sign(x_grad)
