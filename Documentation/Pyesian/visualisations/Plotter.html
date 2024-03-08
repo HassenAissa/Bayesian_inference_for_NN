@@ -115,7 +115,7 @@ class Plotter:
     def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type=&#34;test&#34;) -&gt; (tf.Tensor, tf.Tensor):
         x, y = self._get_x_y(n_samples, data_type)
 
-        if x.shape[1] &gt; dimension: #TODO: does not take images into account
+        if x.shape[1] &gt; dimension:
             print(&#34;Dimension &#34;, len(x.shape[1]), &#34; is not right.&#34;)
             print(&#34;Will apply PCA to reduce to dimension &#34;, dimension)
             base_matrix = tf.pca(x, dimension, dtype=x.dtype)
@@ -137,7 +137,7 @@ class Plotter:
         plt.scatter(x[y == 0][:, 0], x[y == 0][:, 1], marker=&#39;o&#39;, c=&#34;blue&#34;, label=&#34;Class 0&#34;)
         plt.scatter(x[y == 1][:, 0], x[y == 1][:, 1], marker=&#39;x&#39;, c=&#34;red&#34;, label=&#34;Class 1&#34;)
         for pred in prediction_samples:
-            pred = tf.reshape(pred, dim1.shape)
+            pred = tf.reshape(pred[:, 0], dim1.shape)
             plt.contour(dim1, dim2, pred, [0.5], colors=[&#34;red&#34;])
         plt.legend()
         plt.title(&#34;Multiple Decision Boundaries N=&#34; + str(n_boundaries))
@@ -196,7 +196,7 @@ class Plotter:
 
         Args:
             dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
-            granularity (int, optional): The precision of the plot. Defaults to 1e-2.
+            granularity (int, optional): The precision of the plot.
             n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
             n_samples (int, optional): number of samples from the dataset. Defaults to 100.
             data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to &#34;test&#34;.
@@ -215,6 +215,8 @@ class Plotter:
             self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity= granularity, 
                                             n_boundaries=10, un_zoom_level=un_zoom_level)
             self._save(save_path, &#34;decision_boundaries&#34;) if save_path else plt.show()
+        else:
+            raise ValueError(&#34;Decision boundary can only be plotted in 2 dimensions&#34;)
 
 
     def plot_uncertainty_area(self,
@@ -524,7 +526,7 @@ class Plotter:
     def _extract_x_y_from_dataset(self, dimension=2, n_samples=100, data_type=&#34;test&#34;) -&gt; (tf.Tensor, tf.Tensor):
         x, y = self._get_x_y(n_samples, data_type)
 
-        if x.shape[1] &gt; dimension: #TODO: does not take images into account
+        if x.shape[1] &gt; dimension:
             print(&#34;Dimension &#34;, len(x.shape[1]), &#34; is not right.&#34;)
             print(&#34;Will apply PCA to reduce to dimension &#34;, dimension)
             base_matrix = tf.pca(x, dimension, dtype=x.dtype)
@@ -546,7 +548,7 @@ class Plotter:
         plt.scatter(x[y == 0][:, 0], x[y == 0][:, 1], marker=&#39;o&#39;, c=&#34;blue&#34;, label=&#34;Class 0&#34;)
         plt.scatter(x[y == 1][:, 0], x[y == 1][:, 1], marker=&#39;x&#39;, c=&#34;red&#34;, label=&#34;Class 1&#34;)
         for pred in prediction_samples:
-            pred = tf.reshape(pred, dim1.shape)
+            pred = tf.reshape(pred[:, 0], dim1.shape)
             plt.contour(dim1, dim2, pred, [0.5], colors=[&#34;red&#34;])
         plt.legend()
         plt.title(&#34;Multiple Decision Boundaries N=&#34; + str(n_boundaries))
@@ -605,7 +607,7 @@ class Plotter:
 
         Args:
             dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
-            granularity (int, optional): The precision of the plot. Defaults to 1e-2.
+            granularity (int, optional): The precision of the plot.
             n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
             n_samples (int, optional): number of samples from the dataset. Defaults to 100.
             data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to &#34;test&#34;.
@@ -624,6 +626,8 @@ class Plotter:
             self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity= granularity, 
                                             n_boundaries=10, un_zoom_level=un_zoom_level)
             self._save(save_path, &#34;decision_boundaries&#34;) if save_path else plt.show()
+        else:
+            raise ValueError(&#34;Decision boundary can only be plotted in 2 dimensions&#34;)
 
 
     def plot_uncertainty_area(self,
@@ -1035,7 +1039,7 @@ class Plotter:
 <dt><strong><code>dimension</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>the dimension of the feature space for the plot. Defaults to 2.</dd>
 <dt><strong><code>granularity</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The precision of the plot. Defaults to 1e-2.</dd>
+<dd>The precision of the plot.</dd>
 <dt><strong><code>n_boundaries</code></strong> :&ensp;<code>int</code>, optional</dt>
 <dd>the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.</dd>
 <dt><strong><code>n_samples</code></strong> :&ensp;<code>int</code>, optional</dt>
@@ -1062,7 +1066,7 @@ class Plotter:
 
     Args:
         dimension (int, optional): the dimension of the feature space for the plot. Defaults to 2.
-        granularity (int, optional): The precision of the plot. Defaults to 1e-2.
+        granularity (int, optional): The precision of the plot.
         n_boundaries (int, optional): the number of sampled networks for the Monte Carlo approximation each one gives a new decision boundary. Defaults to 30.
         n_samples (int, optional): number of samples from the dataset. Defaults to 100.
         data_type (str, optional): the split of the dataset on which to calculate the metrics. Defaults to &#34;test&#34;.
@@ -1080,7 +1084,9 @@ class Plotter:
     if dimension == 2:
         self._plot_2d_decision_boundary(x, y, base_matrix, dimension=2, granularity= granularity, 
                                         n_boundaries=10, un_zoom_level=un_zoom_level)
-        self._save(save_path, &#34;decision_boundaries&#34;) if save_path else plt.show()</code></pre>
+        self._save(save_path, &#34;decision_boundaries&#34;) if save_path else plt.show()
+    else:
+        raise ValueError(&#34;Decision boundary can only be plotted in 2 dimensions&#34;)</code></pre>
 </details>
 </dd>
 <dt id="Pyesian.visualisations.Plotter.Plotter.plot_uncertainty_area"><code class="name flex">
