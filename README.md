@@ -28,6 +28,9 @@ Our library builds on top of *Tensorflow Keras ©* to make the training of Bayes
 - [X] Support to OpenAi Gym RL envirenment
 - [X] Tensorflow datasets easy loading
 # References 
+- Tensorflow: https://www.tensorflow.org/
+- Tensorflow probability: https://www.tensorflow.org/probability
+- Tensorflow datasets: https://www.tensorflow.org/datasets
 - Weights and Biases - The AI developer platform : https://wandb.ai/site
 - Improving PILCO with Bayesian Neural Network Dynamics Models: https://www.cs.ox.ac.uk/people/yarin.gal/website/PDFs/DeepPILCO.pdf
 - MCMC Using Hamiltonian Dynamics: https://www.mcmchandbook.net/HandbookChapter5.pdf
