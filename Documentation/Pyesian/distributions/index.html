@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>Pyesian.distributions API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>Pyesian.distributions</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from .Distribution import Distribution
+from .DistributionSerializer import DistributionSerializer
+from .GaussianPrior import GaussianPrior
+from .MultivariateNormalDiagPlusLowRank import MultivariateNormalDiagPlusLowRank
+from .Sampled import Sampled
+from os.path import dirname, basename, isfile, join
+import glob
+
+modules = glob.glob(join(dirname(__file__), &#34;*.py&#34;))
+__all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith(&#39;__init__.py&#39;)]</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="Pyesian.distributions.tf" href="tf/index.html">Pyesian.distributions.tf</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="Pyesian.distributions.Distribution"><code class="flex name class">
+<span>class <span class="ident">Distribution</span></span>
+<span>(</span><span>size: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Distribution(ABC):
+    def __init__(self, size: int):
+        self._size = size
+
+    @property
+    def size(self) -&gt; int:
+        &#34;&#34;&#34;
+        returns the site of the distribution
+
+        Returns:
+            int: the size of the distribution
+        &#34;&#34;&#34;
+        return self._size
+
+    @abstractmethod
+    def sample(self) -&gt; tf.Tensor:
+        &#34;&#34;&#34;
+        samples from this distribution
+
+        Returns:
+            tf.Tensor: the sample
+        &#34;&#34;&#34;
+        pass
+
+    @abstractmethod
+    def store(self, path: str):
+        &#34;&#34;&#34;stores the distribution
+
+        Args:
+            path (str): path to the file to store the distribuition
+        &#34;&#34;&#34;
+        pass
+
+    @classmethod
+    @abstractmethod
+    def load(cls, path: str) -&gt; &#39;Distribution&#39;:
+        &#34;&#34;&#34;loads a distribution
+
+        Args:
+            path (str): path of the file from which to load the distribution
+
+        Returns:
+            Distribution: The loaded distribution
+        &#34;&#34;&#34;
+        pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>Pyesian.distributions.MultivariateNormalDiagPlusLowRank.MultivariateNormalDiagPlusLowRank</li>
+<li>Pyesian.distributions.Sampled.Sampled</li>
+<li>Pyesian.distributions.tf.Constant.Constant</li>
+<li>Pyesian.distributions.tf.TensorflowProbabilityDistribution.TensorflowProbabilityDistribution</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="Pyesian.distributions.Distribution.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>path: str) ‑> Pyesian.distributions.Distribution.Distribution</span>
+</code></dt>
+<dd>
+<div class="desc"><p>loads a distribution</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path of the file from which to load the distribution</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="Pyesian.distributions.Distribution" href="#Pyesian.distributions.Distribution">Distribution</a></code></dt>
+<dd>The loaded distribution</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+@abstractmethod
+def load(cls, path: str) -&gt; &#39;Distribution&#39;:
+    &#34;&#34;&#34;loads a distribution
+
+    Args:
+        path (str): path of the file from which to load the distribution
+
+    Returns:
+        Distribution: The loaded distribution
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="Pyesian.distributions.Distribution.size"><code class="name">var <span class="ident">size</span> : int</code></dt>
+<dd>
+<div class="desc"><p>returns the site of the distribution</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>the size of the distribution</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def size(self) -&gt; int:
+    &#34;&#34;&#34;
+    returns the site of the distribution
+
+    Returns:
+        int: the size of the distribution
+    &#34;&#34;&#34;
+    return self._size</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.distributions.Distribution.sample"><code class="name flex">
+<span>def <span class="ident">sample</span></span>(<span>self) ‑> tensorflow.python.framework.tensor.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>samples from this distribution</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tf.Tensor</code></dt>
+<dd>the sample</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def sample(self) -&gt; tf.Tensor:
+    &#34;&#34;&#34;
+    samples from this distribution
+
+    Returns:
+        tf.Tensor: the sample
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.distributions.Distribution.store"><code class="name flex">
+<span>def <span class="ident">store</span></span>(<span>self, path: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>stores the distribution</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path to the file to store the distribuition</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def store(self, path: str):
+    &#34;&#34;&#34;stores the distribution
+
+    Args:
+        path (str): path to the file to store the distribuition
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Pyesian.distributions.DistributionSerializer"><code class="flex name class">
+<span>class <span class="ident">DistributionSerializer</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class allowing to switch between distribution serializers</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DistributionSerializer:
+    &#34;&#34;&#34;A class allowing to switch between distribution serializers
+    &#34;&#34;&#34;
+    __DISTRIBUTION_REGISTER: dict[str, &#39;Distribution&#39;] = {
+        &#34;MultivariateNormalDiagPlusLowRank&#34;: MultivariateNormalDiagPlusLowRank,
+        &#34;TensorflowProbabilityDistribution&#34;: TensorflowProbabilityDistribution,
+        &#34;Constant&#34;: Constant,
+        &#34;Sampled&#34;: Sampled
+    }
+
+    @classmethod
+    def load_from(cls, name: str, extension_register: dict, path: str) -&gt; &#39;Distribution&#39;:
+        &#34;&#34;&#34;selects the class from which to load the distribution by using the predefined distribution register \
+        or the user&#39;s extesion_registers
+
+        Args:
+            name (str): the name of the class of the distribution to load
+            extension_register (dict): the user defned mapping between a distribution name and a distribution class
+            path (str): the path from which to load the distribution
+
+        Returns:
+            Distribution: the loaded distribution
+        &#34;&#34;&#34;
+        if name in cls.__DISTRIBUTION_REGISTER:
+            return cls.__DISTRIBUTION_REGISTER[name].load(path)
+        else:
+            return extension_register[name].load(path)</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="Pyesian.distributions.DistributionSerializer.load_from"><code class="name flex">
+<span>def <span class="ident">load_from</span></span>(<span>name: str, extension_register: dict, path: str) ‑> Pyesian.distributions.Distribution.Distribution</span>
+</code></dt>
+<dd>
+<div class="desc"><p>selects the class from which to load the distribution by using the predefined distribution register
+or the user's extesion_registers</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>str</code></dt>
+<dd>the name of the class of the distribution to load</dd>
+<dt><strong><code>extension_register</code></strong> :&ensp;<code>dict</code></dt>
+<dd>the user defned mapping between a distribution name and a distribution class</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>the path from which to load the distribution</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="Pyesian.distributions.Distribution" href="#Pyesian.distributions.Distribution">Distribution</a></code></dt>
+<dd>the loaded distribution</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def load_from(cls, name: str, extension_register: dict, path: str) -&gt; &#39;Distribution&#39;:
+    &#34;&#34;&#34;selects the class from which to load the distribution by using the predefined distribution register \
+    or the user&#39;s extesion_registers
+
+    Args:
+        name (str): the name of the class of the distribution to load
+        extension_register (dict): the user defned mapping between a distribution name and a distribution class
+        path (str): the path from which to load the distribution
+
+    Returns:
+        Distribution: the loaded distribution
+    &#34;&#34;&#34;
+    if name in cls.__DISTRIBUTION_REGISTER:
+        return cls.__DISTRIBUTION_REGISTER[name].load(path)
+    else:
+        return extension_register[name].load(path)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Pyesian.distributions.GaussianPrior"><code class="flex name class">
+<span>class <span class="ident">GaussianPrior</span></span>
+<span>(</span><span>mean, rho)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>class representing a Prioir following a normal distribution of a given mean and standard deviation</p>
+<p>If the mean and rho are of type int or float, the prior will have these values for all the neurons of the model
+if they are a list, then it should correspond to the number of layers in the model.\
+If they are tensors, they should correspond to the exact shape of the model.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>mean</code></strong> :&ensp;<code>int</code> or <code>float od list</code> or <code>tensor</code></dt>
+<dd>The mean of the gaussian prior</dd>
+<dt><strong><code>rho</code></strong> :&ensp;<code>int</code> or <code>float od list</code> or <code>tensor</code></dt>
+<dd>This attribute could play the role of the standard deviation of a gaussian or the preimage of the standard deviation
+for inference methods that transform before using it. (example: BBB applies a softplus to rho before using it so if we want a small standard deviation, we could put a
+negative value for rho otherwise the softplus could be too big)</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>if mean and rho don't have the same type</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GaussianPrior:
+    &#34;&#34;&#34;
+    class representing a Prioir following a normal distribution of a given mean and standard deviation
+    &#34;&#34;&#34;
+    def __init__(self, mean, rho):
+        &#34;&#34;&#34;
+        If the mean and rho are of type int or float, the prior will have these values for all the neurons of the model\
+        if they are a list, then it should correspond to the number of layers in the model.\ 
+        If they are tensors, they should correspond to the exact shape of the model.
+        Args:
+            mean (int or float od list or tensor): The mean of the gaussian prior
+            rho (int or float od list or tensor): This attribute could play the role of the standard deviation of a gaussian or the preimage of the standard deviation \
+            for inference methods that transform before using it. (example: BBB applies a softplus to rho before using it so if we want a small standard deviation, we could put a\
+                negative value for rho otherwise the softplus could be too big)
+
+        Raises:
+            Exception: if mean and rho don&#39;t have the same type
+        &#34;&#34;&#34;
+        if(type(mean)) != type(rho):
+            raise Exception(&#34;mean and std dev must have the same type&#34;)
+        self._mean = mean
+        self._std_dev = rho
+
+    def _get_priors_from_int_or_float(self, model):
+        &#34;&#34;&#34;
+        creates a list of priors following the model trainable variables for a prior created by integer or floats
+        Args:
+            model (tf.keras.model): The model for which we create the priors
+
+        Returns:
+            list: list of priors following the model trainable variables
+        &#34;&#34;&#34;
+        priors_list = []
+        for layer_idx in range(len(model.layers)):
+            if len(model.layers[layer_idx].trainable_variables) != 0:
+                layer_distribs = []
+                for w in model.layers[layer_idx].trainable_variables:
+                    layer_distribs.append(tfp.distributions.Normal(self._mean * tf.ones(w.shape),
+                                                                   self._std_dev * tf.ones(w.shape)))
+                priors_list.append(layer_distribs)
+            else:
+                priors_list.append(None)
+        return priors_list
+    
+
+    def _get_priors_from_list(self, model):
+        &#34;&#34;&#34;
+        creates a list of priors following the model trainable variables for a prior created by a list of means and std_dev
+        Args:
+            model (tf.keras.model): The model for which we create the priors
+
+        Returns:
+            list: list of priors following the model trainable variables
+        &#34;&#34;&#34;
+        priors_list = []
+        for layer_idx in range(len(model.layers)):
+            if len(model.layers[layer_idx].trainable_variables) != 0:
+                layer_distribs = []
+                for w in model.layers[layer_idx].trainable_variables:
+                    layer_distribs.append(tfp.distributions.Normal(self._mean[layer_idx]*tf.ones(w.shape), self._std_dev[layer_idx]*tf.ones(w.shape)))
+                priors_list.append(layer_distribs)
+            else:
+                priors_list.append(None)
+
+        return priors_list
+    
+    def _get_priors_from_tensor(self, model):
+        &#34;&#34;&#34;
+        creates a list of priors following the model trainable variables for a prior created by a tensor
+        Args:
+            model (tf.keras.model): The model for which we create the priors
+
+        Returns:
+            list: list of priors following the model trainable variables
+        &#34;&#34;&#34;
+        priors_list = []        
+        for layer_idx in range(len(model.layers)):
+            layer = model.layers[layer_idx]
+
+            if len(layer.trainable_variables) != 0:
+                for i in range(len(layer.trainable_variables)):
+                    if layer.trainable_variables[i].shape != self._mean[layer_idx][i].shape:
+                        raise Exception(
+                            &#34;the shape of the mean tensor does not correspond to the shape of the model layer. Given shape: &#34; \
+                            + str(self._mean[layer_idx][i].shape) + &#34;. Expected shape: &#34; + str(
+                                layer.trainable_variables[i].shape))
+                    if layer.trainable_variables[i].shape != self._std_dev[layer_idx][i].shape:
+                        raise Exception(
+                            &#34;the shape of the standard deviation tensor does not correspond to the shape of the model layer. Given shape: &#34; \
+                            + str(self._mean[layer_idx][i].shape) + &#34;. Expected shape: &#34; + str(
+                                layer.trainable_variables[i].shape))
+                priors_list.append([tfp.distributions.Normal(mean, std_dev) for mean, std_dev in zip(self._mean[layer_idx], self._std_dev[layer_idx])])
+            else:
+                priors_list.append(None)
+    
+    def get_model_priors(self, model):
+        &#34;&#34;&#34;
+        creates a list of priors following the model trainable variables shape. 
+        Each trainable weight gets a prior distribution assigned by the mean 
+        and the std_dev of the class
+
+        Args:
+            model (tf.keras.model): the model to follow
+
+        Raises:
+            Exception: if the mean or rho are not int, float, list or tensor
+
+        Returns:
+            list: list of priors following the model trainable variables
+        &#34;&#34;&#34;
+        if isinstance(self._mean, int) or isinstance(self._mean, float):
+            return self._get_priors_from_int_or_float(model)
+        if isinstance(self._mean, list) and (all(isinstance(m, int) for m in self._mean) or all(isinstance(m, float) for m in self._mean)):
+            return self._get_priors_from_list(model)
+        if isinstance(self._mean, list) and all(isinstance(l, list) for l in self._mean):
+            return self._get_priors_from_tensor(model)
+        raise Exception(&#34;mean and standard deviation should be an int, a float, a list or a tensor&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.distributions.GaussianPrior.get_model_priors"><code class="name flex">
+<span>def <span class="ident">get_model_priors</span></span>(<span>self, model)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>creates a list of priors following the model trainable variables shape.
+Each trainable weight gets a prior distribution assigned by the mean
+and the std_dev of the class</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>model</code></strong> :&ensp;<code>tf.keras.model</code></dt>
+<dd>the model to follow</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>Exception</code></dt>
+<dd>if the mean or rho are not int, float, list or tensor</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>list of priors following the model trainable variables</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_model_priors(self, model):
+    &#34;&#34;&#34;
+    creates a list of priors following the model trainable variables shape. 
+    Each trainable weight gets a prior distribution assigned by the mean 
+    and the std_dev of the class
+
+    Args:
+        model (tf.keras.model): the model to follow
+
+    Raises:
+        Exception: if the mean or rho are not int, float, list or tensor
+
+    Returns:
+        list: list of priors following the model trainable variables
+    &#34;&#34;&#34;
+    if isinstance(self._mean, int) or isinstance(self._mean, float):
+        return self._get_priors_from_int_or_float(model)
+    if isinstance(self._mean, list) and (all(isinstance(m, int) for m in self._mean) or all(isinstance(m, float) for m in self._mean)):
+        return self._get_priors_from_list(model)
+    if isinstance(self._mean, list) and all(isinstance(l, list) for l in self._mean):
+        return self._get_priors_from_tensor(model)
+    raise Exception(&#34;mean and standard deviation should be an int, a float, a list or a tensor&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Pyesian.distributions.MultivariateNormalDiagPlusLowRank"><code class="flex name class">
+<span>class <span class="ident">MultivariateNormalDiagPlusLowRank</span></span>
+<span>(</span><span>mean: tensorflow.python.framework.tensor.Tensor, diag: tensorflow.python.framework.tensor.Tensor, D: tensorflow.python.framework.tensor.Tensor)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MultivariateNormalDiagPlusLowRank(Distribution):
+    def store(self, path: str) -&gt; str:
+        to_json = {&#34;mean&#34;: self._mean.numpy().tolist(), &#34;D&#34;: self._D.numpy().tolist(), &#34;diag&#34;: self._diag.numpy().tolist()}
+        data = json.dumps(to_json)
+        with open(os.path.join(path, &#34;distribution.json&#34;), &#34;w&#34;) as file:
+            file.write(data)
+        
+    @classmethod
+    def load(cls, path: str) -&gt; &#39;Distribution&#39;:
+        data = &#34;&#34;
+        with open(os.path.join(path, &#34;distribution.json&#34;), &#34;r&#34;) as file:
+            data = file.read()
+        from_json = json.loads(data)
+        return MultivariateNormalDiagPlusLowRank(tf.convert_to_tensor(from_json[&#34;mean&#34;]), tf.convert_to_tensor(from_json[&#34;diag&#34;]),
+                                                  tf.convert_to_tensor(from_json[&#34;D&#34;]))
+
+    def __init__(self, mean: tf.Tensor, diag: tf.Tensor, D: tf.Tensor):
+        super().__init__(mean.shape[0])
+        self._mean = mean
+        self._D = D
+        self._diag = diag
+
+    def sample(self) -&gt; tf.Tensor:
+        k = self._D.shape[1]
+        z1 = tfp.distributions.Normal(tf.zeros_like(self._mean), self._diag).sample()
+        z2 = tfp.distributions.Normal(tf.zeros((k,)), tf.ones(k, )).sample()
+        z1 = tf.reshape(z1, (-1,1))
+        z2 = tf.reshape(z2, (-1,1))
+        cov_mean = (tf.linalg.matmul(self._D, z2)) * sqrt(1 / (2 * (k - 1)))
+
+        res = tf.reshape(self._mean, (-1,1)) + z1 + cov_mean
+        return tf.reshape( res, (-1,))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>Pyesian.distributions.Distribution.Distribution</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="Pyesian.distributions.MultivariateNormalDiagPlusLowRank.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>path: str) ‑> Pyesian.distributions.Distribution.Distribution</span>
+</code></dt>
+<dd>
+<div class="desc"><p>loads a distribution</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path of the file from which to load the distribution</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="Pyesian.distributions.Distribution" href="#Pyesian.distributions.Distribution">Distribution</a></code></dt>
+<dd>The loaded distribution</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def load(cls, path: str) -&gt; &#39;Distribution&#39;:
+    data = &#34;&#34;
+    with open(os.path.join(path, &#34;distribution.json&#34;), &#34;r&#34;) as file:
+        data = file.read()
+    from_json = json.loads(data)
+    return MultivariateNormalDiagPlusLowRank(tf.convert_to_tensor(from_json[&#34;mean&#34;]), tf.convert_to_tensor(from_json[&#34;diag&#34;]),
+                                              tf.convert_to_tensor(from_json[&#34;D&#34;]))</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.distributions.MultivariateNormalDiagPlusLowRank.sample"><code class="name flex">
+<span>def <span class="ident">sample</span></span>(<span>self) ‑> tensorflow.python.framework.tensor.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>samples from this distribution</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tf.Tensor</code></dt>
+<dd>the sample</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sample(self) -&gt; tf.Tensor:
+    k = self._D.shape[1]
+    z1 = tfp.distributions.Normal(tf.zeros_like(self._mean), self._diag).sample()
+    z2 = tfp.distributions.Normal(tf.zeros((k,)), tf.ones(k, )).sample()
+    z1 = tf.reshape(z1, (-1,1))
+    z2 = tf.reshape(z2, (-1,1))
+    cov_mean = (tf.linalg.matmul(self._D, z2)) * sqrt(1 / (2 * (k - 1)))
+
+    res = tf.reshape(self._mean, (-1,1)) + z1 + cov_mean
+    return tf.reshape( res, (-1,))</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.distributions.MultivariateNormalDiagPlusLowRank.store"><code class="name flex">
+<span>def <span class="ident">store</span></span>(<span>self, path: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>stores the distribution</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path to the file to store the distribuition</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def store(self, path: str) -&gt; str:
+    to_json = {&#34;mean&#34;: self._mean.numpy().tolist(), &#34;D&#34;: self._D.numpy().tolist(), &#34;diag&#34;: self._diag.numpy().tolist()}
+    data = json.dumps(to_json)
+    with open(os.path.join(path, &#34;distribution.json&#34;), &#34;w&#34;) as file:
+        file.write(data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Pyesian.distributions.Sampled"><code class="flex name class">
+<span>class <span class="ident">Sampled</span></span>
+<span>(</span><span>samples: list[tensorflow.python.framework.tensor.Tensor], frequencies: list[int])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Sampled(Distribution):
+    def __init__(self, samples: list[tf.Tensor], frequencies: list[int]):
+        super().__init__(int(samples[0].shape[0]))
+        if len(samples) == 0:
+            raise ValueError(&#34;Can&#39;t have distribution Sampled with 0 samples&#34;)
+        if len(samples) != len(frequencies):
+            raise ValueError(&#34;Number of samples and list frequency do not have the same size&#34;)
+        if len(samples[0].shape) &gt; 1:
+            raise ValueError(&#34;Samples must have only one dimension&#34;)
+        self._n_samples = len(samples)
+        # copy list for encapsulation
+        self._samples = [s for s in samples]
+        self._frequencies = [f for f in frequencies]
+        self._acc_frequencies = []
+        acc = 0
+        for f in self._frequencies:
+            acc += f
+            if f == 0:
+                raise ValueError(&#34;Samples frequencies can&#39;t sum up to zero&#34;)
+            self._acc_frequencies.append(acc)
+
+    def sample(self) -&gt; tf.Tensor:
+        w = random.randint(1, self._acc_frequencies[self._n_samples - 1])
+        index = bisect.bisect_left(self._acc_frequencies, w)
+        return self._samples[index]
+
+    def store(self, path: str):
+        info = {&#34;size&#34;: self._size,
+                &#34;n_samples&#34;: self._n_samples,
+                &#34;frequencies&#34;: self._frequencies,
+                &#34;dtypes&#34;: []}
+        for sample in self._samples:
+            info[&#34;dtypes&#34;].append(sample.dtype.name)
+        with open(os.path.join(path, &#34;info.json&#34;), &#34;w&#34;) as file:
+            file.write(json.dumps(info))
+        if not os.path.exists(os.path.join(path, &#34;samples&#34;)):
+            os.makedirs(os.path.join(path, &#34;samples&#34;))
+        sample_path = os.path.join(path, &#34;samples&#34;)
+        for i, sample in zip(range(self._n_samples), self._samples):
+            serialized_sample = tf.io.serialize_tensor(sample)
+            tf.io.write_file(os.path.join(sample_path, &#34;sample&#34; + str(i) + &#34;.tf&#34;), serialized_sample)
+
+    @classmethod
+    def load(cls, path: str) -&gt; &#39;Distribution&#39;:
+        with open(os.path.join(path, &#34;info.json&#34;), &#34;r&#34;) as file:
+            info = json.load(file)
+        sample_dir = os.path.join(path, &#34;samples&#34;)
+        samples = []
+        dtypes = info[&#34;dtypes&#34;]
+        for i in range(info[&#34;n_samples&#34;]):
+            serialized_sample = tf.io.read_file(os.path.join(sample_dir, &#34;sample&#34; + str(i)+&#34;.tf&#34;))
+            samples.append(tf.io.parse_tensor(serialized_sample, getattr(tf, dtypes[i])))
+        return Sampled(samples, info[&#34;frequencies&#34;])</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>Pyesian.distributions.Distribution.Distribution</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="Pyesian.distributions.Sampled.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>path: str) ‑> Pyesian.distributions.Distribution.Distribution</span>
+</code></dt>
+<dd>
+<div class="desc"><p>loads a distribution</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path of the file from which to load the distribution</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="Pyesian.distributions.Distribution" href="#Pyesian.distributions.Distribution">Distribution</a></code></dt>
+<dd>The loaded distribution</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def load(cls, path: str) -&gt; &#39;Distribution&#39;:
+    with open(os.path.join(path, &#34;info.json&#34;), &#34;r&#34;) as file:
+        info = json.load(file)
+    sample_dir = os.path.join(path, &#34;samples&#34;)
+    samples = []
+    dtypes = info[&#34;dtypes&#34;]
+    for i in range(info[&#34;n_samples&#34;]):
+        serialized_sample = tf.io.read_file(os.path.join(sample_dir, &#34;sample&#34; + str(i)+&#34;.tf&#34;))
+        samples.append(tf.io.parse_tensor(serialized_sample, getattr(tf, dtypes[i])))
+    return Sampled(samples, info[&#34;frequencies&#34;])</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.distributions.Sampled.sample"><code class="name flex">
+<span>def <span class="ident">sample</span></span>(<span>self) ‑> tensorflow.python.framework.tensor.Tensor</span>
+</code></dt>
+<dd>
+<div class="desc"><p>samples from this distribution</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tf.Tensor</code></dt>
+<dd>the sample</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sample(self) -&gt; tf.Tensor:
+    w = random.randint(1, self._acc_frequencies[self._n_samples - 1])
+    index = bisect.bisect_left(self._acc_frequencies, w)
+    return self._samples[index]</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.distributions.Sampled.store"><code class="name flex">
+<span>def <span class="ident">store</span></span>(<span>self, path: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>stores the distribution</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>path</code></strong> :&ensp;<code>str</code></dt>
+<dd>path to the file to store the distribuition</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def store(self, path: str):
+    info = {&#34;size&#34;: self._size,
+            &#34;n_samples&#34;: self._n_samples,
+            &#34;frequencies&#34;: self._frequencies,
+            &#34;dtypes&#34;: []}
+    for sample in self._samples:
+        info[&#34;dtypes&#34;].append(sample.dtype.name)
+    with open(os.path.join(path, &#34;info.json&#34;), &#34;w&#34;) as file:
+        file.write(json.dumps(info))
+    if not os.path.exists(os.path.join(path, &#34;samples&#34;)):
+        os.makedirs(os.path.join(path, &#34;samples&#34;))
+    sample_path = os.path.join(path, &#34;samples&#34;)
+    for i, sample in zip(range(self._n_samples), self._samples):
+        serialized_sample = tf.io.serialize_tensor(sample)
+        tf.io.write_file(os.path.join(sample_path, &#34;sample&#34; + str(i) + &#34;.tf&#34;), serialized_sample)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="Pyesian" href="../index.html">Pyesian</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="Pyesian.distributions.tf" href="tf/index.html">Pyesian.distributions.tf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="Pyesian.distributions.Distribution" href="#Pyesian.distributions.Distribution">Distribution</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.distributions.Distribution.load" href="#Pyesian.distributions.Distribution.load">load</a></code></li>
+<li><code><a title="Pyesian.distributions.Distribution.sample" href="#Pyesian.distributions.Distribution.sample">sample</a></code></li>
+<li><code><a title="Pyesian.distributions.Distribution.size" href="#Pyesian.distributions.Distribution.size">size</a></code></li>
+<li><code><a title="Pyesian.distributions.Distribution.store" href="#Pyesian.distributions.Distribution.store">store</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.distributions.DistributionSerializer" href="#Pyesian.distributions.DistributionSerializer">DistributionSerializer</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.distributions.DistributionSerializer.load_from" href="#Pyesian.distributions.DistributionSerializer.load_from">load_from</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.distributions.GaussianPrior" href="#Pyesian.distributions.GaussianPrior">GaussianPrior</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.distributions.GaussianPrior.get_model_priors" href="#Pyesian.distributions.GaussianPrior.get_model_priors">get_model_priors</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.distributions.MultivariateNormalDiagPlusLowRank" href="#Pyesian.distributions.MultivariateNormalDiagPlusLowRank">MultivariateNormalDiagPlusLowRank</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.distributions.MultivariateNormalDiagPlusLowRank.load" href="#Pyesian.distributions.MultivariateNormalDiagPlusLowRank.load">load</a></code></li>
+<li><code><a title="Pyesian.distributions.MultivariateNormalDiagPlusLowRank.sample" href="#Pyesian.distributions.MultivariateNormalDiagPlusLowRank.sample">sample</a></code></li>
+<li><code><a title="Pyesian.distributions.MultivariateNormalDiagPlusLowRank.store" href="#Pyesian.distributions.MultivariateNormalDiagPlusLowRank.store">store</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.distributions.Sampled" href="#Pyesian.distributions.Sampled">Sampled</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.distributions.Sampled.load" href="#Pyesian.distributions.Sampled.load">load</a></code></li>
+<li><code><a title="Pyesian.distributions.Sampled.sample" href="#Pyesian.distributions.Sampled.sample">sample</a></code></li>
+<li><code><a title="Pyesian.distributions.Sampled.store" href="#Pyesian.distributions.Sampled.store">store</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

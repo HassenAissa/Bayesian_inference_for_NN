@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>Pyesian.dynamics.deep_pilco API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>Pyesian.dynamics.deep_pilco</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from .control import gym, Policy, Control,np
+from Pyesian.datasets import Dataset
+from Pyesian.optimizers import Optimizer
+from Pyesian.dynamics.custom import all_rewards
+import tensorflow as tf
+import tensorflow_probability as tfp
+import copy, json, pickle
+from tensorflow.keras import backend as bk
+
+def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
+    &#34;&#34;&#34;
+    Given hidden nn layers and input/output format, create a complete nn
+    Args:
+        template: tensorflow sequential nn with only hidden layers
+        ipd (tuple): input dimension
+        opd (tuple): output dimension
+    Returns:
+        tf.Sequential: complete nn
+    &#34;&#34;&#34;
+    network = tf.keras.Sequential()
+    network.add(tf.keras.Input(shape=ipd))
+    for layer in template.layers:
+        network.add(layer)
+    network.add(tf.keras.layers.Dense(opd[0], out_activation))   
+    print(&#34;Network input output&#34;, ipd, opd)
+    return network
+
+class RBF(tf.keras.layers.Layer):
+    &#39;&#39;&#39;
+    tensorflow network layer with Radial Basis Function
+    inputs: number of hidden units and model parameter gamma
+    &#39;&#39;&#39;
+    def __init__(self, units, gamma, **kwargs):
+        super(RBF, self).__init__(**kwargs)
+        self.units = units
+        self.gamma = bk.cast_to_floatx(gamma)
+    
+    def build(self, input_shape):
+        self.mean = self.add_weight(name=&#39;mean&#39;,
+                                  shape=(int(input_shape[1]), self.units),
+                                  initializer=&#39;uniform&#39;,
+                                  trainable=True)
+        super(RBF, self).build(input_shape)
+
+    def call(self, inputs):
+        diff = bk.expand_dims(inputs) - self.mean
+        norm = bk.sum(bk.pow(diff, 2), axis=1)
+        return bk.exp(-1 * self.gamma * norm)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.units)
+
+class NNPolicy(Policy):
+    &#39;&#39;&#39;
+    Policy model using neural networks
+    basic inputs:
+        network (tf.Sequential): template or complete nn
+        hyperparams (HyperParameter): should include {lr=..., batch_size=...}
+    &#39;&#39;&#39;
+    def __init__(self, network, hyperparams):
+        super().__init__()
+        # using tensorflow neural network for optimizing policy params &#34;phi&#34;
+        self.network = network # template network consisting of inner layers
+        self.hyperparams = hyperparams
+        self.model_ready = False
+
+    def setup(self, env: gym.Env, ipd):
+        &#39;&#39;&#39;
+        Complete the class after initialization and create an optimizer for gradient descent
+        Args:
+            env: Gym environment
+            ipd: input dimension
+        &#39;&#39;&#39;
+        learning_rate = 1e-3
+        if &#34;lr&#34; in self.hyperparams._params:
+            learning_rate = self.hyperparams._params[&#34;lr&#34;]
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        if not self.model_ready:
+            print(&#34;Setup genral policy&#34;)
+            Policy.setup(self, env)
+            print(&#34;Setup NN policy&#34;)
+            self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
+            self.model_ready = True
+        
+    def _optimize_step(self, grad, check_converge=False):
+        self.optimizer.apply_gradients(zip(grad, self.network.trainable_variables))
+
+        # To be implemented: check convergence
+        if check_converge:
+            converge = False
+            return converge
+        
+    def act(self, states, take=True):
+        &#39;&#39;&#39;
+        Determine the actions given a set of states
+        Args:
+            states (list(Tonsor)): the set of vectors representing environment state
+            take (bool): if set to true, also return &#34;action_takes&#34;; otherwise return this term as empty list
+        Return:
+            actions (list(Tensor)): direct action values returned by policy network
+            action_takes (list(Tensor)): actions converted in a format acceptable by gym for interaction
+        &#39;&#39;&#39;
+        actions = self.network(states)
+        action_takes = []
+        if take:
+            # Discrete action takes the maximum probability of all cases
+            if self.oact == &#34;softmax&#34;:
+                for action in actions:
+                    i = self.range[0]
+                    max_a, max_p = i, action[0]
+                    for p in action[1:]:
+                        i += 1
+                        if p &gt; max_p:
+                            max_a = i
+                            max_p  = p
+                    action_takes.append(tf.cast(max_a, self.dtype))
+            else:
+                for action in actions:
+                    low = tf.math.maximum(action, self.range[0])
+                    res = tf.math.minimum(low, self.range[1])
+                    action_takes.append(tf.reshape(tf.cast(res, self.dtype), self.action_d))
+        return actions, action_takes
+                
+class DynamicsTraining:
+    &#39;&#39;&#39;
+    The class to learn transition model f(state, action) =&gt; new state
+    inputs:
+        optimizer (Optimizer): Bayesian optimizer (SWAG, BBB, HMC...) for learning
+        data_specs (dict): should include {loss=..., likelidood=...}, as per Dataset class
+        template (tf.Sequential): similar to policy, a sequential nn with only hidden layers
+        hyperparams (HyperParameters): typically include {lr=..., batch_size=...} and specifics of optimizer
+    &#39;&#39;&#39;
+    def __init__(self, optimizer:Optimizer, data_specs:dict, 
+                 template=None, hyperparams=None):
+        self.optimizer, self.template, = optimizer, template
+        self.hyperparams = hyperparams
+        self.data_specs = data_specs
+        self.features, self.targets = [], []
+        self.start = False   
+        self.model_ready = (template is None)
+
+    def _create_model(self, ipd, opd):
+        if self.model_ready:
+            return
+        model = complete_model(self.template, ipd, opd, out_activation=&#34;linear&#34;) 
+        self.model = model   
+
+    def compile_more(self, extra):
+        &#39;&#39;&#39;
+        Provide additional parameters for bayesian model
+        Args:
+            extra (dict): all names and values
+        &#39;&#39;&#39;
+        self.rems = extra
+
+    def _train(self, features, targets, opd, n_epochs):
+        if len(self.features)/len(features) &gt; 50:
+            self.targets = self.targets[len(self.features):]
+            self.features = self.features[len(self.features):]
+        self.features += features
+        self.targets += targets
+        print(&#34;Dyn data size:&#34;, len(self.features))
+        data = tf.data.Dataset.from_tensor_slices((self.features, self.targets))
+        train_dataset = Dataset(data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd[0],
+                                train_proportion=1.0, test_proportion=0.0, valid_proportion=0.0)
+        # train_dataset = Dataset(
+        #     dataset.train_data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+        if not self.start:
+            try:
+                self.optimizer.compile(self.hyperparams, self.model.to_json(), 
+                                    train_dataset, **self.rems)
+            except:
+                self.optimizer._dataset = train_dataset
+                self.optimizer._dataset_setup()
+            self.start = True
+        else:
+            self.optimizer._dataset = train_dataset
+        # nb_epochs = int(ep_fac * np.sqrt(len(self.features)))
+        # print(&#34;Dyn training epochs&#34;, nb_epochs)
+        self.optimizer.train(n_epochs)
+
+class BayesianDynamics(Control):
+    &#39;&#39;&#39;
+    Main class for Deep Pilco Bayesian reinforcement learning algorithm
+    inputs:
+        env: gym environment
+        horizon: time steps to run the algorithm at each iteration
+        dyn_training: the class to learn transition dynamics
+        policy: the model for policy
+        rew_name (str): the name of reward function (as in user defined in &#34;custom.py&#34;)
+        learn_config: tuple(dynamic training epoch number (int), particle number (int), discount factor (float))
+    &#39;&#39;&#39;
+    def __init__(
+        self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
+        policy: NNPolicy, rew_name, learn_config:tuple
+    ):
+        super().__init__(env, horizon, policy)
+        self.policy.setup(self.env, self.state_d)
+        ipd = (self.state_fd[0] + policy.action_fd[0],)
+        opd = (self.state_fd[0],)
+        dyn_training._create_model(ipd, opd)
+        self.dyn_training = dyn_training
+        self.rew_name = rew_name    
+        self.state_reward = all_rewards[rew_name]
+        if learn_config:
+            self.dyntrain_ep, self.kp, self.gamma = learn_config
+        # self.policy_optimizer = policy_optimizer
+    
+    def _sample_initial(self):
+        # default sampling method, return initial normalized states
+        options = None  # {&#34;low&#34;:-0.5, &#34;high&#34;:0.5}
+        sample, info = self.env.reset(options=options)  #{&#34;low&#34;:-0.5, &#34;high&#34;:0.5})
+        return sample
+
+    def _dyn_feature(self, state0, action0):
+        s0 = tf.reshape(state0, self.state_fd)
+        feature = tf.concat([s0, action0], axis=0)
+        return feature
+    
+    def _dyn_target(self, state1):
+
+        target = tf.reshape(state1, self.state_fd)
+        return target
+        
+    def _execute(self, use_policy=True):
+        all_states, all_actions = super()._execute(use_policy=use_policy)
+        features = []
+        targets = []
+        for s in range(len(all_states)-1):
+            feature = self._dyn_feature(all_states[s], all_actions[s])
+            target = self._dyn_target(all_states[s+1])
+            features.append(feature)
+            targets.append(target)
+        return features, targets
+
+    def _k_particles(self):
+        # create k random bnn weights and k random inputs
+        self.models = []
+        samples = []
+        bnn = self.dyn_training.optimizer.result()
+        for i in range(self.kp):
+            self.models.append(bnn.sample_model())
+            samples.append(self._sample_initial())
+        samples = tf.convert_to_tensor(samples) 
+        return samples
+    
+    def _forward(self, samples):  
+        ys = []      
+        actions, action_takes = self.policy.act(samples, take=False)
+        for i in range(self.kp):
+            feature = self._dyn_feature(samples[i], actions[i])
+            y = self.models[i](tf.reshape(feature, shape=(1,-1))) # normalized new state
+            ys.append(y[0])
+        ys = tf.convert_to_tensor(ys)
+        ymean = tf.math.reduce_mean(ys, axis=0)
+        ystd = tf.math.reduce_std(ys, axis=0)
+        dtbn = tfp.distributions.Normal(ymean, ystd)
+        new_states = []
+        for i in range(self.kp):
+            x = dtbn.sample()
+            new_states.append(x)
+        return actions, tf.convert_to_tensor(new_states)  
+        
+    def _t_reward(self, states, t):
+        k_rew = 0
+        for i in range(self.kp):
+            # if calculating cost, use negative state reward
+            k_rew += self.state_reward(states[i], t)
+        exp_rew = k_rew / self.kp
+        return exp_rew
+
+    def learn(self, nb_epochs, record_file, random_ep):
+        &#39;&#39;&#39;
+        The main procedure of Deep Pilco algorithm
+        Args:
+            nb_epochs (int): the number of iterations to run the algorithm for
+            record_file (str): the name of file to log training information
+            random_ep (int): the number of epochs using purely random policy at the beginning
+        &#39;&#39;&#39;
+        freq = max(int(self.horizon / 25), 1)
+        if not random_ep:
+            random_ep = 5
+        else:
+            random_ep = int(random_ep)
+        def step(ep, check_converge=False):
+            print(&#34;&gt;&gt;Learning epoch&#34;, ep)
+            # train dynamic model using transition dataset
+            use_policy = False
+            if ep &gt; random_ep:
+                use_policy = True
+            xs, ys = self._execute(use_policy=use_policy)
+            self.dyn_training._train(xs, ys, self.state_fd, self.dyntrain_ep)
+            if not use_policy:
+                return
+            
+            # k sample inputs and k dynamic bnn
+            states = self._k_particles()
+            # predict trajectory and calculate gradient
+            with tf.GradientTape(persistent=True) as tape:
+                tape.watch(self.policy.network.trainable_variables)
+                tot_cost = -self._t_reward(states, 0)
+                prev_tmark = 0
+                discount = 1
+                f = open(record_file, &#34;a&#34;)
+                f.write(&#34;Learning epoch &#34;+str(ep)+&#34;\n; Actions hor: &#34;)
+                for t in range(1,self.horizon+1):
+                    actions, new_states = self._forward(states)
+                    tmark = int(10*t/self.horizon)
+                    if tmark &gt; prev_tmark and tmark % 2 == 0:
+                        print(&#34;Time step: &#34;+str(t)+&#34;/&#34;+str(self.horizon))
+                    prev_tmark = tmark
+                    states = new_states
+                    if t % freq == 0:
+                        f.write(str([str(a.numpy())+&#34;,&#34; for a in actions[:3]]))
+                        discount *= self.gamma
+                        tot_cost -= discount * self._t_reward(states, t)
+                        
+            grad = tape.gradient(tot_cost, self.policy.network.trainable_variables)
+            f.write(&#34;\nTotal cost: &#34;+str(tot_cost)+&#34;\n&#34;)
+            if None in grad:
+                f.write(&#34;Invalid gradient!\n&#34;)
+                f.close()
+                return 
+            f.write(&#34;Gradient sample: &#34;+str(grad[-1])+&#34;, length &#34;+str(len(grad))+&#34;\n&#34;)
+            f.close()
+            return self.policy._optimize_step(grad, check_converge=check_converge)
+        
+        f = open(record_file, &#34;w&#34;)
+        f.write(&#34;&#34;)
+        f.close()
+        if nb_epochs:
+            # learning for a given number of epochs
+            for ep in range(1, nb_epochs+1):
+                step(ep)
+        else:
+            ep = 1
+            while not step(ep, check_converge=True):
+                # continue learning if policy not converge
+                ep += 1
+                continue
+        print(&#34;--Learning completed--&#34;)
+
+    def store(self, pref, tot_epochs):
+        &#39;&#39;&#39;
+        Store training session information in json file
+        Args:
+            pref (str): directory name prefix (like &#34;static/sessions/&#34;)
+            tot_epochs (int): the current epoch number of training
+        &#39;&#39;&#39;
+        f = open(pref+&#34;loss.pkl&#34;, &#34;wb&#34;)
+        pickle.dump(self.dyn_training.data_specs[&#34;loss&#34;], f)
+        f.close()
+        info = dict()
+        info[&#34;learn_config&#34;] = (self.dyntrain_ep, self.kp, self.gamma)
+        info[&#34;rew_name&#34;] = self.rew_name
+        info[&#34;horizon&#34;] = self.horizon
+        info[&#34;likelihood&#34;] = self.dyn_training.data_specs[&#34;likelihood&#34;]
+        info[&#34;tot_epochs&#34;] = tot_epochs
+        f = open(pref+&#34;agent.json&#34;, &#34;w&#34;)
+        json.dump(info, f)
+        f.close()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="Pyesian.dynamics.deep_pilco.complete_model"><code class="name flex">
+<span>def <span class="ident">complete_model</span></span>(<span>template: keras.src.engine.sequential.Sequential, ipd, opd, out_activation)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Given hidden nn layers and input/output format, create a complete nn</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>template</code></strong></dt>
+<dd>tensorflow sequential nn with only hidden layers</dd>
+<dt><strong><code>ipd</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>input dimension</dd>
+<dt><strong><code>opd</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>output dimension</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tf.Sequential</code></dt>
+<dd>complete nn</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def complete_model(template:tf.keras.Sequential, ipd, opd, out_activation):
+    &#34;&#34;&#34;
+    Given hidden nn layers and input/output format, create a complete nn
+    Args:
+        template: tensorflow sequential nn with only hidden layers
+        ipd (tuple): input dimension
+        opd (tuple): output dimension
+    Returns:
+        tf.Sequential: complete nn
+    &#34;&#34;&#34;
+    network = tf.keras.Sequential()
+    network.add(tf.keras.Input(shape=ipd))
+    for layer in template.layers:
+        network.add(layer)
+    network.add(tf.keras.layers.Dense(opd[0], out_activation))   
+    print(&#34;Network input output&#34;, ipd, opd)
+    return network</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="Pyesian.dynamics.deep_pilco.BayesianDynamics"><code class="flex name class">
+<span>class <span class="ident">BayesianDynamics</span></span>
+<span>(</span><span>env: gymnasium.core.Env, horizon: int, dyn_training: <a title="Pyesian.dynamics.deep_pilco.DynamicsTraining" href="#Pyesian.dynamics.deep_pilco.DynamicsTraining">DynamicsTraining</a>, policy: <a title="Pyesian.dynamics.deep_pilco.NNPolicy" href="#Pyesian.dynamics.deep_pilco.NNPolicy">NNPolicy</a>, rew_name, learn_config: tuple)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Main class for Deep Pilco Bayesian reinforcement learning algorithm
+inputs:
+env: gym environment
+horizon: time steps to run the algorithm at each iteration
+dyn_training: the class to learn transition dynamics
+policy: the model for policy
+rew_name (str): the name of reward function (as in user defined in "custom.py")
+learn_config: tuple(dynamic training epoch number (int), particle number (int), discount factor (float))</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BayesianDynamics(Control):
+    &#39;&#39;&#39;
+    Main class for Deep Pilco Bayesian reinforcement learning algorithm
+    inputs:
+        env: gym environment
+        horizon: time steps to run the algorithm at each iteration
+        dyn_training: the class to learn transition dynamics
+        policy: the model for policy
+        rew_name (str): the name of reward function (as in user defined in &#34;custom.py&#34;)
+        learn_config: tuple(dynamic training epoch number (int), particle number (int), discount factor (float))
+    &#39;&#39;&#39;
+    def __init__(
+        self, env: gym.Env, horizon:int, dyn_training:DynamicsTraining,
+        policy: NNPolicy, rew_name, learn_config:tuple
+    ):
+        super().__init__(env, horizon, policy)
+        self.policy.setup(self.env, self.state_d)
+        ipd = (self.state_fd[0] + policy.action_fd[0],)
+        opd = (self.state_fd[0],)
+        dyn_training._create_model(ipd, opd)
+        self.dyn_training = dyn_training
+        self.rew_name = rew_name    
+        self.state_reward = all_rewards[rew_name]
+        if learn_config:
+            self.dyntrain_ep, self.kp, self.gamma = learn_config
+        # self.policy_optimizer = policy_optimizer
+    
+    def _sample_initial(self):
+        # default sampling method, return initial normalized states
+        options = None  # {&#34;low&#34;:-0.5, &#34;high&#34;:0.5}
+        sample, info = self.env.reset(options=options)  #{&#34;low&#34;:-0.5, &#34;high&#34;:0.5})
+        return sample
+
+    def _dyn_feature(self, state0, action0):
+        s0 = tf.reshape(state0, self.state_fd)
+        feature = tf.concat([s0, action0], axis=0)
+        return feature
+    
+    def _dyn_target(self, state1):
+
+        target = tf.reshape(state1, self.state_fd)
+        return target
+        
+    def _execute(self, use_policy=True):
+        all_states, all_actions = super()._execute(use_policy=use_policy)
+        features = []
+        targets = []
+        for s in range(len(all_states)-1):
+            feature = self._dyn_feature(all_states[s], all_actions[s])
+            target = self._dyn_target(all_states[s+1])
+            features.append(feature)
+            targets.append(target)
+        return features, targets
+
+    def _k_particles(self):
+        # create k random bnn weights and k random inputs
+        self.models = []
+        samples = []
+        bnn = self.dyn_training.optimizer.result()
+        for i in range(self.kp):
+            self.models.append(bnn.sample_model())
+            samples.append(self._sample_initial())
+        samples = tf.convert_to_tensor(samples) 
+        return samples
+    
+    def _forward(self, samples):  
+        ys = []      
+        actions, action_takes = self.policy.act(samples, take=False)
+        for i in range(self.kp):
+            feature = self._dyn_feature(samples[i], actions[i])
+            y = self.models[i](tf.reshape(feature, shape=(1,-1))) # normalized new state
+            ys.append(y[0])
+        ys = tf.convert_to_tensor(ys)
+        ymean = tf.math.reduce_mean(ys, axis=0)
+        ystd = tf.math.reduce_std(ys, axis=0)
+        dtbn = tfp.distributions.Normal(ymean, ystd)
+        new_states = []
+        for i in range(self.kp):
+            x = dtbn.sample()
+            new_states.append(x)
+        return actions, tf.convert_to_tensor(new_states)  
+        
+    def _t_reward(self, states, t):
+        k_rew = 0
+        for i in range(self.kp):
+            # if calculating cost, use negative state reward
+            k_rew += self.state_reward(states[i], t)
+        exp_rew = k_rew / self.kp
+        return exp_rew
+
+    def learn(self, nb_epochs, record_file, random_ep):
+        &#39;&#39;&#39;
+        The main procedure of Deep Pilco algorithm
+        Args:
+            nb_epochs (int): the number of iterations to run the algorithm for
+            record_file (str): the name of file to log training information
+            random_ep (int): the number of epochs using purely random policy at the beginning
+        &#39;&#39;&#39;
+        freq = max(int(self.horizon / 25), 1)
+        if not random_ep:
+            random_ep = 5
+        else:
+            random_ep = int(random_ep)
+        def step(ep, check_converge=False):
+            print(&#34;&gt;&gt;Learning epoch&#34;, ep)
+            # train dynamic model using transition dataset
+            use_policy = False
+            if ep &gt; random_ep:
+                use_policy = True
+            xs, ys = self._execute(use_policy=use_policy)
+            self.dyn_training._train(xs, ys, self.state_fd, self.dyntrain_ep)
+            if not use_policy:
+                return
+            
+            # k sample inputs and k dynamic bnn
+            states = self._k_particles()
+            # predict trajectory and calculate gradient
+            with tf.GradientTape(persistent=True) as tape:
+                tape.watch(self.policy.network.trainable_variables)
+                tot_cost = -self._t_reward(states, 0)
+                prev_tmark = 0
+                discount = 1
+                f = open(record_file, &#34;a&#34;)
+                f.write(&#34;Learning epoch &#34;+str(ep)+&#34;\n; Actions hor: &#34;)
+                for t in range(1,self.horizon+1):
+                    actions, new_states = self._forward(states)
+                    tmark = int(10*t/self.horizon)
+                    if tmark &gt; prev_tmark and tmark % 2 == 0:
+                        print(&#34;Time step: &#34;+str(t)+&#34;/&#34;+str(self.horizon))
+                    prev_tmark = tmark
+                    states = new_states
+                    if t % freq == 0:
+                        f.write(str([str(a.numpy())+&#34;,&#34; for a in actions[:3]]))
+                        discount *= self.gamma
+                        tot_cost -= discount * self._t_reward(states, t)
+                        
+            grad = tape.gradient(tot_cost, self.policy.network.trainable_variables)
+            f.write(&#34;\nTotal cost: &#34;+str(tot_cost)+&#34;\n&#34;)
+            if None in grad:
+                f.write(&#34;Invalid gradient!\n&#34;)
+                f.close()
+                return 
+            f.write(&#34;Gradient sample: &#34;+str(grad[-1])+&#34;, length &#34;+str(len(grad))+&#34;\n&#34;)
+            f.close()
+            return self.policy._optimize_step(grad, check_converge=check_converge)
+        
+        f = open(record_file, &#34;w&#34;)
+        f.write(&#34;&#34;)
+        f.close()
+        if nb_epochs:
+            # learning for a given number of epochs
+            for ep in range(1, nb_epochs+1):
+                step(ep)
+        else:
+            ep = 1
+            while not step(ep, check_converge=True):
+                # continue learning if policy not converge
+                ep += 1
+                continue
+        print(&#34;--Learning completed--&#34;)
+
+    def store(self, pref, tot_epochs):
+        &#39;&#39;&#39;
+        Store training session information in json file
+        Args:
+            pref (str): directory name prefix (like &#34;static/sessions/&#34;)
+            tot_epochs (int): the current epoch number of training
+        &#39;&#39;&#39;
+        f = open(pref+&#34;loss.pkl&#34;, &#34;wb&#34;)
+        pickle.dump(self.dyn_training.data_specs[&#34;loss&#34;], f)
+        f.close()
+        info = dict()
+        info[&#34;learn_config&#34;] = (self.dyntrain_ep, self.kp, self.gamma)
+        info[&#34;rew_name&#34;] = self.rew_name
+        info[&#34;horizon&#34;] = self.horizon
+        info[&#34;likelihood&#34;] = self.dyn_training.data_specs[&#34;likelihood&#34;]
+        info[&#34;tot_epochs&#34;] = tot_epochs
+        f = open(pref+&#34;agent.json&#34;, &#34;w&#34;)
+        json.dump(info, f)
+        f.close()</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="Pyesian.dynamics.control.Control" href="control.html#Pyesian.dynamics.control.Control">Control</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.dynamics.deep_pilco.BayesianDynamics.learn"><code class="name flex">
+<span>def <span class="ident">learn</span></span>(<span>self, nb_epochs, record_file, random_ep)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The main procedure of Deep Pilco algorithm</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>nb_epochs</code></strong> :&ensp;<code>int</code></dt>
+<dd>the number of iterations to run the algorithm for</dd>
+<dt><strong><code>record_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>the name of file to log training information</dd>
+<dt><strong><code>random_ep</code></strong> :&ensp;<code>int</code></dt>
+<dd>the number of epochs using purely random policy at the beginning</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def learn(self, nb_epochs, record_file, random_ep):
+    &#39;&#39;&#39;
+    The main procedure of Deep Pilco algorithm
+    Args:
+        nb_epochs (int): the number of iterations to run the algorithm for
+        record_file (str): the name of file to log training information
+        random_ep (int): the number of epochs using purely random policy at the beginning
+    &#39;&#39;&#39;
+    freq = max(int(self.horizon / 25), 1)
+    if not random_ep:
+        random_ep = 5
+    else:
+        random_ep = int(random_ep)
+    def step(ep, check_converge=False):
+        print(&#34;&gt;&gt;Learning epoch&#34;, ep)
+        # train dynamic model using transition dataset
+        use_policy = False
+        if ep &gt; random_ep:
+            use_policy = True
+        xs, ys = self._execute(use_policy=use_policy)
+        self.dyn_training._train(xs, ys, self.state_fd, self.dyntrain_ep)
+        if not use_policy:
+            return
+        
+        # k sample inputs and k dynamic bnn
+        states = self._k_particles()
+        # predict trajectory and calculate gradient
+        with tf.GradientTape(persistent=True) as tape:
+            tape.watch(self.policy.network.trainable_variables)
+            tot_cost = -self._t_reward(states, 0)
+            prev_tmark = 0
+            discount = 1
+            f = open(record_file, &#34;a&#34;)
+            f.write(&#34;Learning epoch &#34;+str(ep)+&#34;\n; Actions hor: &#34;)
+            for t in range(1,self.horizon+1):
+                actions, new_states = self._forward(states)
+                tmark = int(10*t/self.horizon)
+                if tmark &gt; prev_tmark and tmark % 2 == 0:
+                    print(&#34;Time step: &#34;+str(t)+&#34;/&#34;+str(self.horizon))
+                prev_tmark = tmark
+                states = new_states
+                if t % freq == 0:
+                    f.write(str([str(a.numpy())+&#34;,&#34; for a in actions[:3]]))
+                    discount *= self.gamma
+                    tot_cost -= discount * self._t_reward(states, t)
+                    
+        grad = tape.gradient(tot_cost, self.policy.network.trainable_variables)
+        f.write(&#34;\nTotal cost: &#34;+str(tot_cost)+&#34;\n&#34;)
+        if None in grad:
+            f.write(&#34;Invalid gradient!\n&#34;)
+            f.close()
+            return 
+        f.write(&#34;Gradient sample: &#34;+str(grad[-1])+&#34;, length &#34;+str(len(grad))+&#34;\n&#34;)
+        f.close()
+        return self.policy._optimize_step(grad, check_converge=check_converge)
+    
+    f = open(record_file, &#34;w&#34;)
+    f.write(&#34;&#34;)
+    f.close()
+    if nb_epochs:
+        # learning for a given number of epochs
+        for ep in range(1, nb_epochs+1):
+            step(ep)
+    else:
+        ep = 1
+        while not step(ep, check_converge=True):
+            # continue learning if policy not converge
+            ep += 1
+            continue
+    print(&#34;--Learning completed--&#34;)</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.BayesianDynamics.store"><code class="name flex">
+<span>def <span class="ident">store</span></span>(<span>self, pref, tot_epochs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Store training session information in json file</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>pref</code></strong> :&ensp;<code>str</code></dt>
+<dd>directory name prefix (like "static/sessions/")</dd>
+<dt><strong><code>tot_epochs</code></strong> :&ensp;<code>int</code></dt>
+<dd>the current epoch number of training</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def store(self, pref, tot_epochs):
+    &#39;&#39;&#39;
+    Store training session information in json file
+    Args:
+        pref (str): directory name prefix (like &#34;static/sessions/&#34;)
+        tot_epochs (int): the current epoch number of training
+    &#39;&#39;&#39;
+    f = open(pref+&#34;loss.pkl&#34;, &#34;wb&#34;)
+    pickle.dump(self.dyn_training.data_specs[&#34;loss&#34;], f)
+    f.close()
+    info = dict()
+    info[&#34;learn_config&#34;] = (self.dyntrain_ep, self.kp, self.gamma)
+    info[&#34;rew_name&#34;] = self.rew_name
+    info[&#34;horizon&#34;] = self.horizon
+    info[&#34;likelihood&#34;] = self.dyn_training.data_specs[&#34;likelihood&#34;]
+    info[&#34;tot_epochs&#34;] = tot_epochs
+    f = open(pref+&#34;agent.json&#34;, &#34;w&#34;)
+    json.dump(info, f)
+    f.close()</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="Pyesian.dynamics.control.Control" href="control.html#Pyesian.dynamics.control.Control">Control</a></b></code>:
+<ul class="hlist">
+<li><code><a title="Pyesian.dynamics.control.Control.reward" href="control.html#Pyesian.dynamics.control.Control.reward">reward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.DynamicsTraining"><code class="flex name class">
+<span>class <span class="ident">DynamicsTraining</span></span>
+<span>(</span><span>optimizer: Pyesian.optimizers.Optimizer.Optimizer, data_specs: dict, template=None, hyperparams=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The class to learn transition model f(state, action) =&gt; new state
+inputs:
+optimizer (Optimizer): Bayesian optimizer (SWAG, BBB, HMC&hellip;) for learning
+data_specs (dict): should include {loss=&hellip;, likelidood=&hellip;}, as per Dataset class
+template (tf.Sequential): similar to policy, a sequential nn with only hidden layers
+hyperparams (HyperParameters): typically include {lr=&hellip;, batch_size=&hellip;} and specifics of optimizer</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DynamicsTraining:
+    &#39;&#39;&#39;
+    The class to learn transition model f(state, action) =&gt; new state
+    inputs:
+        optimizer (Optimizer): Bayesian optimizer (SWAG, BBB, HMC...) for learning
+        data_specs (dict): should include {loss=..., likelidood=...}, as per Dataset class
+        template (tf.Sequential): similar to policy, a sequential nn with only hidden layers
+        hyperparams (HyperParameters): typically include {lr=..., batch_size=...} and specifics of optimizer
+    &#39;&#39;&#39;
+    def __init__(self, optimizer:Optimizer, data_specs:dict, 
+                 template=None, hyperparams=None):
+        self.optimizer, self.template, = optimizer, template
+        self.hyperparams = hyperparams
+        self.data_specs = data_specs
+        self.features, self.targets = [], []
+        self.start = False   
+        self.model_ready = (template is None)
+
+    def _create_model(self, ipd, opd):
+        if self.model_ready:
+            return
+        model = complete_model(self.template, ipd, opd, out_activation=&#34;linear&#34;) 
+        self.model = model   
+
+    def compile_more(self, extra):
+        &#39;&#39;&#39;
+        Provide additional parameters for bayesian model
+        Args:
+            extra (dict): all names and values
+        &#39;&#39;&#39;
+        self.rems = extra
+
+    def _train(self, features, targets, opd, n_epochs):
+        if len(self.features)/len(features) &gt; 50:
+            self.targets = self.targets[len(self.features):]
+            self.features = self.features[len(self.features):]
+        self.features += features
+        self.targets += targets
+        print(&#34;Dyn data size:&#34;, len(self.features))
+        data = tf.data.Dataset.from_tensor_slices((self.features, self.targets))
+        train_dataset = Dataset(data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd[0],
+                                train_proportion=1.0, test_proportion=0.0, valid_proportion=0.0)
+        # train_dataset = Dataset(
+        #     dataset.train_data, self.data_specs[&#34;loss&#34;], self.data_specs[&#34;likelihood&#34;], opd)
+        if not self.start:
+            try:
+                self.optimizer.compile(self.hyperparams, self.model.to_json(), 
+                                    train_dataset, **self.rems)
+            except:
+                self.optimizer._dataset = train_dataset
+                self.optimizer._dataset_setup()
+            self.start = True
+        else:
+            self.optimizer._dataset = train_dataset
+        # nb_epochs = int(ep_fac * np.sqrt(len(self.features)))
+        # print(&#34;Dyn training epochs&#34;, nb_epochs)
+        self.optimizer.train(n_epochs)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.dynamics.deep_pilco.DynamicsTraining.compile_more"><code class="name flex">
+<span>def <span class="ident">compile_more</span></span>(<span>self, extra)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Provide additional parameters for bayesian model</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>extra</code></strong> :&ensp;<code>dict</code></dt>
+<dd>all names and values</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compile_more(self, extra):
+    &#39;&#39;&#39;
+    Provide additional parameters for bayesian model
+    Args:
+        extra (dict): all names and values
+    &#39;&#39;&#39;
+    self.rems = extra</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.NNPolicy"><code class="flex name class">
+<span>class <span class="ident">NNPolicy</span></span>
+<span>(</span><span>network, hyperparams)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Policy model using neural networks
+basic inputs:
+network (tf.Sequential): template or complete nn
+hyperparams (HyperParameter): should include {lr=&hellip;, batch_size=&hellip;}</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NNPolicy(Policy):
+    &#39;&#39;&#39;
+    Policy model using neural networks
+    basic inputs:
+        network (tf.Sequential): template or complete nn
+        hyperparams (HyperParameter): should include {lr=..., batch_size=...}
+    &#39;&#39;&#39;
+    def __init__(self, network, hyperparams):
+        super().__init__()
+        # using tensorflow neural network for optimizing policy params &#34;phi&#34;
+        self.network = network # template network consisting of inner layers
+        self.hyperparams = hyperparams
+        self.model_ready = False
+
+    def setup(self, env: gym.Env, ipd):
+        &#39;&#39;&#39;
+        Complete the class after initialization and create an optimizer for gradient descent
+        Args:
+            env: Gym environment
+            ipd: input dimension
+        &#39;&#39;&#39;
+        learning_rate = 1e-3
+        if &#34;lr&#34; in self.hyperparams._params:
+            learning_rate = self.hyperparams._params[&#34;lr&#34;]
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        if not self.model_ready:
+            print(&#34;Setup genral policy&#34;)
+            Policy.setup(self, env)
+            print(&#34;Setup NN policy&#34;)
+            self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
+            self.model_ready = True
+        
+    def _optimize_step(self, grad, check_converge=False):
+        self.optimizer.apply_gradients(zip(grad, self.network.trainable_variables))
+
+        # To be implemented: check convergence
+        if check_converge:
+            converge = False
+            return converge
+        
+    def act(self, states, take=True):
+        &#39;&#39;&#39;
+        Determine the actions given a set of states
+        Args:
+            states (list(Tonsor)): the set of vectors representing environment state
+            take (bool): if set to true, also return &#34;action_takes&#34;; otherwise return this term as empty list
+        Return:
+            actions (list(Tensor)): direct action values returned by policy network
+            action_takes (list(Tensor)): actions converted in a format acceptable by gym for interaction
+        &#39;&#39;&#39;
+        actions = self.network(states)
+        action_takes = []
+        if take:
+            # Discrete action takes the maximum probability of all cases
+            if self.oact == &#34;softmax&#34;:
+                for action in actions:
+                    i = self.range[0]
+                    max_a, max_p = i, action[0]
+                    for p in action[1:]:
+                        i += 1
+                        if p &gt; max_p:
+                            max_a = i
+                            max_p  = p
+                    action_takes.append(tf.cast(max_a, self.dtype))
+            else:
+                for action in actions:
+                    low = tf.math.maximum(action, self.range[0])
+                    res = tf.math.minimum(low, self.range[1])
+                    action_takes.append(tf.reshape(tf.cast(res, self.dtype), self.action_d))
+        return actions, action_takes</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="Pyesian.dynamics.control.Policy" href="control.html#Pyesian.dynamics.control.Policy">Policy</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.dynamics.deep_pilco.NNPolicy.act"><code class="name flex">
+<span>def <span class="ident">act</span></span>(<span>self, states, take=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Determine the actions given a set of states</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt>states (list(Tonsor)): the set of vectors representing environment state</dt>
+<dt><strong><code>take</code></strong> :&ensp;<code>bool</code></dt>
+<dd>if set to true, also return "action_takes"; otherwise return this term as empty list</dd>
+</dl>
+<h2 id="return">Return</h2>
+<p>actions (list(Tensor)): direct action values returned by policy network
+action_takes (list(Tensor)): actions converted in a format acceptable by gym for interaction</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def act(self, states, take=True):
+    &#39;&#39;&#39;
+    Determine the actions given a set of states
+    Args:
+        states (list(Tonsor)): the set of vectors representing environment state
+        take (bool): if set to true, also return &#34;action_takes&#34;; otherwise return this term as empty list
+    Return:
+        actions (list(Tensor)): direct action values returned by policy network
+        action_takes (list(Tensor)): actions converted in a format acceptable by gym for interaction
+    &#39;&#39;&#39;
+    actions = self.network(states)
+    action_takes = []
+    if take:
+        # Discrete action takes the maximum probability of all cases
+        if self.oact == &#34;softmax&#34;:
+            for action in actions:
+                i = self.range[0]
+                max_a, max_p = i, action[0]
+                for p in action[1:]:
+                    i += 1
+                    if p &gt; max_p:
+                        max_a = i
+                        max_p  = p
+                action_takes.append(tf.cast(max_a, self.dtype))
+        else:
+            for action in actions:
+                low = tf.math.maximum(action, self.range[0])
+                res = tf.math.minimum(low, self.range[1])
+                action_takes.append(tf.reshape(tf.cast(res, self.dtype), self.action_d))
+    return actions, action_takes</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.NNPolicy.setup"><code class="name flex">
+<span>def <span class="ident">setup</span></span>(<span>self, env: gymnasium.core.Env, ipd)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Complete the class after initialization and create an optimizer for gradient descent</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>env</code></strong></dt>
+<dd>Gym environment</dd>
+<dt><strong><code>ipd</code></strong></dt>
+<dd>input dimension</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setup(self, env: gym.Env, ipd):
+    &#39;&#39;&#39;
+    Complete the class after initialization and create an optimizer for gradient descent
+    Args:
+        env: Gym environment
+        ipd: input dimension
+    &#39;&#39;&#39;
+    learning_rate = 1e-3
+    if &#34;lr&#34; in self.hyperparams._params:
+        learning_rate = self.hyperparams._params[&#34;lr&#34;]
+    self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+    if not self.model_ready:
+        print(&#34;Setup genral policy&#34;)
+        Policy.setup(self, env)
+        print(&#34;Setup NN policy&#34;)
+        self.network = complete_model(self.network, ipd, self.action_fd, self.oact)
+        self.model_ready = True</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.RBF"><code class="flex name class">
+<span>class <span class="ident">RBF</span></span>
+<span>(</span><span>units, gamma, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>tensorflow network layer with Radial Basis Function
+inputs: number of hidden units and model parameter gamma</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RBF(tf.keras.layers.Layer):
+    &#39;&#39;&#39;
+    tensorflow network layer with Radial Basis Function
+    inputs: number of hidden units and model parameter gamma
+    &#39;&#39;&#39;
+    def __init__(self, units, gamma, **kwargs):
+        super(RBF, self).__init__(**kwargs)
+        self.units = units
+        self.gamma = bk.cast_to_floatx(gamma)
+    
+    def build(self, input_shape):
+        self.mean = self.add_weight(name=&#39;mean&#39;,
+                                  shape=(int(input_shape[1]), self.units),
+                                  initializer=&#39;uniform&#39;,
+                                  trainable=True)
+        super(RBF, self).build(input_shape)
+
+    def call(self, inputs):
+        diff = bk.expand_dims(inputs) - self.mean
+        norm = bk.sum(bk.pow(diff, 2), axis=1)
+        return bk.exp(-1 * self.gamma * norm)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.units)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>keras.src.engine.base_layer.Layer</li>
+<li>tensorflow.python.module.module.Module</li>
+<li>tensorflow.python.trackable.autotrackable.AutoTrackable</li>
+<li>tensorflow.python.trackable.base.Trackable</li>
+<li>keras.src.utils.version_utils.LayerVersionSelector</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Pyesian.dynamics.deep_pilco.RBF.build"><code class="name flex">
+<span>def <span class="ident">build</span></span>(<span>self, input_shape)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates the variables of the layer (for subclass implementers).</p>
+<p>This is a method that implementers of subclasses of <code>Layer</code> or <code>Model</code>
+can override if they need a state-creation step in-between
+layer instantiation and layer call. It is invoked automatically before
+the first execution of <code>call()</code>.</p>
+<p>This is typically used to create the weights of <code>Layer</code> subclasses
+(at the discretion of the subclass implementer).</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_shape</code></strong></dt>
+<dd>Instance of <code>TensorShape</code>, or list of instances of
+<code>TensorShape</code> if the layer expects a list of inputs
+(one instance per input).</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build(self, input_shape):
+    self.mean = self.add_weight(name=&#39;mean&#39;,
+                              shape=(int(input_shape[1]), self.units),
+                              initializer=&#39;uniform&#39;,
+                              trainable=True)
+    super(RBF, self).build(input_shape)</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.RBF.call"><code class="name flex">
+<span>def <span class="ident">call</span></span>(<span>self, inputs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is where the layer's logic lives.</p>
+<p>The <code>call()</code> method may not create state (except in its first
+invocation, wrapping the creation of variables or other resources in
+<code>tf.init_scope()</code>).
+It is recommended to create state, including
+<code>tf.Variable</code> instances and nested <code>Layer</code> instances,
+in <code>__init__()</code>, or in the <code>build()</code> method that is
+called automatically before <code>call()</code> executes for the first time.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>inputs</code></strong></dt>
+<dd>Input tensor, or dict/list/tuple of input tensors.
+The first positional <code>inputs</code> argument is subject to special rules:
+- <code>inputs</code> must be explicitly passed. A layer cannot have zero
+arguments, and <code>inputs</code> cannot be provided via the default value
+of a keyword argument.
+- NumPy array or Python scalar values in <code>inputs</code> get cast as
+tensors.
+- Keras mask metadata is only collected from <code>inputs</code>.
+- Layers are built (<code>build(input_shape)</code> method)
+using shape info from <code>inputs</code> only.
+- <code>input_spec</code> compatibility is only checked against <code>inputs</code>.
+- Mixed precision input casting is only applied to <code>inputs</code>.
+If a layer has tensor arguments in <code>*args</code> or <code>**kwargs</code>, their
+casting behavior in mixed precision should be handled manually.
+- The SavedModel input specification is generated using <code>inputs</code>
+only.
+- Integration with various ecosystem packages like TFMOT, TFLite,
+TF.js, etc is only supported for <code>inputs</code> and not for tensors in
+positional and keyword arguments.</dd>
+<dt><strong><code>*args</code></strong></dt>
+<dd>Additional positional arguments. May contain tensors, although
+this is not recommended, for the reasons above.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Additional keyword arguments. May contain tensors, although
+this is not recommended, for the reasons above.
+The following optional keyword arguments are reserved:
+- <code>training</code>: Boolean scalar tensor of Python boolean indicating
+whether the <code>call</code> is meant for training or inference.
+- <code>mask</code>: Boolean input mask. If the layer's <code>call()</code> method takes a
+<code>mask</code> argument, its default value will be set to the mask
+generated for <code>inputs</code> by the previous layer (if <code>input</code> did come
+from a layer that generated a corresponding mask, i.e. if it came
+from a Keras layer with masking support).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A tensor or list/tuple of tensors.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def call(self, inputs):
+    diff = bk.expand_dims(inputs) - self.mean
+    norm = bk.sum(bk.pow(diff, 2), axis=1)
+    return bk.exp(-1 * self.gamma * norm)</code></pre>
+</details>
+</dd>
+<dt id="Pyesian.dynamics.deep_pilco.RBF.compute_output_shape"><code class="name flex">
+<span>def <span class="ident">compute_output_shape</span></span>(<span>self, input_shape)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the output shape of the layer.</p>
+<p>This method will cause the layer's state to be built, if that has not
+happened before. This requires that the layer will later be used with
+inputs that match the input shape provided here.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>input_shape</code></strong></dt>
+<dd>Shape tuple (tuple of integers) or <code>tf.TensorShape</code>,
+or structure of shape tuples / <code>tf.TensorShape</code> instances
+(one per output tensor of the layer).
+Shape tuples can include None for free dimensions,
+instead of an integer.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A <code>tf.TensorShape</code> instance
+or structure of <code>tf.TensorShape</code> instances.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compute_output_shape(self, input_shape):
+    return (input_shape[0], self.units)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="Pyesian.dynamics" href="index.html">Pyesian.dynamics</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="Pyesian.dynamics.deep_pilco.complete_model" href="#Pyesian.dynamics.deep_pilco.complete_model">complete_model</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="Pyesian.dynamics.deep_pilco.BayesianDynamics" href="#Pyesian.dynamics.deep_pilco.BayesianDynamics">BayesianDynamics</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.dynamics.deep_pilco.BayesianDynamics.learn" href="#Pyesian.dynamics.deep_pilco.BayesianDynamics.learn">learn</a></code></li>
+<li><code><a title="Pyesian.dynamics.deep_pilco.BayesianDynamics.store" href="#Pyesian.dynamics.deep_pilco.BayesianDynamics.store">store</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.dynamics.deep_pilco.DynamicsTraining" href="#Pyesian.dynamics.deep_pilco.DynamicsTraining">DynamicsTraining</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.dynamics.deep_pilco.DynamicsTraining.compile_more" href="#Pyesian.dynamics.deep_pilco.DynamicsTraining.compile_more">compile_more</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.dynamics.deep_pilco.NNPolicy" href="#Pyesian.dynamics.deep_pilco.NNPolicy">NNPolicy</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.dynamics.deep_pilco.NNPolicy.act" href="#Pyesian.dynamics.deep_pilco.NNPolicy.act">act</a></code></li>
+<li><code><a title="Pyesian.dynamics.deep_pilco.NNPolicy.setup" href="#Pyesian.dynamics.deep_pilco.NNPolicy.setup">setup</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Pyesian.dynamics.deep_pilco.RBF" href="#Pyesian.dynamics.deep_pilco.RBF">RBF</a></code></h4>
+<ul class="">
+<li><code><a title="Pyesian.dynamics.deep_pilco.RBF.build" href="#Pyesian.dynamics.deep_pilco.RBF.build">build</a></code></li>
+<li><code><a title="Pyesian.dynamics.deep_pilco.RBF.call" href="#Pyesian.dynamics.deep_pilco.RBF.call">call</a></code></li>
+<li><code><a title="Pyesian.dynamics.deep_pilco.RBF.compute_output_shape" href="#Pyesian.dynamics.deep_pilco.RBF.compute_output_shape">compute_output_shape</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
